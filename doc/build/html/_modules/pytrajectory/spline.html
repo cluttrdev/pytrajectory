@@ -1,0 +1,395 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytrajectory.spline &mdash; pytrajectory 0.3.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytrajectory.spline</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">solve</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">scipy.sparse</span> <span class="kn">as</span> <span class="nn">sparse</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">spsolve</span>
+
+<span class="kn">import</span> <span class="nn">log</span>
+<span class="c">#from log import IPS</span>
+<span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
+
+
+<div class="viewcode-block" id="fdiff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.fdiff">[docs]</a><span class="k">def</span> <span class="nf">fdiff</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;This function is used to get the derivative of of a callable splinefunction</span>
+<span class="sd">    </span>
+<span class="sd">    :param func: The spline function to derivate.</span>
+<span class="sd">    :type func: instancemethod</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c"># Return derivative of temporary function</span>
+    <span class="c"># im_func is the functions id</span>
+    <span class="c"># im_self is the object of which func is the method</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_f</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_df</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_df</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_ddf</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_ddf</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_dddf</span>
+    
+    <span class="c"># Return derivative of callable function</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">df</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">ddf</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">ddf</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">dddf</span>
+
+    <span class="c"># raise notImplemented</span>
+    <span class="k">print</span> <span class="s">&#39;not implemented&#39;</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline">[docs]</a><span class="k">class</span> <span class="nc">CubicSpline</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;This class provides an object that represents a cubic spline ...</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">bc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bcd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bcdd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">steady</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="c"># [a,b] ... interval</span>
+        <span class="c"># n     ... number of spline parts</span>
+        <span class="c"># tag   ... string with name of the spline object</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="n">bc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bcd</span> <span class="o">=</span> <span class="n">bcd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bcdd</span> <span class="o">=</span> <span class="n">bcdd</span>
+
+        <span class="c"># size of polynomial parts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">))</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c"># create array of symbolic coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symarray</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="o">+</span><span class="n">tag</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="c">#   key: spline part    value: coefficients of the polynom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="c"># create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">steady</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;makesteady()&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">makesteady</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="CubicSpline.makesteady"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.makesteady">[docs]</a>    <span class="k">def</span> <span class="nf">makesteady</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This method sets up and solves equations that ensure steadiness and</span>
+<span class="sd">        smoothness conditions of the spline in every joining point satisfy boundary conditions.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;makesteady: &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+        
+        <span class="c"># This should be untouched yet</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">==</span> <span class="bp">False</span>
+
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span>
+
+        <span class="c"># mu represents degree of boundary conditions</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">mu</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bcd</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">mu</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bcdd</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">mu</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c"># ---&gt; docu p. 14</span>
+        <span class="n">v</span><span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mu</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">coeffs</span><span class="p">[:,</span><span class="n">v</span><span class="p">]</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="nb">list</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}</span><span class="o">-</span><span class="p">{</span><span class="n">v</span><span class="p">})]))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mu</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">coeffs</span><span class="p">[:,</span><span class="n">v</span><span class="p">]</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mu</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">coeffs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">v</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mu</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">coeffs</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="n">v</span><span class="p">]</span>
+
+        <span class="c"># b is what is not in a</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">coeffs</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="c"># Build Matrix for equation system of smoothness conditions --&gt; p. 13</span>
+
+        <span class="c"># get matrix dimensions --&gt; (3.21) &amp; (3.22)</span>
+        <span class="n">N2</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">N1</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mu</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N1</span><span class="p">,</span><span class="n">N2</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N1</span><span class="p">)</span>
+
+        <span class="c"># build block band matrix for smoothness in every joining point</span>
+        <span class="c">#   derivatives from order 0 to 2</span>
+        <span class="c">#   --&gt; (3.19), caution because of sign error in documentation</span>
+        <span class="n">repmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>   <span class="n">h</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>  <span class="n">h</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>    <span class="mi">6</span><span class="o">*</span><span class="n">h</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="mi">4</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">repmat</span>
+
+        <span class="c"># add equations for boundary conditions</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">h</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bcd</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="o">*</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bcdd</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">h</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcdd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcdd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c"># get A and B matrix --&gt; docu p. 13</span>
+        <span class="c">#</span>
+        <span class="c">#       M*c = r</span>
+        <span class="c"># A*a + B*b = r</span>
+        <span class="c">#         b = B^(-1)*(r-A*a)</span>
+        <span class="c">#</span>
+        <span class="c"># we need B^(-1)*r [absolute part -&gt; tmp1] and B^(-1)*A [coefficients of a -&gt; tmp2]</span>
+
+        <span class="n">a_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N2</span><span class="o">-</span><span class="n">N1</span><span class="p">))</span>
+        <span class="n">b_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N1</span><span class="p">))</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">aa</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">aa</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">a_mat</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">bb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">bb</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">b_mat</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a_mat</span><span class="p">)</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_mat</span><span class="p">)</span>
+
+        <span class="c"># do the inversion</span>
+        <span class="c">#   np.float16 to avoid factors like 1e-16</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="c">#16)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="c">#16)</span>
+
+        <span class="n">tmp_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">tmp_coeffs_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">bb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">bb</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">tmp_coeffs</span><span class="p">[(</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">tmp2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">tmp_coeffs_abs</span><span class="p">[(</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">tmp1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">tmp3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">aa</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">aa</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">tmp_coeffs</span><span class="p">[(</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">tmp3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span> <span class="o">=</span> <span class="n">tmp_coeffs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span> <span class="o">=</span> <span class="n">tmp_coeffs_abs</span>
+
+        <span class="c"># docu p. 13: a is vector of independent spline coeffs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_indep</span> <span class="o">=</span> <span class="n">a</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">=</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.tmp_evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_evalf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This function returns a matrix and vector to evaluate the spline or a derivative at x</span>
+<span class="sd">        by multiplying the matrix with numerical values of the independent variables</span>
+<span class="sd">        and adding the vector.</span>
+<span class="sd">        </span>
+<span class="sd">        :param real x: The point to evaluate the spline at</span>
+<span class="sd">        :param int d: The derivation order</span>
+<span class="sd">        :returns: M, m -- Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c"># Get the spline part where x is in</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
+        
+        <span class="c"># Calculate vector to multiply coefficient matrix with</span>
+        <span class="n">x</span> <span class="o">-=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        
+        <span class="n">M0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">m0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">M0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">m0</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.tmp_f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_f">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`tmp_evalf`&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.tmp_df"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_df">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`tmp_evalf`&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.tmp_ddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_ddf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_ddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`tmp_evalf`&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.tmp_dddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_dddf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_dddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`tmp_evalf`&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.set_coeffs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.set_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_sol</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This function is used to set up numerical values for the spline coefficients</span>
+<span class="sd">        </span>
+<span class="sd">        :param dict c_sol: Dictionary with coefficient and numerical value</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">c_num</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c_sol</span><span class="p">)</span><span class="o">+</span><span class="n">ca</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">ca</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CubicSpline.evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.evalf">[docs]</a>    <span class="k">def</span> <span class="nf">evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="c"># get polynomial part where x is in</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">d</span><span class="p">)(</span><span class="n">x</span><span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.df"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.df">[docs]</a>    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.ddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.ddf">[docs]</a>    <span class="k">def</span> <span class="nf">ddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.dddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.dddf">[docs]</a>    <span class="k">def</span> <span class="nf">dddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">spline</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">tag</span><span class="o">=</span><span class="s">&#39;x1&#39;</span><span class="p">,</span><span class="n">bc</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">bcd</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">bcdd</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">IPS</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Mar 16 13:50:28 2014
-
-@author: andreaskunze
-"""
-
 import numpy as np
 import pylab as plt
 

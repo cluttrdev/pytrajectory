@@ -7,7 +7,7 @@ import sys
 from IPython import embed
 
 
-class Logger(object):
+class Logger():
     def __init__(self, fname, mode, suppress):
         self.logfile = open(fname, mode)
         self.stdout = sys.stdout
@@ -25,7 +25,7 @@ class Logger(object):
         self.logfile.close()
 
 
-class Timer(object):
+class Timer():
     def __init__(self, label="~", verbose=True):
         self.label = label
         self.verbose = verbose
@@ -39,7 +39,7 @@ class Timer(object):
             logtime("---> [%s elapsed %f s]"%(self.label, self.delta))
 
 
-class CumTimer(object):
+class CumTimer():
     def __init__(self, ctimer):
         self.ctimer = ctimer
 

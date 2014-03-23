@@ -7,7 +7,7 @@ from scipy import sparse
 
 import pylab as plt
 
-from spline import CubicSpline
+from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
 
@@ -18,47 +18,7 @@ from time import time
 from IPython import embed as IPS
 
 
-def tmp_fdiff(func):
-    '''
-    This function is used by Trajectory to get the derivative of of a callable splinefunction
-
-    im_func ... function-ID
-    im_self ... object of which func is the method
-    '''
-
-    if(func.im_func == CubicSpline.tmp_f.im_func):
-        return func.im_self.tmp_df
-    if(func.im_func == CubicSpline.tmp_df.im_func):
-        return func.im_self.tmp_ddf
-    if(func.im_func == CubicSpline.tmp_ddf.im_func):
-        return func.im_self.tmp_dddf
-
-    # raise notImplemented
-    print 'not implemented'
-    return None
-
-
-def fdiff(func):
-    '''
-    This function is used by Trajectory to get the derivative of of a callable splinefunction
-
-    im_func ... function-ID
-    im_self ... object of which func is the method
-    '''
-
-    if(func.im_func == CubicSpline.f.im_func):
-        return func.im_self.df
-    if(func.im_func == CubicSpline.df.im_func):
-        return func.im_self.ddf
-    if(func.im_func == CubicSpline.ddf.im_func):
-        return func.im_self.dddf
-
-    # raise notImplemented
-    print 'not implemented'
-    return None
-
-
-class IntegChain(object):
+class IntegChain():
     def __init__(self, lst):
         self.top = lst[0]
         self.bottom = lst[-1]
@@ -128,11 +88,18 @@ class Trajectory():
         # create symbolic variables
         self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
-
+        
         # transform symbolic ff to numeric ff
         #F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        #ff_num= sp.lambdify((self.x_sym,self.u_sym),F)
+        #_ff_num = sp.lambdify((self.x_sym,self.u_sym),F)
+        # 
+        #def ff_num(x, u):
+        #    tmp_xu = np.hstack((x,u))
+        #    return _ff_num(*tmp_xu)
+        #
         #self.ff = ff_num
+        
+        
         self.ff = ff
 
         # dictionaries for boundary conditions
@@ -147,8 +114,7 @@ class Trajectory():
     
     
     def getParam(self):
-        '''
-        This method is used to set some of the parameters
+        '''This method is used to set some of the parameters
         '''
         
         # first, determine system dimensions
@@ -180,8 +146,7 @@ class Trajectory():
 
 
     def iteration(self):
-        '''
-        This is the main loop --> [5.1]
+        '''This is the main loop --> [5.1]
         '''
 
         log.info( 40*"#")
@@ -258,8 +223,7 @@ class Trajectory():
 
 
     def iterate(self):
-        '''
-        This method is used to run one iteration
+        '''This method is used to run one iteration
         '''
         self.nIt += 1
 
@@ -289,8 +253,7 @@ class Trajectory():
 
 
     def getGuess(self):
-        '''
-        This method is used to determine a starting value (guess) for the
+        '''This method is used to determine a starting value (guess) for the
         solver of the collocation equation system --> docu p. 24
         '''
 
@@ -350,8 +313,7 @@ class Trajectory():
 
 
     def find_int_chains(self):
-        '''
-        This method calls the symbolic vectorfield and looks for equations like
+        '''This method calls the symbolic vectorfield and looks for equations like
         d/dt x_i = x_[i+1]
         to find integrator chains
         '''
@@ -377,8 +339,7 @@ class Trajectory():
 
 
     def init_splines(self):
-        '''
-        This method is used to initialise the temporary splines
+        '''This method is used to initialise the temporary splines
         '''
         log.info( 40*"#")
         log.info( "#########  Initialise Splines  #########")
@@ -468,7 +429,7 @@ class Trajectory():
                 splines[ss].makesteady()
 
         for xx in self.x_sym:
-            dx_fnc[xx] = tmp_fdiff(x_fnc[xx])
+            dx_fnc[xx] = fdiff(x_fnc[xx])
 
         indep_coeffs= dict()
         for ss in splines:
@@ -483,10 +444,8 @@ class Trajectory():
 
 
     def equation_system(self):
-        '''
-        This method is used to build the equation system which will be solved
-        later
-        '''
+        '''This method is used to build the equation system which will be solved later'''
+        
         log.info( 40*"#")
         log.info("####  Building the equation system  ####")
         log.info( 40*"#")
@@ -594,9 +553,8 @@ class Trajectory():
 
 
     def solve(self):
-        '''
-        This method is used to solve the collocation equation system
-        '''
+        '''This method is used to solve the collocation equation system.'''
+        
         log.info( 40*"#")
         log.info("#####  Solving the equation system  ####")
         log.info( 40*"#")
@@ -612,9 +570,8 @@ class Trajectory():
 
 
     def G(self, c):
-        '''
-        This is the callable function that represents the collocation system
-        '''
+        '''This is the callable function that represents the collocation system.'''
+        
         ff = self.ff
         eqind = np.array(self.eqind)
 
@@ -653,10 +610,8 @@ class Trajectory():
 
 
     def DG(self, c):
-        '''
-        This is the callable function that returns the jacobian matrix
-        of the collocation system
-        '''
+        '''This is the callable function that returns the jacobian matrix of the collocation system.'''
+        
         Df = self.Df
         eqind = np.array(self.eqind)
 
@@ -711,10 +666,9 @@ class Trajectory():
 
 
     def setCoeff(self):
-        '''
-        This method is used to create the actual splines by using
+        '''This method is used to create the actual splines by using
         the numerical solutions to set up the coefficients of the polynomial
-        spline parts of every created spline
+        spline parts of every created spline.
         '''
         # set up coefficients for each spline
         log.info("Set spline coefficients")
@@ -814,9 +768,7 @@ class Trajectory():
 
 
     def simulate(self):
-        '''
-        This method is used to solve the initial value problem
-        '''
+        '''This method is used to solve the initial value problem.'''
 
         log.info( 40*"#")
         log.info("##  Solving the initial value problem ##")
@@ -861,23 +813,18 @@ class Trajectory():
 
 
     def x(self, t):
-        '''
-        This function returns the system state at a given (time-) point
-        '''
+        '''This function returns the system state at a given (time-) point.'''
         return np.array([self.x_fnc[xx](t) for xx in self.x_sym])
 
 
     def u(self, t):
-        '''
-        This function returns the inputs state at a given (time-) point
-        '''
+        '''This function returns the inputs state at a given (time-) point.'''
         return np.array([self.u_fnc[uu](t) for uu in self.u_sym])
 
 
     def plot(self):
-        '''
-        This method provides graphics for each system variable, manipulated
-        variable and error function and plots the solution of the simulation
+        '''This method provides graphics for each system variable, manipulated
+        variable and error function and plots the solution of the simulation.
         '''
 
         log.info("Plot")
@@ -1033,8 +980,8 @@ if __name__ == '__main__':
         b = 2.0
         sx = 5
         su = 5
-        kx = 2
-        maxIt  = 4
+        kx = 5
+        maxIt  = 5
         g = [0,0]
         eps = 0.05
 

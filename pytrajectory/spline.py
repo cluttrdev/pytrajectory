@@ -9,7 +9,39 @@ import log
 from IPython import embed as IPS
 
 
+def fdiff(func):
+    '''This function is used to get the derivative of of a callable splinefunction.
+    
+    :param func: The spline function to derivate.
+    :type func: instancemethod
+    '''
+    
+    # Return derivative of temporary function
+    # im_func is the functions id
+    # im_self is the object of which func is the method
+    if(func.im_func == CubicSpline.tmp_f.im_func):
+        return func.im_self.tmp_df
+    if(func.im_func == CubicSpline.tmp_df.im_func):
+        return func.im_self.tmp_ddf
+    if(func.im_func == CubicSpline.tmp_ddf.im_func):
+        return func.im_self.tmp_dddf
+    
+    # Return derivative of callable function
+    if(func.im_func == CubicSpline.f.im_func):
+        return func.im_self.df
+    if(func.im_func == CubicSpline.df.im_func):
+        return func.im_self.ddf
+    if(func.im_func == CubicSpline.ddf.im_func):
+        return func.im_self.dddf
+
+    # raise notImplemented
+    print 'not implemented'
+    return None
+
+
 class CubicSpline():
+    '''This class provides an object that represents a cubic spline ...'''
+    
     def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
         # [a,b] ... interval
         # n     ... number of spline parts
@@ -36,7 +68,7 @@ class CubicSpline():
         self.tmp_S_abs = np.zeros((self.n,4))
 
         for i in xrange(self.n):
-            # --> create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3
+            # create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3
             self.S[i] = np.poly1d(self.coeffs[i])
 
         self.steady_flag = False
@@ -47,12 +79,13 @@ class CubicSpline():
 
 
     def makesteady(self):
+        '''This method sets up and solves equations that ensure steadiness and
+        smoothness conditions of the spline in every joining point satisfy boundary conditions.
         '''
-        This method sets up and solves equations that ensure steadiness and
-        smoothness conditions of the spline in every joining point
-        '''
+        
         log.info("makesteady: "+self.tag)
-
+        
+        # This should be untouched yet
         assert self.steady_flag == False
 
         coeffs = self.coeffs
@@ -90,15 +123,8 @@ class CubicSpline():
         N2 = 4*self.n
         N1 = 3*(self.n-1) + 2*(mu+1)
 
-        #============================
-        # DENSE
         M = np.zeros((N1,N2))
         r = np.zeros(N1)
-        #============================
-        # SPARSE --> not working because of fancy indexing
-        #M = sparse.csr_matrix((N1,N2))
-        #r = sparse.csr_matrix((N1,1))
-        #============================
 
         # build block band matrix for smoothness in every joining point
         #   derivatives from order 0 to 2
@@ -135,15 +161,9 @@ class CubicSpline():
         #
         # we need B^(-1)*r [absolute part -> tmp1] and B^(-1)*A [coefficients of a -> tmp2]
 
-        #============================
-        # DENSE
         a_mat = np.zeros((N2,N2-N1))
         b_mat = np.zeros((N2,N1))
-        #============================
-        # SPARSE --> not working because of item assignment
-        #a_mat = sparse.coo_matrix((N2,N2-N1))
-        #b_mat = sparse.coo_matrix((N2,N1))
-        #============================
+        
         for i,aa in enumerate(a):
             tmp = aa.name.split('_')[-2:]
             j = int(tmp[0])
@@ -156,16 +176,9 @@ class CubicSpline():
             k = int(tmp[1])
             b_mat[4*j+k,i] = 1
 
-        #============================
-        # DENSE
-        #A = np.array(np.dot(M,a_mat), dtype=float)
-        #B = np.array(np.dot(M,b_mat), dtype=float)
-        #============================
-        # SPARSE
         M = sparse.csr_matrix(M)
         A = M.dot(a_mat)
         B = M.dot(b_mat)
-        #============================
 
         # do the inversion
         #   np.float16 to avoid factors like 1e-16
@@ -200,9 +213,32 @@ class CubicSpline():
         self.steady_flag = True
 
 
-    def tmp_evalf(self, i, p):
-        # i ... Spline part
-
+    def tmp_evalf(self, x, d):
+        '''This function returns a matrix and vector to evaluate the spline or a derivative at x
+        by multiplying the matrix with numerical values of the independent variables
+        and adding the vector.
+        
+        :param real x: The point to evaluate the spline at
+        :param int d: The derivation order
+        :returns: M, m -- Matrix and vector that represent how the splines coefficients depend on the free parameters.
+        '''
+        
+        # Get the spline part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+        
+        # Calculate vector to multiply coefficient matrix with
+        x -= (i+1)*self.h
+        
+        if (d == 0):
+            p = np.array([x*x*x,x*x,x,1.0])
+        elif (d == 1):
+            p = np.array([3.0*x*x,2.0*x,1.0,0.0])
+        elif (d == 2):
+            p = np.array([6.0*x,2.0,0.0,0.0])
+        elif (d == 3):
+            p = np.array([6.0,0.0,0.0,0.0])
+        
         M0 = np.array([m for m in self.tmp_S[i]],dtype=float)
         m0 = self.tmp_S_abs[i]
 
@@ -210,62 +246,31 @@ class CubicSpline():
 
 
     def tmp_f(self,x):
-        # x ... evaluation point
-
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
-        if (i == self.n): i-= 1
-
-        x -= (i+1)*self.h
-        p = np.array([x*x*x,x*x,x,1.0])
-
-        return self.tmp_evalf(i,p)
+        '''This is just a wrapper for :func:`tmp_evalf` with the spline itself.'''
+        return self.tmp_evalf(x, 0)
 
 
     def tmp_df(self,x):
-        # x ... evaluation point
-
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
-        if (i == self.n): i-= 1
-
-        x -= (i+1)*self.h
-        p = np.array([3.0*x*x,2.0*x,1.0,0.0])
-
-        return self.tmp_evalf(i,p)
+        '''This is just a wrapper for :func:`tmp_evalf` with the splines 1st derivative.'''
+        return self.tmp_evalf(x, 1)
 
 
     def tmp_ddf(self,x):
-        # x ... evaluation point
-
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
-        if (i == self.n): i-= 1
-
-        x -= (i+1)*self.h
-        p = np.array([6.0*x,2.0,0.0,0.0])
-
-        return self.tmp_evalf(i,p)
+        '''This is just a wrapper for :func:`tmp_evalf` with the splines 2nd derivative.'''
+        return self.tmp_evalf(x, 2)
 
 
     def tmp_dddf(self,x):
-        # x ... evaluation point
-
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
-        if (i == self.n): i-= 1
-
-        x -= (i+1)*self.h
-        p = np.array([6.0,0.0,0.0,0.0])
-
-        return self.tmp_evalf(i,p)
+        '''This is just a wrapper for :func:`tmp_evalf` with the splines 3rd derivative.'''
+        return self.tmp_evalf(x, 3)
 
 
     def set_coeffs(self, c_sol):
-        # this function is used to set up numerical values for
-        # spline coefficient
-        # just needs a dictionary with coefficient and value
-
+        '''This function is used to set up numerical values for the spline coefficients.
+        
+        :param dict c_sol: Dictionary with coefficient and numerical value
+        '''
+        
         for i in xrange(self.n):
             c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.tmp_S[i],self.tmp_S_abs[i])]
             self.S[i] = np.poly1d(c_num)
@@ -280,15 +285,19 @@ class CubicSpline():
         return p.deriv(d)(x-(i+1)*self.h)
 
     def f(self, x):
+        '''This is just a wrapper for :func:`evalf` to evaluate the spline itself.'''
         return self.evalf(x,0)
 
     def df(self, x):
+        '''This is just a wrapper for :func:`evalf` to evaluate the splines 1st derivative.'''
         return self.evalf(x,1)
 
     def ddf(self, x):
+        '''This is just a wrapper for :func:`evalf` to evaluate the splines 2nd derivative.'''
         return self.evalf(x,2)
 
     def dddf(self, x):
+        '''This is just a wrapper for :func:`evalf` to evaluate the splines 3rd derivative.'''
         return self.evalf(x,3)
 
 

@@ -1,0 +1,53 @@
+PyTrajectory Modules Reference
+******************************
+
+.. automodule:: pytrajectory
+
+trajectory module
+=================
+
+.. automodule:: pytrajectory.trajectory
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spline module
+=============
+
+.. automodule:: pytrajectory.spline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+solver module
+=============
+
+.. automodule:: pytrajectory.solver
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+simulation module
+=================
+
+.. automodule:: pytrajectory.simulation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tools module
+============
+
+.. automodule:: pytrajectory.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+log module
+==========
+
+.. automodule:: pytrajectory.log
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
