@@ -1,0 +1,1048 @@
+import os
+import sys
+
+import numpy as np
+import sympy as sp
+from scipy import sparse
+
+import pylab as plt
+
+from spline import CubicSpline
+from solver import Solver
+from simulation import Simulation
+
+import log
+#from log import IPS
+from time import time
+
+from IPython import embed as IPS
+
+
+def tmp_fdiff(func):
+    '''
+    This function is used by Trajectory to get the derivative of of a callable splinefunction
+
+    im_func ... function-ID
+    im_self ... object of which func is the method
+    '''
+
+    if(func.im_func == CubicSpline.tmp_f.im_func):
+        return func.im_self.tmp_df
+    if(func.im_func == CubicSpline.tmp_df.im_func):
+        return func.im_self.tmp_ddf
+    if(func.im_func == CubicSpline.tmp_ddf.im_func):
+        return func.im_self.tmp_dddf
+
+    # raise notImplemented
+    print 'not implemented'
+    return None
+
+
+def fdiff(func):
+    '''
+    This function is used by Trajectory to get the derivative of of a callable splinefunction
+
+    im_func ... function-ID
+    im_self ... object of which func is the method
+    '''
+
+    if(func.im_func == CubicSpline.f.im_func):
+        return func.im_self.df
+    if(func.im_func == CubicSpline.df.im_func):
+        return func.im_self.ddf
+    if(func.im_func == CubicSpline.ddf.im_func):
+        return func.im_self.dddf
+
+    # raise notImplemented
+    print 'not implemented'
+    return None
+
+
+class IntegChain(object):
+    def __init__(self, lst):
+        self.top = lst[0]
+        self.bottom = lst[-1]
+        self.elemdict = dict()
+    
+    def successor(self, elem):
+        pass
+    
+    def predecessor(self, elem):
+        pass
+
+
+class Trajectory():
+    def __init__(self, ff, xa, xb, algo='leven', delta=2, sx=3, su=3,
+                 a=0.0, b=1.0, maxIt=7, kx=2, eps=1e-2, tol=1e-5,
+                 find_x_chains=True, find_u_chains=True, g=None):
+        # ff    ... vectorfield
+        # xa,xb ... boundary conditions
+        # algo  ... solver to use
+        # delta ... constant for calculation of collocation points
+        # sx,su ... initial number of spline parts
+        # a,b   ... borders (a<b)
+        # maxIt ... maximum number of iterations
+        # kx    ... factor for raising the number of spline parts
+        # eps   ... tolerance for the solution
+        # tol   ... tolerance for the solver
+        # find_*_chains ... look for integrator chains
+        # g     ... boundary conditions for manipulated variables
+        
+        # save symbolic vectorfield
+        self.ff_sym = ff
+        
+        # symbolic analysis
+        self.getParam()
+        
+        if not (len(xa) == len(xb) == self.n):
+            raise ValueError, 'Dimension mismatch xa,xb'
+        
+        self.algo = algo
+        self.delta = delta
+        self.sx = sx
+        self.su = su
+        self.a = a
+        self.b = b
+        self.maxIt = maxIt
+        self.kx = kx
+        self.eps = eps
+        self.tol = tol
+        self.find_x_chains = find_x_chains
+        self.find_u_chains = find_u_chains
+        self.g = g
+
+        # iteration number
+        self.nIt = 0
+
+        # error of simulation
+        self.err = 2*self.eps*np.ones(self.n)
+
+        # dictionary for spline objects
+        #   key: variable   value: CubicSpline-object
+        self.splines = dict()
+
+        # dictionaries for callable solution functions
+        self.x_fnc = dict()
+        self.u_fnc = dict()
+
+        # create symbolic variables
+        self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
+        self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
+
+        # transform symbolic ff to numeric ff
+        #F = sp.Matrix(ff(self.x_sym,self.u_sym))
+        #ff_num= sp.lambdify((self.x_sym,self.u_sym),F)
+        #self.ff = ff_num
+        self.ff = ff
+
+        # dictionaries for boundary conditions
+        self.xa = dict()
+        self.xb = dict()
+        for i,xx in enumerate(self.x_sym):
+            self.xa[xx] = xa[i]
+            self.xb[xx] = xb[i]
+
+        # set logfile
+        #log.set_file()
+    
+    
+    def getParam(self):
+        '''
+        This method is used to set some of the parameters
+        '''
+        
+        # first, determine system dimensions
+        i = 0
+        j = 0
+        success = False
+        while not success:
+            i += 1
+            j += 1            
+            for jj in xrange(j):
+                for ii in xrange(i):
+                    x = np.ones(ii)
+                    u = np.ones(jj)
+                    try:
+                        self.ff_sym(x,u)
+                        success = True
+                        n = ii
+                        m = jj
+                    except:
+                        pass
+        self.n = n
+        self.m = m
+        
+        # get minimal neccessary number of spline parts for the manipulated variables
+        # --> (3.35)        
+        #nu = -1
+        #...
+        #self.su = self.n - 3 + 2*(nu + 1) 
+
+
+    def iteration(self):
+        '''
+        This is the main loop --> [5.1]
+        '''
+
+        log.info( 40*"#")
+        log.info("       ---- First Iteration ----")
+        log.info( 40*"#")
+        log.info("# spline parts: %d"%self.sx)
+
+        # looking for integrator chains --> [3.4]
+        if (self.find_x_chains):
+            with log.Timer("find_int_chains()"):
+                self.find_int_chains()
+        else:
+            self.chains = dict()
+
+        # determine which equations have to be solved by collocation
+        s1 = set(self.x_sym)
+        s2 = set(self.chains.values())
+
+        # create list with indices of the equations that have to be solved
+        # corresponding to lower ends of integrator chains without inputs
+        # (equations above them hold by definition)
+        eqind = []
+        for xx in list(s1.difference(s2)):
+            eqind.append(self.x_sym.index(xx))
+        eqind.sort()
+        self.eqind = eqind
+
+        # start first iteration
+        self.iterate()
+
+        ######################
+        # this is the solution of the simulation
+        xt = self.A[1]
+        self.err = np.empty(self.n)
+
+        # what is the error
+        log.info("Difference:")
+        for i,xx in enumerate(self.x_sym):
+            self.err[i] = self.xb[xx] - xt[-1:][0][i]
+            log.info(str(xx)+" : %f"%self.err[i])
+
+        log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
+        ######################
+
+        # this was the first iteration
+        # now we are getting into the loop, see fig [8]
+        while(max(abs(self.err)) > self.eps and self.nIt < self.maxIt):
+            log.info( 40*"#")
+            log.info("       ---- Next Iteration ----")
+            log.info( 40*"#")
+
+            # raise the number of spline parts
+            self.sx = round(self.kx*self.sx)
+
+            log.info("# spline parts: %d"%self.sx)
+
+            # store the old spline for getting the guess later
+            self.old_splines = self.splines
+
+            # start next iteration
+            self.iterate()
+
+            # this is the solution of the simulation
+            xt = self.A[1]
+            self.err = np.empty(self.n)
+
+            # what is the error
+            log.info("Difference:")
+            for i,xx in enumerate(self.x_sym):
+                self.err[i] = abs(self.xb[xx] - xt[-1:][0][i])
+                log.info(str(xx)+" : %f"%self.err[i])
+
+            log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
+
+
+    def iterate(self):
+        '''
+        This method is used to run one iteration
+        '''
+        self.nIt += 1
+
+        # initialise splines
+        with log.Timer("init_splines()"):
+            self.init_splines()
+
+        # Get first guess for solver
+        with log.Timer("getGuess()"):
+            self.getGuess()
+
+        # create equation system --> [3.1.1]
+        with log.Timer("equation_system()"):
+            self.equation_system()
+
+        # solve it --> [4.3]
+        with log.Timer("solve()"):
+            self.solve()
+
+        # write back the coefficients
+        with log.Timer("setCoeff()"):
+            self.setCoeff()
+
+        # solve the initial value problem
+        with log.Timer("simulate()"):
+            self.simulate()
+
+
+    def getGuess(self):
+        '''
+        This method is used to determine a starting value (guess) for the
+        solver of the collocation equation system --> docu p. 24
+        '''
+
+        if (self.nIt == 1):
+            self.c_list = np.empty(0)
+
+            for cc in sorted(self.indep_coeffs, key = lambda c: c.name):
+                self.c_list = np.hstack((self.c_list,self.indep_coeffs[cc]))
+            guess = np.ones(len(self.c_list))*0.1
+        else:
+            # make splines local
+            old_splines = self.old_splines
+            new_splines = self.splines
+
+            guess = np.empty(0)
+            self.c_list = np.empty(0)
+
+            # get new guess for every independent variable
+            for cc in sorted(self.coeffs_sol,key = lambda c: c.name):
+                self.c_list = np.hstack((self.c_list,self.indep_coeffs[cc]))
+
+                if (1 and new_splines[cc].type == 'x'):
+                    log.info("get new guess for spline %s"%cc.name)
+
+                    # how many unknown coefficients does the new spline have
+                    nn = len(self.indep_coeffs[cc])
+
+                    # and this will be the number of equations or points to
+                    # evaluate the old spline
+                    #   but we dont want to use the borders because they got
+                    #   the boundary values already
+                    gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+
+                    # evaluate the old and new spline at all points in gpts
+                    #   they should be equal in these points
+
+                    OLD = [None]*len(gpts)
+                    NEW = [None]*len(gpts)
+                    NEW_abs = [None]*len(gpts)
+                    for i,p in enumerate(gpts):
+                        OLD[i] = old_splines[cc].f(p)
+                        NEW[i], NEW_abs[i] = new_splines[cc].tmp_f(p)
+
+                    OLD = np.array(OLD)
+                    NEW = np.array(NEW)
+                    NEW_abs = np.array(NEW_abs)
+
+                    TT = np.linalg.solve(NEW,OLD-NEW_abs)
+
+                    guess = np.hstack((guess,TT))
+                else:
+                    #if it is a manipulated variable, just take the old solution
+                    guess = np.hstack((guess,self.coeffs_sol[cc]))
+
+        # the new guess
+        self.guess = guess
+
+
+    def find_int_chains(self):
+        '''
+        This method calls the symbolic vectorfield and looks for equations like
+        d/dt x_i = x_[i+1]
+        to find integrator chains
+        '''
+
+        log.info( "Looking for integrator chains")
+
+        fi = self.ff_sym(self.x_sym,self.u_sym)
+
+        dic = {}
+        for i in xrange(self.n):
+            for xx in self.x_sym:
+                if ((fi[i].subs(1.0, 1)) == xx):
+                    # substitution because of sympy difference betw. 1.0 and 1
+                    dic[xx] = self.x_sym[i]
+            if (self.find_u_chains):
+                for uu in self.u_sym:
+                    if ((fi[i]) == uu):
+                        dic[uu] = self.x_sym[i]
+
+        # dic looks like this:  {x_4: x_1, x_5: x_2, x_6:x_3}
+        # where x_4 = d x_1 / dt and so on
+        self.chains = dic
+
+
+    def init_splines(self):
+        '''
+        This method is used to initialise the temporary splines
+        '''
+        log.info( 40*"#")
+        log.info( "#########  Initialise Splines  #########")
+        log.info( 40*"#")
+
+        # dictionaries for splines and callable solution function for x,u and dx
+        splines = dict()
+        x_fnc = dict()
+        u_fnc = dict()
+        dx_fnc = dict()
+
+        # collect all variables a spline has to be created for
+        chains = self.chains
+        var = []
+        for vv in chains.values():
+            if (not chains.has_key(vv)):
+                var.append(vv)
+
+        # flip the dictionary, key becomes value
+        dic = {v:k for k,v in chains.items()}
+
+        for xx in var:
+            # store current integrator chain
+            tmp = []
+            vv = xx
+            tmp.append(vv)
+
+            # now we're working our way through the chain
+            while (dic.has_key(vv)):
+                vv = dic[vv]
+                tmp.append(vv)
+
+            info = ''
+            for t in tmp:
+                info += '->' + str(t)
+            log.info("Found integrator chain: "+info)
+
+            # create splines
+
+            if (tmp[-1] in self.u_sym):
+                # if the last entry of the actual integrator chain is an input
+                splines[xx] = CubicSpline(self.a,self.b,n=self.su,steady=False,tag=str(xx))
+                splines[xx].type = 'u'
+            else:
+                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,steady=False,tag=str(xx))
+                splines[xx].type = 'x'
+
+            for i,tt in enumerate(tmp):
+                if (tt in self.u_sym):
+                    if (i == 0):
+                        u_fnc[tt] = splines[xx].tmp_f
+                    if (i == 1):
+                        u_fnc[tt] = splines[xx].tmp_df
+                    if (i == 2):
+                        u_fnc[tt] = splines[xx].tmp_ddf
+                else:
+                    if (i == 0):
+                        splines[xx].bc = [self.xa[tt],self.xb[tt]]
+                        if ((self.g != None) and (splines[xx].type == 'u')):
+                            splines[xx].bcd = self.g
+                        x_fnc[tt] = splines[xx].tmp_f
+                    if (i == 1):
+                        splines[xx].bcd = [self.xa[tt],self.xb[tt]]
+                        if ((self.g != None) and (splines[xx].type == 'u')):
+                            splines[xx].bcdd = self.g
+                        x_fnc[tt] = splines[xx].tmp_df
+                    if (i == 2):
+                        splines[xx].bcdd = [self.xa[tt],self.xb[tt]]
+                        x_fnc[tt] = splines[xx].tmp_ddf
+
+        # now handle the variables which are not part of any chain
+        for xx in self.x_sym:
+            if (not x_fnc.has_key(xx)):
+                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[xx],self.xb[xx]],steady=False,tag=str(xx))
+                splines[xx].type = 'x'
+                x_fnc[xx] = splines[xx].tmp_f
+
+        for uu in self.u_sym:
+            if (not u_fnc.has_key(uu)):
+                splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=str(uu))
+                splines[uu].type = 'u'
+                u_fnc[uu] = splines[uu].tmp_f
+
+        # solve smoothness conditions of each spline
+        for ss in splines:
+            with log.Timer("makesteady()"):
+                splines[ss].makesteady()
+
+        for xx in self.x_sym:
+            dx_fnc[xx] = tmp_fdiff(x_fnc[xx])
+
+        indep_coeffs= dict()
+        for ss in splines:
+            indep_coeffs[ss] = splines[ss].c_indep
+
+        self.indep_coeffs = indep_coeffs
+
+        self.splines = splines
+        self.x_fnc = x_fnc
+        self.u_fnc = u_fnc
+        self.dx_fnc = dx_fnc
+
+
+    def equation_system(self):
+        '''
+        This method is used to build the equation system which will be solved
+        later
+        '''
+        log.info( 40*"#")
+        log.info("####  Building the equation system  ####")
+        log.info( 40*"#")
+
+        # make functions local
+        x_fnc = self.x_fnc
+        dx_fnc = self.dx_fnc
+        u_fnc = self.u_fnc
+
+        # make symbols local
+        x_sym = self.x_sym
+        u_sym = self.u_sym
+
+        a = self.a
+        b = self.b
+        delta = self.delta
+
+        # generate collocation points ---> [3.3]
+        cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
+        self.cpts = cpts
+
+        lx = len(cpts)*len(x_sym)
+        lu = len(cpts)*len(u_sym)
+
+        Mx = [None]*lx
+        Mx_abs = [None]*lx
+        Mdx = [None]*lx
+        Mdx_abs = [None]*lx
+        Mu = [None]*lu
+        Mu_abs = [None]*lu
+
+        indic = dict()
+        i = 0
+        j = 0
+        # iterate over spline quantities
+        for sq in sorted(self.indep_coeffs, key=lambda c: c.name):
+            # sq = system quantity
+            # increase j by the number of indep coeffs on which it depends
+            j += len(self.indep_coeffs[sq])
+            indic[sq] = (i,j)
+            i = j
+
+        # iterate over all quantities including inputs
+        for sq in x_sym+u_sym:
+            tmp_sq = sq
+            while self.chains.has_key(tmp_sq):
+                tmp_sq = self.chains[tmp_sq]
+            # tmp_sq now contains end of integrator chain
+            indic[sq] = indic[tmp_sq]
+
+        # total number of indep coeffs
+        c_len = len(self.c_list)
+
+        eqx = 0
+        equ = 0
+        for i,p in enumerate(cpts):
+            for xx in x_sym:
+                mx = np.zeros(c_len)
+                mdx = np.zeros(c_len)
+
+                i,j= indic[xx]
+
+                mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
+                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
+
+                Mx[eqx] = mx
+                Mdx[eqx] = mdx
+                eqx += 1
+
+            for uu in u_sym:
+                mu = np.zeros(c_len)
+
+                i,j = indic[uu]
+
+                mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
+
+                Mu[equ] = mu
+                equ += 1
+
+        self.Mx = np.array(Mx)
+        self.Mx_abs = np.array(Mx_abs)
+        self.Mdx = np.array(Mdx)
+        self.Mdx_abs = np.array(Mdx_abs)
+        self.Mu = np.array(Mu)
+        self.Mu_abs = np.array(Mu_abs)
+
+        ################################################################
+        # SPARSE
+        #self.Mx = sparse.csr_matrix(self.Mx)
+        #self.Mx_abs = sparse.csr_matrix(self.Mx_abs)
+        #self.Mdx = sparse.csr_matrix(self.Mdx)
+        #self.Mdx_abs = sparse.csr_matrix(self.Mdx_abs)
+        #self.Mu = sparse.csr_matrix(self.Mu)
+        #self.Mu_abs = sparse.csr_matrix(self.Mu_abs)
+
+        ################################################################
+        # for creation of the jacobian matrix
+
+        f = self.ff_sym(x_sym,u_sym)
+        Df = sp.Matrix(f).jacobian(self.x_sym+self.u_sym)
+
+        self.Df = sp.lambdify(self.x_sym+self.u_sym, Df, modules='numpy')
+
+        ################################################################
+
+
+    def solve(self):
+        '''
+        This method is used to solve the collocation equation system
+        '''
+        log.info( 40*"#")
+        log.info("#####  Solving the equation system  ####")
+        log.info( 40*"#")
+
+        # create our solver
+        dim = len(self.cpts)*len(self.eqind)
+        #IPS()
+        solver = Solver(dim, self.G, self.DG, self.c_list, self.guess,
+                        maxx= 20, tol= self.tol, algo=self.algo)
+
+        # solve the equation system
+        self.sol = solver.solve()
+
+
+    def G(self, c):
+        '''
+        This is the callable function that represents the collocation system
+        '''
+        ff = self.ff
+        eqind = np.array(self.eqind)
+
+        x_len = len(self.x_sym)
+        u_len = len(self.u_sym)
+
+        # DENSE
+        X = np.dot(self.Mx,c) + self.Mx_abs
+        U = np.dot(self.Mu,c) + self.Mu_abs
+
+        # SPARSE
+        #X = Mx.dot(c)+Mx_abs
+        #U = Mu.dot(c)+Mu_abs
+
+        X = np.array(X).reshape((-1,x_len))
+        U = np.array(U).reshape((-1,u_len))
+
+        # evaluate system equations and select those related
+        # to lower ends of integrator chains (via eqind)
+        # other equations need not to be solved
+
+        F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float)[:,eqind]
+        #F = np.array([ff(*np.hstack((x,u))) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
+
+        # DENSE
+        dX = np.dot(self.Mdx,c) + self.Mdx_abs
+        dX = np.reshape(dX,(-1,x_len))[:,eqind]
+
+        # SPARSE
+        #dX = Mdx.dot(c) + Mdx_abs
+        #dX = np.array(dX).reshape((-1,x_len))[:,eqind]
+
+        G = F-dX
+
+        return G.flatten()
+
+
+    def DG(self, c):
+        '''
+        This is the callable function that returns the jacobian matrix
+        of the collocation system
+        '''
+        Df = self.Df
+        eqind = np.array(self.eqind)
+
+        x_len = len(self.x_sym)
+        u_len = len(self.u_sym)
+
+        # x-/u-values in all collocation points
+        X = self.Mx.dot(c) + self.Mx_abs
+        X = np.array(X).reshape((-1,x_len)) # one column for every state component
+        U = self.Mu.dot(c) + self.Mu_abs
+        U = np.array(U).reshape((-1,u_len)) # one column for every input component
+
+        # construct jacobian of rhs w.r.t. indep coeffs
+        DF_blocks = []
+        for x,u in zip(X,U):
+            # get one row of U and X respectively
+            tmp_xu = np.hstack((x,u))
+
+            # evaluate jacobian at current collocation point
+            DF_blocks.append(Df(*tmp_xu))
+
+        #tmp= np.array(tmp)
+        #assert tmp.shape== (len(self.cpts), x_len, len(self.c_list))
+
+        # SPARSE
+        #Mu = Mu.toarray()
+        #Mx = Mx.toarray()
+
+        DF = []
+        for i,df in enumerate(DF_blocks):
+            J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
+            res = np.dot(df,J_XU)
+            assert res.shape == (x_len,len(self.c_list))
+            DF.append(res)
+
+        DF = np.array(DF)[:,eqind,:]
+        # 1st index : collocation point
+        # 2nd index : equations that have to be solved --> end of an integrator chain
+        # 3rd index : component of c
+
+        # now compute jacobian of x_dot w.r.t. to indep coeffs
+        #DENSE
+        DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+
+        # SPARSE
+        #DdX = Mdx.toarray().reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+
+        # stack matrices in vertical direction
+        DG = np.vstack(DF) - np.vstack(DdX)
+
+        return DG
+
+
+    def setCoeff(self):
+        '''
+        This method is used to create the actual splines by using
+        the numerical solutions to set up the coefficients of the polynomial
+        spline parts of every created spline
+        '''
+        # set up coefficients for each spline
+        log.info("Set spline coefficients")
+
+        sol = self.sol
+        subs = dict()
+        chains = self.chains
+
+        for cc in sorted(self.indep_coeffs, key=lambda c: c.name):
+            i = len(self.indep_coeffs[cc])
+            subs[cc] = sol[:i]
+            sol = sol[i:]
+
+        for u in self.u_sym:
+            uu = u
+            while chains.has_key(uu):
+                uu = chains[uu]
+            subs[u] = subs[uu]
+
+        for x in self.x_sym:
+            xx = x
+            while chains.has_key(xx):
+                xx = chains[xx]
+            subs[x] = subs[xx]
+
+        for cc in self.splines:
+            self.splines[cc].set_coeffs(subs[cc])
+
+        # reset functions
+        self.x_fnc = dict()
+        self.u_fnc = dict()
+        self.dx_fnc = dict()
+
+        # collect all variables a spline has been created for
+        splines = self.splines
+        var = []
+        for vv in chains.values():
+            if (not chains.has_key(vv)):
+                var.append(vv)
+
+        # flip the dictionary, key becomes value
+        dic = {v:k for k,v in chains.items()}
+
+        for xx in var:
+            # store current integrator chain
+            tmp = []
+            vv = xx
+            tmp.append(vv)
+
+            # now we're working our way through the chain
+            while (dic.has_key(vv)):
+                vv = dic[vv]
+                tmp.append(vv)
+
+            for i,tt in enumerate(tmp):
+                if (tt in self.u_sym):
+                    if (i == 0):
+                        self.u_fnc[tt]= splines[xx].f
+                    if (i == 1):
+                        self.u_fnc[tt]= splines[xx].df
+                    if (i == 2):
+                        self.u_fnc[tt]= splines[xx].ddf
+                else:
+                    if (i==0):
+                        self.x_fnc[tt]= splines[xx].f
+                    if (i==1):
+                        self.x_fnc[tt]= splines[xx].df
+                    if (i==2):
+                        self.x_fnc[tt]= splines[xx].ddf
+
+        # now handle the variables which are not part of any chain
+        for xx in self.x_sym:
+            if (not self.x_fnc.has_key(xx)):
+                self.x_fnc[xx] = splines[xx].f
+
+        for uu in self.u_sym:
+            if (not self.u_fnc.has_key(uu)):
+                self.u_fnc[uu] = splines[uu].f
+
+        for xx in self.x_sym:
+            self.dx_fnc[xx] = fdiff(self.x_fnc[xx])
+
+        # yet another dictionary for solution and coeffs
+        coeffs_sol = dict()
+
+        # used for indexing
+        j = 0
+        k = 0
+
+        # take solution and write back the coefficients for each spline
+        for cc in sorted(self.indep_coeffs, key=lambda c: c.name):
+            k += len(self.indep_coeffs[cc])
+            coeffs_sol[cc] = self.sol[j:k]
+            j = k
+
+        self.coeffs_sol = coeffs_sol
+
+
+    def simulate(self):
+        '''
+        This method is used to solve the initial value problem
+        '''
+
+        log.info( 40*"#")
+        log.info("##  Solving the initial value problem ##")
+        log.info( 40*"#")
+
+        # get list as start value
+        start = []
+        for xx in self.x_sym:
+            start.append(self.xa[xx])
+        log.info("start: %s"%str(start))
+
+        T = self.b - self.a
+
+        #S = Simulation(self.ff, T, start, self.x_sym, self.u_sym, self.u_fnc)
+        S = Simulation(self.ff_sym, T, start, self.x_sym, self.u_sym, self.u_fnc)
+
+        self.A = S.simulate()
+
+        self.H = dict()
+
+        t = self.A[0]
+
+        #calculate the error functions H_i(t)
+        for ii in self.eqind:
+            error = []
+
+            for tt in t:
+                xe = []
+                xde = []
+                ue = []
+                for xx in self.x_sym:
+                    xe.append(self.x_fnc[xx](tt))
+                    xde.append(self.dx_fnc[xx](tt))
+                for uu in self.u_sym:
+                    ue.append(self.u_fnc[uu](tt))
+
+                f = self.ff_sym(xe,ue)
+                error.append(f[ii]-xde[ii])
+            self.H[ii] = np.array(error,dtype=float)
+
+        log.info(40*"-")
+
+
+    def x(self, t):
+        '''
+        This function returns the system state at a given (time-) point
+        '''
+        return np.array([self.x_fnc[xx](t) for xx in self.x_sym])
+
+
+    def u(self, t):
+        '''
+        This function returns the inputs state at a given (time-) point
+        '''
+        return np.array([self.u_fnc[uu](t) for uu in self.u_sym])
+
+
+    def plot(self):
+        '''
+        This method provides graphics for each system variable, manipulated
+        variable and error function and plots the solution of the simulation
+        '''
+
+        log.info("Plot")
+
+        z=self.n+self.m+len(self.eqind)
+        z1=np.floor(np.sqrt(z))
+        z2=np.ceil(z/z1)
+        t=self.A[0]
+        xt = self.A[1]
+        ut= self.A[2]
+
+
+        log.info("Ending up with:")
+        for i,xx in enumerate(self.x_sym):
+            log.info(str(xx)+" : "+str(xt[-1:][0][i]))
+
+        log.info("Shoul be:")
+        for i,xx in enumerate(self.x_sym):
+            log.info(str(xx)+" : "+str(self.xb[xx]))
+
+        log.info("Difference")
+        for i,xx in enumerate(self.x_sym):
+            log.info(str(xx)+" : "+str(self.xb[xx]-xt[-1:][0][i]))
+
+
+        def setAxLinesBW(ax):
+            """
+            Take each Line2D in the axes, ax, and convert the line style to be
+            suitable for black and white viewing.
+            """
+            MARKERSIZE = 3
+
+
+            ##?? was bedeuten die Zahlen bei dash[...]?
+            COLORMAP = {
+                'b': {'marker': None, 'dash': (None,None)},
+                'g': {'marker': None, 'dash': [5,5]},
+                'r': {'marker': None, 'dash': [5,3,1,3]},
+                'c': {'marker': None, 'dash': [1,3]},
+                'm': {'marker': None, 'dash': [5,2,5,2,5,10]},
+                'y': {'marker': None, 'dash': [5,3,1,2,1,10]},
+                'k': {'marker': 'o', 'dash': (None,None)} #[1,2,1,10]}
+                }
+
+            for line in ax.get_lines():
+                origColor = line.get_color()
+                line.set_color('black')
+                line.set_dashes(COLORMAP[origColor]['dash'])
+                line.set_marker(COLORMAP[origColor]['marker'])
+                line.set_markersize(MARKERSIZE)
+
+        def setFigLinesBW(fig):
+            """
+            Take each axes in the figure, and for each line in the axes, make the
+            line viewable in black and white.
+            """
+            for ax in fig.get_axes():
+                setAxLinesBW(ax)
+
+
+        plt.rcParams['figure.subplot.bottom']=.2
+        plt.rcParams['figure.subplot.top']= .95
+        plt.rcParams['figure.subplot.left']=.13
+        plt.rcParams['figure.subplot.right']=.95
+
+        plt.rcParams['font.size']=16
+
+        plt.rcParams['legend.fontsize']=16
+        plt.rc('text', usetex=True)
+
+
+        plt.rcParams['xtick.labelsize']=16
+        plt.rcParams['ytick.labelsize']=16
+        plt.rcParams['legend.fontsize']=20
+
+        plt.rcParams['axes.titlesize']=26
+        plt.rcParams['axes.labelsize']=26
+
+
+        plt.rcParams['xtick.major.pad']='8'
+        plt.rcParams['ytick.major.pad']='8'
+
+        mm = 1./25.4 #mm to inch
+        scale = 3
+        fs = [100*mm*scale, 60*mm*scale]
+
+        fff=plt.figure(figsize=fs, dpi=80)
+
+
+        PP=1
+        for i,xx in enumerate(self.x_sym):
+            plt.subplot(int(z1),int(z2),PP)
+            PP+=1
+            plt.plot(t,xt[:,i])
+            plt.xlabel(r'$t$')
+            plt.title(r'$'+str(xx)+'(t)$')
+
+        for i,uu in enumerate(self.u_sym):
+            plt.subplot(int(z1),int(z2),PP)
+            PP+=1
+            plt.plot(t,ut[:,i])
+            plt.xlabel(r'$t$')
+            plt.title(r'$'+str(uu)+'(t)$')
+
+        for hh in self.H:
+            plt.subplot(int(z1),int(z2),PP)
+            PP+=1
+            plt.plot(t,self.H[hh])
+            plt.xlabel(r'$t$')
+            plt.title(r'$H_'+str(hh+1)+'(t)$')
+
+        setFigLinesBW(fff)
+
+        plt.tight_layout()
+
+        plt.show()
+
+
+if __name__ == '__main__':
+    from sympy import cos, sin
+    from numpy import pi
+    import os
+
+    os.environ['SYMPY_USE_CACHE'] = 'no'
+
+    # partiell linearisiertes inverses Pendel [6.1.3]
+
+    calc=True
+
+    def f(x,u):
+        x1,x2,x3,x4 = x
+        u1, = u
+        l = 0.5
+        g = 9.81
+        ff = np.array([     x2,
+                             u1,
+                             x4,
+                        (1/l)*(g*sin(x3)+u1*cos(x3))])
+        return ff
+
+    xa = [  0.0,
+            0.0,
+            pi,
+            0.0]
+
+    xb = [  0.0,
+            0.0,
+            0.0,
+            0.0]
+    
+    if(calc):
+        a = 0.0
+        b = 2.0
+        sx = 5
+        su = 5
+        kx = 2
+        maxIt  = 4
+        g = [0,0]
+        eps = 0.05
+
+        T = Trajectory(f,xa,xb,a=a,b=b,sx=sx,su=su,kx=kx,
+                        maxIt=maxIt,g=g,eps=eps)
+
+        with log.Timer("iteration"):
+            T.iteration()
+    IPS()
+    sys.exit()
+

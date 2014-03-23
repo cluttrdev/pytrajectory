@@ -1,0 +1,297 @@
+import numpy as np
+from numpy.linalg import solve
+import sympy as sp
+import scipy.sparse as sparse
+from scipy.sparse.linalg import spsolve
+
+import log
+#from log import IPS
+from IPython import embed as IPS
+
+
+class CubicSpline():
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
+        # [a,b] ... interval
+        # n     ... number of spline parts
+        # tag   ... string with name of the spline object
+
+        self.a = a
+        self.b = b
+        self.n = int(n)
+        self.tag = tag
+        self.bc = bc
+        self.bcd = bcd
+        self.bcdd = bcdd
+
+        # size of polynomial parts
+        self.h = (float(b)-float(a))/float(n)
+
+        # create array of symbolic coefficients
+        self.coeffs = sp.symarray('c'+tag, (self.n, 4))
+
+        #   key: spline part    value: coefficients of the polynom
+        self.S = dict()
+
+        self.tmp_S = np.ones_like(self.coeffs)
+        self.tmp_S_abs = np.zeros((self.n,4))
+
+        for i in xrange(self.n):
+            # --> create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3
+            self.S[i] = np.poly1d(self.coeffs[i])
+
+        self.steady_flag = False
+
+        if (steady):
+            with log.Timer("makesteady()"):
+                self.makesteady()
+
+
+    def makesteady(self):
+        '''
+        This method sets up and solves equations that ensure steadiness and
+        smoothness conditions of the spline in every joining point
+        '''
+        log.info("makesteady: "+self.tag)
+
+        assert self.steady_flag == False
+
+        coeffs = self.coeffs
+        h = self.h
+
+        # mu represents degree of boundary conditions
+        mu = -1
+        if (self.bc != None):
+            mu += 1
+        if (self.bcd != None):
+            mu += 1
+        if (self.bcdd != None):
+            mu += 1
+
+        # ---> docu p. 14
+        v= 0
+        if (mu == -1):
+            a = coeffs[:,v]
+            a = np.hstack((a,coeffs[0,list({0,1,2,3}-{v})]))
+        if (mu == 0):
+            a = coeffs[:,v]
+            a = np.hstack((a,coeffs[0,2]))
+        if (mu == 1):
+            a = coeffs[:-1,v]
+        if (mu == 2):
+            a = coeffs[:-3,v]
+
+        # b is what is not in a
+        b = np.array(list(set(coeffs.flatten())-set(a)))
+        b = np.array(sorted(b,key=lambda x:x.name))
+
+        # Build Matrix for equation system of smoothness conditions --> p. 13
+
+        # get matrix dimensions --> (3.21) & (3.22)
+        N2 = 4*self.n
+        N1 = 3*(self.n-1) + 2*(mu+1)
+
+        #============================
+        # DENSE
+        M = np.zeros((N1,N2))
+        r = np.zeros(N1)
+        #============================
+        # SPARSE --> not working because of fancy indexing
+        #M = sparse.csr_matrix((N1,N2))
+        #r = sparse.csr_matrix((N1,1))
+        #============================
+
+        # build block band matrix for smoothness in every joining point
+        #   derivatives from order 0 to 2
+        #   --> (3.19), caution because of sign error in documentation
+        repmat = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
+                           [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
+                           [0.0, 2.0, 0.0, 0.0,    6*h,  -2.0,  0.0, 0.0]])
+
+        for i in xrange(self.n-1):
+            M[3*i:3*(i+1),4*i:4*(i+2)] = repmat
+
+        # add equations for boundary conditions
+        if (self.bc != None):
+            M[3*(self.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
+            M[3*(self.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
+            r[3*(self.n-1)] = self.bc[0]
+            r[3*(self.n-1)+1] = self.bc[1]
+        if (self.bcd != None):
+            M[3*(self.n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
+            M[3*(self.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
+            r[3*(self.n-1)+2] = self.bcd[0]
+            r[3*(self.n-1)+3] = self.bcd[1]
+        if (self.bcdd != None):
+            M[3*(self.n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
+            M[3*(self.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
+            r[3*(self.n-1)+4] = self.bcdd[0]
+            r[3*(self.n-1)+5] = self.bcdd[1]
+
+        # get A and B matrix --> docu p. 13
+        #
+        #       M*c = r
+        # A*a + B*b = r
+        #         b = B^(-1)*(r-A*a)
+        #
+        # we need B^(-1)*r [absolute part -> tmp1] and B^(-1)*A [coefficients of a -> tmp2]
+
+        #============================
+        # DENSE
+        a_mat = np.zeros((N2,N2-N1))
+        b_mat = np.zeros((N2,N1))
+        #============================
+        # SPARSE --> not working because of item assignment
+        #a_mat = sparse.coo_matrix((N2,N2-N1))
+        #b_mat = sparse.coo_matrix((N2,N1))
+        #============================
+        for i,aa in enumerate(a):
+            tmp = aa.name.split('_')[-2:]
+            j = int(tmp[0])
+            k = int(tmp[1])
+            a_mat[4*j+k,i] = 1
+
+        for i,bb in enumerate(b):
+            tmp = bb.name.split('_')[-2:]
+            j = int(tmp[0])
+            k = int(tmp[1])
+            b_mat[4*j+k,i] = 1
+
+        #============================
+        # DENSE
+        #A = np.array(np.dot(M,a_mat), dtype=float)
+        #B = np.array(np.dot(M,b_mat), dtype=float)
+        #============================
+        # SPARSE
+        M = sparse.csr_matrix(M)
+        A = M.dot(a_mat)
+        B = M.dot(b_mat)
+        #============================
+
+        # do the inversion
+        #   np.float16 to avoid factors like 1e-16
+        tmp1 = np.array(solve(B,r.T),dtype=np.float)#16)
+        tmp2 = np.array(solve(B,-A),dtype=np.float)#16)
+
+        tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
+        tmp_coeffs_abs = np.zeros((self.n,4))
+
+        for i,bb in enumerate(b):
+            tmp = bb.name.split('_')[-2:]
+            j = int(tmp[0])
+            k = int(tmp[1])
+
+            tmp_coeffs[(j,k)] = tmp2[i]
+            tmp_coeffs_abs[(j,k)] = tmp1[i]
+
+        tmp3 = np.eye(len(a))
+        for i,aa in enumerate(a):
+            tmp = aa.name.split('_')[-2:]
+            j = int(tmp[0])
+            k = int(tmp[1])
+
+            tmp_coeffs[(j,k)] = tmp3[i]
+
+        self.tmp_S = tmp_coeffs
+        self.tmp_S_abs = tmp_coeffs_abs
+
+        # docu p. 13: a is vector of independent spline coeffs
+        self.c_indep = a
+
+        self.steady_flag = True
+
+
+    def tmp_evalf(self, i, p):
+        # i ... Spline part
+
+        M0 = np.array([m for m in self.tmp_S[i]],dtype=float)
+        m0 = self.tmp_S_abs[i]
+
+        return np.dot(p,M0), np.dot(p,m0)
+
+
+    def tmp_f(self,x):
+        # x ... evaluation point
+
+        # get polynomial part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+
+        x -= (i+1)*self.h
+        p = np.array([x*x*x,x*x,x,1.0])
+
+        return self.tmp_evalf(i,p)
+
+
+    def tmp_df(self,x):
+        # x ... evaluation point
+
+        # get polynomial part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+
+        x -= (i+1)*self.h
+        p = np.array([3.0*x*x,2.0*x,1.0,0.0])
+
+        return self.tmp_evalf(i,p)
+
+
+    def tmp_ddf(self,x):
+        # x ... evaluation point
+
+        # get polynomial part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+
+        x -= (i+1)*self.h
+        p = np.array([6.0*x,2.0,0.0,0.0])
+
+        return self.tmp_evalf(i,p)
+
+
+    def tmp_dddf(self,x):
+        # x ... evaluation point
+
+        # get polynomial part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+
+        x -= (i+1)*self.h
+        p = np.array([6.0,0.0,0.0,0.0])
+
+        return self.tmp_evalf(i,p)
+
+
+    def set_coeffs(self, c_sol):
+        # this function is used to set up numerical values for
+        # spline coefficient
+        # just needs a dictionary with coefficient and value
+
+        for i in xrange(self.n):
+            c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.tmp_S[i],self.tmp_S_abs[i])]
+            self.S[i] = np.poly1d(c_num)
+
+
+    def evalf(self, x, d):
+        # get polynomial part where x is in
+        i = int(np.floor(x*self.n/(self.b)))
+        if (i == self.n): i-= 1
+        p = self.S[i]
+
+        return p.deriv(d)(x-(i+1)*self.h)
+
+    def f(self, x):
+        return self.evalf(x,0)
+
+    def df(self, x):
+        return self.evalf(x,1)
+
+    def ddf(self, x):
+        return self.evalf(x,2)
+
+    def dddf(self, x):
+        return self.evalf(x,3)
+
+
+if __name__ == '__main__':
+    spline = CubicSpline(0,1,5,tag='x1',bc=[0,0],bcd=[0,0],bcdd=[0,0])
+    IPS()
