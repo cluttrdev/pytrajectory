@@ -10,25 +10,13 @@ import pylab as plt
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
+from tools import IntegChain
 
 import log
 #from log import IPS
 from time import time
 
 from IPython import embed as IPS
-
-
-class IntegChain():
-    def __init__(self, lst):
-        self.top = lst[0]
-        self.bottom = lst[-1]
-        self.elemdict = dict()
-    
-    def successor(self, elem):
-        pass
-    
-    def predecessor(self, elem):
-        pass
 
 
 class Trajectory():
@@ -90,15 +78,14 @@ class Trajectory():
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
         
         # transform symbolic ff to numeric ff
-        #F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        #_ff_num = sp.lambdify((self.x_sym,self.u_sym),F)
-        # 
-        #def ff_num(x, u):
-        #    tmp_xu = np.hstack((x,u))
-        #    return _ff_num(*tmp_xu)
-        #
-        #self.ff = ff_num
+        F = sp.Matrix(ff(self.x_sym,self.u_sym))
+        _ff_num = sp.lambdify((self.x_sym,self.u_sym),F)
+         
+        def ff_num(x, u):
+            tmp_xu = np.hstack((x,u))
+            return _ff_num(*tmp_xu)
         
+        self.ff = ff_num
         
         self.ff = ff
 
@@ -114,14 +101,14 @@ class Trajectory():
     
     
     def getParam(self):
-        '''This method is used to set some of the parameters
+        '''This method is used to set some of the method parameters
         '''
         
         # first, determine system dimensions
-        i = 0
-        j = 0
-        success = False
-        while not success:
+        i = -1
+        j = -1
+        found_nm = False
+        while not found_nm:
             i += 1
             j += 1            
             for jj in xrange(j):
@@ -130,7 +117,7 @@ class Trajectory():
                     u = np.ones(jj)
                     try:
                         self.ff_sym(x,u)
-                        success = True
+                        found_nm = True
                         n = ii
                         m = jj
                     except:
@@ -156,24 +143,22 @@ class Trajectory():
 
         # looking for integrator chains --> [3.4]
         if (self.find_x_chains):
-            with log.Timer("find_int_chains()"):
-                self.find_int_chains()
+            with log.Timer("findIntegChains()"):
+                self.findIntegChains()
         else:
             self.chains = dict()
 
         # determine which equations have to be solved by collocation
-        s1 = set(self.x_sym)
-        s2 = set(self.chains.values())
-
-        # create list with indices of the equations that have to be solved
-        # corresponding to lower ends of integrator chains without inputs
-        # (equations above them hold by definition)
+        # --> 
         eqind = []
-        for xx in list(s1.difference(s2)):
-            eqind.append(self.x_sym.index(xx))
+        for ic in self.chains:
+            if ic.lower.name.startswith('x'):
+                lower = ic.lower
+                eqind.append(self.x_sym.index(lower))
         eqind.sort()
+        
         self.eqind = eqind
-
+        
         # start first iteration
         self.iterate()
 
@@ -228,8 +213,8 @@ class Trajectory():
         self.nIt += 1
 
         # initialise splines
-        with log.Timer("init_splines()"):
-            self.init_splines()
+        with log.Timer("initSplines()"):
+            self.initSplines()
 
         # Get first guess for solver
         with log.Timer("getGuess()"):
@@ -312,7 +297,7 @@ class Trajectory():
         self.guess = guess
 
 
-    def find_int_chains(self):
+    def findIntegChains(self):
         '''This method calls the symbolic vectorfield and looks for equations like
         d/dt x_i = x_[i+1]
         to find integrator chains
@@ -322,23 +307,55 @@ class Trajectory():
 
         fi = self.ff_sym(self.x_sym,self.u_sym)
 
-        dic = {}
+        chaindict = {}
         for i in xrange(self.n):
             for xx in self.x_sym:
                 if ((fi[i].subs(1.0, 1)) == xx):
                     # substitution because of sympy difference betw. 1.0 and 1
-                    dic[xx] = self.x_sym[i]
+                    chaindict[xx] = self.x_sym[i]
             if (self.find_u_chains):
                 for uu in self.u_sym:
                     if ((fi[i]) == uu):
-                        dic[uu] = self.x_sym[i]
+                        chaindict[uu] = self.x_sym[i]
 
-        # dic looks like this:  {x_4: x_1, x_5: x_2, x_6:x_3}
-        # where x_4 = d x_1 / dt and so on
-        self.chains = dic
-
-
-    def init_splines(self):
+        # dic looks like this:  {u_1: x_2, x_4: x_3, x_2:x_1}
+        # where x_4 = d x_3 / dt and so on
+        self.chains = chaindict
+        
+        # find upper ends of integrator chains
+        uppers = []
+        for vv in chaindict.values():
+            if (not chaindict.has_key(vv)):
+                uppers.append(vv)
+        
+        # create ordered lists that temporarily represent the integrator chains
+        tmpchains = []
+        
+        # therefor we flip the dictionary to work our way through its keys (former values)
+        dictchain = {v:k for k,v in chaindict.items()}
+        
+        for var in uppers:
+            tmpchain = []
+            vv = var
+            tmpchain.append(vv)
+            
+            while dictchain.has_key(vv):
+                vv = dictchain[vv]
+                tmpchain.append(vv)
+            
+            tmpchains.append(tmpchain)
+        
+        # create an integrator chain object for every temporary chain
+        chains = []
+        for lst in tmpchains:
+            chains.append(IntegChain(lst))
+        
+        self.chains = chains
+        
+        
+    
+    
+    def initSplines(self):
         '''This method is used to initialise the temporary splines
         '''
         log.info( 40*"#")
@@ -350,66 +367,45 @@ class Trajectory():
         x_fnc = dict()
         u_fnc = dict()
         dx_fnc = dict()
-
-        # collect all variables a spline has to be created for
+        
         chains = self.chains
-        var = []
-        for vv in chains.values():
-            if (not chains.has_key(vv)):
-                var.append(vv)
-
-        # flip the dictionary, key becomes value
-        dic = {v:k for k,v in chains.items()}
-
-        for xx in var:
-            # store current integrator chain
-            tmp = []
-            vv = xx
-            tmp.append(vv)
-
-            # now we're working our way through the chain
-            while (dic.has_key(vv)):
-                vv = dic[vv]
-                tmp.append(vv)
-
-            info = ''
-            for t in tmp:
-                info += '->' + str(t)
-            log.info("Found integrator chain: "+info)
-
-            # create splines
-
-            if (tmp[-1] in self.u_sym):
-                # if the last entry of the actual integrator chain is an input
-                splines[xx] = CubicSpline(self.a,self.b,n=self.su,steady=False,tag=str(xx))
-                splines[xx].type = 'u'
-            else:
-                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,steady=False,tag=str(xx))
-                splines[xx].type = 'x'
-
-            for i,tt in enumerate(tmp):
-                if (tt in self.u_sym):
+        
+        # first handle variables that are part of an integrator chain
+        for ic in chains:
+            upper = ic.upper
+            
+            # here we just create a spline object for the upper ends of every chain
+            # w.r.t. its lower end
+            if ic.lower.name.startswith('x'):
+                splines[upper] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
+                splines[upper].type = 'x'
+            elif ic.lower.name.startswith('u'):
+                splines[upper] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=upper.name)
+                splines[upper].type = 'u'
+            
+            for i,elem in enumerate(ic.elements):
+                if elem in self.u_sym:
                     if (i == 0):
-                        u_fnc[tt] = splines[xx].tmp_f
+                        u_fnc[elem] = splines[upper].tmp_f
                     if (i == 1):
-                        u_fnc[tt] = splines[xx].tmp_df
+                        u_fnc[elem] = splines[upper].tmp_df
                     if (i == 2):
-                        u_fnc[tt] = splines[xx].tmp_ddf
-                else:
+                        u_fnc[elem] = splines[upper].tmp_ddf
+                elif elem in self.x_sym:
                     if (i == 0):
-                        splines[xx].bc = [self.xa[tt],self.xb[tt]]
-                        if ((self.g != None) and (splines[xx].type == 'u')):
-                            splines[xx].bcd = self.g
-                        x_fnc[tt] = splines[xx].tmp_f
+                        splines[upper].bc = [self.xa[elem],self.xb[elem]]
+                        if ((self.g != None) and (splines[upper].type == 'u')):
+                            splines[upper].bcd = self.g
+                        x_fnc[elem] = splines[upper].tmp_f
                     if (i == 1):
-                        splines[xx].bcd = [self.xa[tt],self.xb[tt]]
-                        if ((self.g != None) and (splines[xx].type == 'u')):
-                            splines[xx].bcdd = self.g
-                        x_fnc[tt] = splines[xx].tmp_df
+                        splines[upper].bcd = [self.xa[elem],self.xb[elem]]
+                        if ((self.g != None) and (splines[upper].type == 'u')):
+                            splines[upper].bcdd = self.g
+                        x_fnc[elem] = splines[upper].tmp_df
                     if (i == 2):
-                        splines[xx].bcdd = [self.xa[tt],self.xb[tt]]
-                        x_fnc[tt] = splines[xx].tmp_ddf
-
+                        splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
+                        x_fnc[elem] = splines[upper].tmp_ddf
+        
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:
             if (not x_fnc.has_key(xx)):
@@ -490,12 +486,10 @@ class Trajectory():
 
         # iterate over all quantities including inputs
         for sq in x_sym+u_sym:
-            tmp_sq = sq
-            while self.chains.has_key(tmp_sq):
-                tmp_sq = self.chains[tmp_sq]
-            # tmp_sq now contains end of integrator chain
-            indic[sq] = indic[tmp_sq]
-
+            for ic in self.chains:
+                if sq in ic:
+                    indic[sq] = indic[ic.upper]
+        
         # total number of indep coeffs
         c_len = len(self.c_list)
 
@@ -653,7 +647,7 @@ class Trajectory():
         # 3rd index : component of c
 
         # now compute jacobian of x_dot w.r.t. to indep coeffs
-        #DENSE
+        # DENSE
         DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
 
         # SPARSE
@@ -670,7 +664,7 @@ class Trajectory():
         the numerical solutions to set up the coefficients of the polynomial
         spline parts of every created spline.
         '''
-        # set up coefficients for each spline
+        
         log.info("Set spline coefficients")
 
         sol = self.sol
@@ -681,63 +675,42 @@ class Trajectory():
             i = len(self.indep_coeffs[cc])
             subs[cc] = sol[:i]
             sol = sol[i:]
-
-        for u in self.u_sym:
-            uu = u
-            while chains.has_key(uu):
-                uu = chains[uu]
-            subs[u] = subs[uu]
-
-        for x in self.x_sym:
-            xx = x
-            while chains.has_key(xx):
-                xx = chains[xx]
-            subs[x] = subs[xx]
-
+        
+        for var in self.x_sym + self.u_sym:
+            for ic in self.chains:
+                if var in ic:
+                    subs[var] = subs[ic.upper]
+        
+        # set numerical coefficients for each spline
         for cc in self.splines:
             self.splines[cc].set_coeffs(subs[cc])
 
-        # reset functions
+        # reset callable functions
         self.x_fnc = dict()
         self.u_fnc = dict()
         self.dx_fnc = dict()
-
-        # collect all variables a spline has been created for
+        
         splines = self.splines
-        var = []
-        for vv in chains.values():
-            if (not chains.has_key(vv)):
-                var.append(vv)
-
-        # flip the dictionary, key becomes value
-        dic = {v:k for k,v in chains.items()}
-
-        for xx in var:
-            # store current integrator chain
-            tmp = []
-            vv = xx
-            tmp.append(vv)
-
-            # now we're working our way through the chain
-            while (dic.has_key(vv)):
-                vv = dic[vv]
-                tmp.append(vv)
-
-            for i,tt in enumerate(tmp):
-                if (tt in self.u_sym):
+        
+        # again we handle variables that are part of an integrator chain first
+        for ic in chains:
+            upper = ic.upper
+            
+            for i,elem in enumerate(ic.elements):
+                if elem in self.u_sym:
                     if (i == 0):
-                        self.u_fnc[tt]= splines[xx].f
+                        self.u_fnc[elem] = splines[upper].f
                     if (i == 1):
-                        self.u_fnc[tt]= splines[xx].df
+                        self.u_fnc[elem] = splines[upper].df
                     if (i == 2):
-                        self.u_fnc[tt]= splines[xx].ddf
-                else:
-                    if (i==0):
-                        self.x_fnc[tt]= splines[xx].f
-                    if (i==1):
-                        self.x_fnc[tt]= splines[xx].df
-                    if (i==2):
-                        self.x_fnc[tt]= splines[xx].ddf
+                        self.u_fnc[elem] = splines[upper].ddf
+                elif elem in self.x_sym:
+                    if (i == 0):
+                        self.x_fnc[elem] = splines[upper].f
+                    if (i == 1):
+                        self.x_fnc[elem] = splines[upper].df
+                    if (i == 2):
+                        self.x_fnc[elem] = splines[upper].ddf
 
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:

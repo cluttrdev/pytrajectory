@@ -1,5 +1,47 @@
 import numpy as np
 import pylab as plt
+from sympy.core.symbol import Symbol
+from IPython import embed as IPS
+
+
+class IntegChain():
+    '''This class provides a representation of a integrator chain consisting of sympy symbols ...
+    '''
+    
+    def __init__(self, lst):
+        self.elements = lst
+        self.upper = self.elements[0]
+        self.lower = self.elements[-1]
+    
+    def __len__(self):
+        return len(self.elements)
+    
+    def __getitem__(self, key):
+        return self.elements[key]
+    
+    def __contains__(self, item):
+        return (item in self.elements)
+    
+    def successor(self, elem):
+        if not elem == self.bottom:
+            i = self.elements.index(elem)
+            succ = self.elements[i+1]
+        else:
+            print 'ERROR: lower end of integrator chain has no successor'
+            succ = elem
+        
+        return succ
+    
+    def predecessor(self, elem):
+        if not elem == self.top:
+            i = self.elements.index(elem)
+            pred = self.elements[i-1]
+        else:
+            print 'ERROR: uper end of integrator chain has no successor'
+            pred = elem
+        
+        return pred
+
 
 def plot(self):
     #provides graphics for each system variable, manipulated variable and error function

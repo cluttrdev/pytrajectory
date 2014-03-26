@@ -56,46 +56,29 @@ control system.</p>
 <div class="section" id="module-pytrajectory.trajectory">
 <span id="trajectory-module"></span><h2>Trajectory Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="pytrajectory.trajectory.IntegChain">
-<em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">IntegChain</tt><big>(</big><em>lst</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#IntegChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.IntegChain" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pytrajectory.trajectory.IntegChain.predecessor">
-<tt class="descname">predecessor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#IntegChain.predecessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.IntegChain.predecessor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.trajectory.IntegChain.successor">
-<tt class="descname">successor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#IntegChain.successor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.IntegChain.successor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="pytrajectory.trajectory.Trajectory">
 <em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>xa</em>, <em>xb</em>, <em>algo='leven'</em>, <em>delta=2</em>, <em>sx=3</em>, <em>su=3</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>maxIt=7</em>, <em>kx=2</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>find_x_chains=True</em>, <em>find_u_chains=True</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.DG">
 <tt class="descname">DG</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.DG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.DG" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the callable function that returns the jacobian matrix
-of the collocation system</p>
+<dd><p>This is the callable function that returns the jacobian matrix of the collocation system.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.G">
 <tt class="descname">G</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.G"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.G" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the callable function that represents the collocation system</p>
+<dd><p>This is the callable function that represents the collocation system.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.equation_system">
 <tt class="descname">equation_system</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.equation_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.equation_system" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to build the equation system which will be solved
-later</p>
+<dd><p>This method is used to build the equation system which will be solved later</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.find_int_chains">
-<tt class="descname">find_int_chains</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.find_int_chains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.find_int_chains" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.trajectory.Trajectory.findIntegChains">
+<tt class="descname">findIntegChains</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.findIntegChains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.findIntegChains" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method calls the symbolic vectorfield and looks for equations like
 d/dt x_i = x_[i+1]
 to find integrator chains</p>
@@ -111,12 +94,12 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.getParam">
 <tt class="descname">getParam</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.getParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.getParam" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to set some of the parameters</p>
+<dd><p>This method is used to set some of the method parameters</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.init_splines">
-<tt class="descname">init_splines</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.init_splines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.init_splines" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.trajectory.Trajectory.initSplines">
+<tt class="descname">initSplines</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.initSplines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.initSplines" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to initialise the temporary splines</p>
 </dd></dl>
 
@@ -136,7 +119,7 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 <dt id="pytrajectory.trajectory.Trajectory.plot">
 <tt class="descname">plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method provides graphics for each system variable, manipulated
-variable and error function and plots the solution of the simulation</p>
+variable and error function and plots the solution of the simulation.</p>
 </dd></dl>
 
 <dl class="method">
@@ -144,31 +127,31 @@ variable and error function and plots the solution of the simulation</p>
 <tt class="descname">setCoeff</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setCoeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setCoeff" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to create the actual splines by using
 the numerical solutions to set up the coefficients of the polynomial
-spline parts of every created spline</p>
+spline parts of every created spline.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.simulate">
 <tt class="descname">simulate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.simulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.simulate" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to solve the initial value problem</p>
+<dd><p>This method is used to solve the initial value problem.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.solve">
 <tt class="descname">solve</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to solve the collocation equation system</p>
+<dd><p>This method is used to solve the collocation equation system.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.u">
 <tt class="descname">u</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.u"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.u" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function returns the inputs state at a given (time-) point</p>
+<dd><p>This function returns the inputs state at a given (time-) point.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.x">
 <tt class="descname">x</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.x" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function returns the system state at a given (time-) point</p>
+<dd><p>This function returns the system state at a given (time-) point.</p>
 </dd></dl>
 
 </dd></dl>
@@ -183,17 +166,20 @@ spline parts of every created spline</p>
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.dddf">
 <tt class="descname">dddf</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.dddf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.dddf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.evalf" title="pytrajectory.spline.CubicSpline.evalf"><tt class="xref py py-func docutils literal"><span class="pre">evalf()</span></tt></a> to evaluate the splines 3rd derivative.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.ddf">
 <tt class="descname">ddf</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.ddf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.ddf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.evalf" title="pytrajectory.spline.CubicSpline.evalf"><tt class="xref py py-func docutils literal"><span class="pre">evalf()</span></tt></a> to evaluate the splines 2nd derivative.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.df">
 <tt class="descname">df</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.df" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.evalf" title="pytrajectory.spline.CubicSpline.evalf"><tt class="xref py py-func docutils literal"><span class="pre">evalf()</span></tt></a> to evaluate the splines 1st derivative.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.evalf">
@@ -203,7 +189,8 @@ spline parts of every created spline</p>
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.f">
 <tt class="descname">f</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.f" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.evalf" title="pytrajectory.spline.CubicSpline.evalf"><tt class="xref py py-func docutils literal"><span class="pre">evalf()</span></tt></a> to evaluate the spline itself.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.makesteady">
@@ -215,7 +202,7 @@ smoothness conditions of the spline in every joining point satisfy boundary cond
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.set_coeffs">
 <tt class="descname">set_coeffs</tt><big>(</big><em>c_sol</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.set_coeffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.set_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function is used to set up numerical values for the spline coefficients</p>
+<dd><p>This function is used to set up numerical values for the spline coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -229,19 +216,19 @@ smoothness conditions of the spline in every joining point satisfy boundary cond
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.tmp_dddf">
 <tt class="descname">tmp_dddf</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.tmp_dddf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.tmp_dddf" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a></p>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a> with the splines 3rd derivative.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.tmp_ddf">
 <tt class="descname">tmp_ddf</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.tmp_ddf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.tmp_ddf" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a></p>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a> with the splines 2nd derivative.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.tmp_df">
 <tt class="descname">tmp_df</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.tmp_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.tmp_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a></p>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a> with the splines 1st derivative.</p>
 </dd></dl>
 
 <dl class="method">
@@ -270,7 +257,7 @@ and adding the vector.</p>
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.tmp_f">
 <tt class="descname">tmp_f</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.tmp_f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.tmp_f" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a></p>
+<dd><p>This is just a wrapper for <a class="reference internal" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="pytrajectory.spline.CubicSpline.tmp_evalf"><tt class="xref py py-func docutils literal"><span class="pre">tmp_evalf()</span></tt></a> with the spline itself.</p>
 </dd></dl>
 
 </dd></dl>
@@ -278,7 +265,7 @@ and adding the vector.</p>
 <dl class="function">
 <dt id="pytrajectory.spline.fdiff">
 <tt class="descclassname">pytrajectory.spline.</tt><tt class="descname">fdiff</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#fdiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.fdiff" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function is used to get the derivative of of a callable splinefunction</p>
+<dd><p>This function is used to get the derivative of of a callable splinefunction.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -333,6 +320,22 @@ and adding the vector.</p>
 </div>
 <div class="section" id="module-pytrajectory.tools">
 <span id="tools-module"></span><h2>Tools Module<a class="headerlink" href="#module-pytrajectory.tools" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytrajectory.tools.IntegChain">
+<em class="property">class </em><tt class="descclassname">pytrajectory.tools.</tt><tt class="descname">IntegChain</tt><big>(</big><em>lst</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides a representation of a integrator chain consisting of sympy symbols ...</p>
+<dl class="method">
+<dt id="pytrajectory.tools.IntegChain.predecessor">
+<tt class="descname">predecessor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.predecessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.predecessor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.tools.IntegChain.successor">
+<tt class="descname">successor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.successor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.successor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="pytrajectory.tools.plot">
 <tt class="descclassname">pytrajectory.tools.</tt><tt class="descname">plot</tt><big>(</big><em>self</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.plot" title="Permalink to this definition">¶</a></dt>
@@ -388,7 +391,7 @@ and adding the vector.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140323-173813.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140325-205227.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
