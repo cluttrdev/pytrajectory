@@ -50,15 +50,40 @@
             
   <div class="section" id="module-pytrajectory">
 <span id="pytrajectory-modules-reference"></span><h1>PyTrajectory Modules Reference<a class="headerlink" href="#module-pytrajectory" title="Permalink to this headline">¶</a></h1>
-<p>A Python library for the determination of the feed forward control 
-to achieve a transition between desired states of a nonlinear
-control system.</p>
+<p>PyTrajectory is a Python library for the determination of the feed forward control 
+to achieve a transition between desired states of a nonlinear control system.</p>
 <div class="section" id="module-pytrajectory.trajectory">
 <span id="trajectory-module"></span><h2>Trajectory Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.trajectory.Trajectory">
-<em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>xa</em>, <em>xb</em>, <em>algo='leven'</em>, <em>delta=2</em>, <em>sx=3</em>, <em>su=3</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>maxIt=7</em>, <em>kx=2</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>find_x_chains=True</em>, <em>find_u_chains=True</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>xa=None</em>, <em>xb=None</em>, <em>g=None</em>, <em>sx=5</em>, <em>su=5</em>, <em>kx=2</em>, <em>delta=2</em>, <em>maxIt=7</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>algo='leven'</em>, <em>use_chains=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class of the PyTrajectory project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield (rhs) of the control system</li>
+<li><strong>a</strong> (<em>real</em>) &#8211; Left border</li>
+<li><strong>b</strong> (<em>real</em>) &#8211; Right border</li>
+<li><strong>xa</strong> (<em>list</em>) &#8211; Boundary values at the left border</li>
+<li><strong>xb</strong> (<em>list</em>) &#8211; Boundary values at the right border</li>
+<li><strong>g</strong> (<em>list</em>) &#8211; Boundary values of the input variables</li>
+<li><strong>sx</strong> (<em>int</em>) &#8211; Initial number of spline parts for the system variables</li>
+<li><strong>su</strong> (<em>int</em>) &#8211; Initial number of spline parts for the input variables</li>
+<li><strong>kx</strong> (<em>int</em>) &#8211; Factor for raising the number of spline parts for the system variables</li>
+<li><strong>delta</strong> (<em>int</em>) &#8211; Constant for calculation of collocation points</li>
+<li><strong>maxIt</strong> (<em>int</em>) &#8211; Maximum number of iterations</li>
+<li><strong>eps</strong> (<em>real</em>) &#8211; Tolerance for the solution of the initial value problem</li>
+<li><strong>tol</strong> (<em>real</em>) &#8211; Tolerance for the solver of the equation system</li>
+<li><strong>algo</strong> (<em>str</em>) &#8211; Solver to use</li>
+<li><strong>use_chains</strong> (<em>bool</em>) &#8211; Whether or not to use integrator chains</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.DG">
 <tt class="descname">DG</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.DG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.DG" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the callable function that returns the jacobian matrix of the collocation system.</p>
@@ -71,17 +96,9 @@ control system.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.equation_system">
-<tt class="descname">equation_system</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.equation_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.equation_system" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to build the equation system which will be solved later</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.findIntegChains">
-<tt class="descname">findIntegChains</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.findIntegChains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.findIntegChains" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method calls the symbolic vectorfield and looks for equations like
-d/dt x_i = x_[i+1]
-to find integrator chains</p>
+<dt id="pytrajectory.trajectory.Trajectory.buildEQS">
+<tt class="descname">buildEQS</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.buildEQS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.buildEQS" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is used to build the equation system which will be solved later.</p>
 </dd></dl>
 
 <dl class="method">
@@ -89,12 +106,6 @@ to find integrator chains</p>
 <tt class="descname">getGuess</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.getGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.getGuess" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to determine a starting value (guess) for the
 solver of the collocation equation system &#8211;&gt; docu p. 24</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.getParam">
-<tt class="descname">getParam</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.getParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.getParam" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to set some of the method parameters</p>
 </dd></dl>
 
 <dl class="method">
@@ -125,9 +136,8 @@ variable and error function and plots the solution of the simulation.</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.setCoeff">
 <tt class="descname">setCoeff</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setCoeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setCoeff" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to create the actual splines by using
-the numerical solutions to set up the coefficients of the polynomial
-spline parts of every created spline.</p>
+<dd><p>This method is used to create the actual splines by using the numerical solutions
+to set up the coefficients of the polynomial spline parts of every created spline.</p>
 </dd></dl>
 
 <dl class="method">
@@ -154,6 +164,86 @@ spline parts of every created spline.</p>
 <dd><p>This function returns the system state at a given (time-) point.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="pytrajectory.trajectory.analyseSystem">
+<tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">analyseSystem</tt><big>(</big><em>ff</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#analyseSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.analyseSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function analyses the system given by the callable vectorfield <tt class="docutils literal"><span class="pre">ff(x,</span> <span class="pre">u)</span></tt>
+and returns values for some of the method parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">res &#8211; Dictionary with the results of the system analysis<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">key</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>n</td>
+<td>Dimension of the system variables</td>
+</tr>
+<tr class="row-odd"><td>m</td>
+<td>Dimension of the input variables</td>
+</tr>
+<tr class="row-even"><td>chains</td>
+<td>Integrator chains</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytrajectory.trajectory.getDimensions">
+<tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">getDimensions</tt><big>(</big><em>ff</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#getDimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.getDimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function determines the dimensions of the system and input variables.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">int n &#8211; Dimension of the system variables</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">int m &#8211; Dimension of the input variables</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytrajectory.trajectory.getIntegChains">
+<tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">getIntegChains</tt><big>(</big><em>ff</em>, <em>dim</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#getIntegChains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.getIntegChains" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function calls the vectorfield and looks for equations like
+d/dt x_i = x_[i+1]
+to find integrator chains</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</li>
+<li><strong>dim</strong> (<em>tuple</em>) &#8211; (n,m) Dimensions of the system (n) and input (m) variables</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list chains &#8211; List with objects of found integrator chains</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -195,8 +285,8 @@ spline parts of every created spline.</p>
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.makesteady">
 <tt class="descname">makesteady</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.makesteady"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.makesteady" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method sets up and solves equations that ensure steadiness and
-smoothness conditions of the spline in every joining point satisfy boundary conditions.</p>
+<dd><p>This method sets up and solves equations that satisfy boundary conditions and
+ensure steadiness and smoothness conditions of the spline in every joining point.</p>
 </dd></dl>
 
 <dl class="method">
@@ -391,7 +481,7 @@ and adding the vector.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140325-205227.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140327-194834.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

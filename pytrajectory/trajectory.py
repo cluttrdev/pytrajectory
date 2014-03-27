@@ -20,30 +20,32 @@ from IPython import embed as IPS
 
 
 class Trajectory():
-    def __init__(self, ff, xa, xb, algo='leven', delta=2, sx=3, su=3,
-                 a=0.0, b=1.0, maxIt=7, kx=2, eps=1e-2, tol=1e-5,
-                 find_x_chains=True, find_u_chains=True, g=None):
-        # ff    ... vectorfield
-        # xa,xb ... boundary conditions
-        # algo  ... solver to use
-        # delta ... constant for calculation of collocation points
-        # sx,su ... initial number of spline parts
-        # a,b   ... borders (a<b)
-        # maxIt ... maximum number of iterations
-        # kx    ... factor for raising the number of spline parts
-        # eps   ... tolerance for the solution
-        # tol   ... tolerance for the solver
-        # find_*_chains ... look for integrator chains
-        # g     ... boundary conditions for manipulated variables
+    '''
+    Base class of the PyTrajectory project.
+    
+    
+    :param callable ff: Vectorfield (rhs) of the control system
+    :param real a: Left border
+    :param real b: Right border
+    :param list xa: Boundary values at the left border
+    :param list xb: Boundary values at the right border
+    :param list g: Boundary values of the input variables
+    :param int sx: Initial number of spline parts for the system variables
+    :param int su: Initial number of spline parts for the input variables
+    :param int kx: Factor for raising the number of spline parts for the system variables
+    :param int delta: Constant for calculation of collocation points
+    :param int maxIt: Maximum number of iterations
+    :param real eps: Tolerance for the solution of the initial value problem
+    :param real tol: Tolerance for the solver of the equation system
+    :param str algo: Solver to use
+    :param bool use_chains: Whether or not to use integrator chains
+    '''
+    
+    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=2,
+                delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
         
         # save symbolic vectorfield
         self.ff_sym = ff
-        
-        # symbolic analysis
-        self.getParam()
-        
-        if not (len(xa) == len(xb) == self.n):
-            raise ValueError, 'Dimension mismatch xa,xb'
         
         self.algo = algo
         self.delta = delta
@@ -55,9 +57,20 @@ class Trajectory():
         self.kx = kx
         self.eps = eps
         self.tol = tol
-        self.find_x_chains = find_x_chains
-        self.find_u_chains = find_u_chains
+        self.use_chains = use_chains
         self.g = g
+        
+        # system analysis
+        sys_ana = analyseSystem(ff)
+        
+        self.n = sys_ana['n']
+        self.m = sys_ana['m']
+        self.chains = sys_ana['chains']
+        #self.su = sys_ana['su'] --> not implemented
+        
+        # a little check
+        if not (len(xa) == len(xb) == self.n):
+            raise ValueError, 'Dimension mismatch xa,xb'
 
         # iteration number
         self.nIt = 0
@@ -79,15 +92,11 @@ class Trajectory():
         
         # transform symbolic ff to numeric ff
         F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        _ff_num = sp.lambdify((self.x_sym,self.u_sym),F)
-         
-        def ff_num(x, u):
-            tmp_xu = np.hstack((x,u))
-            return _ff_num(*tmp_xu)
+        _ff_num = sp.lambdify((self.x_sym,self.u_sym), F, modules='numpy')
         
-        self.ff = ff_num
+        ff_num = lambda x, u: np.array(_ff_num(x,u))
         
-        self.ff = ff
+        self.ff = _ff_num
 
         # dictionaries for boundary conditions
         self.xa = dict()
@@ -100,40 +109,9 @@ class Trajectory():
         #log.set_file()
     
     
-    def getParam(self):
-        '''This method is used to set some of the method parameters
+    def startIteration(self):
         '''
-        
-        # first, determine system dimensions
-        i = -1
-        j = -1
-        found_nm = False
-        while not found_nm:
-            i += 1
-            j += 1            
-            for jj in xrange(j):
-                for ii in xrange(i):
-                    x = np.ones(ii)
-                    u = np.ones(jj)
-                    try:
-                        self.ff_sym(x,u)
-                        found_nm = True
-                        n = ii
-                        m = jj
-                    except:
-                        pass
-        self.n = n
-        self.m = m
-        
-        # get minimal neccessary number of spline parts for the manipulated variables
-        # --> (3.35)        
-        #nu = -1
-        #...
-        #self.su = self.n - 3 + 2*(nu + 1) 
-
-
-    def iteration(self):
-        '''This is the main loop --> [5.1]
+        This is the main loop --> [5.1]
         '''
 
         log.info( 40*"#")
@@ -142,22 +120,23 @@ class Trajectory():
         log.info("# spline parts: %d"%self.sx)
 
         # looking for integrator chains --> [3.4]
-        if (self.find_x_chains):
-            with log.Timer("findIntegChains()"):
-                self.findIntegChains()
-        else:
+        if not self.use_chains:
             self.chains = dict()
 
         # determine which equations have to be solved by collocation
         # --> 
         eqind = []
-        for ic in self.chains:
-            if ic.lower.name.startswith('x'):
-                lower = ic.lower
-                eqind.append(self.x_sym.index(lower))
-        eqind.sort()
         
-        self.eqind = eqind
+        if self.chains:
+            for ic in self.chains:
+                if ic.lower.name.startswith('x'):
+                    lower = ic.lower
+                    eqind.append(self.x_sym.index(lower))
+                    eqind.sort()
+        else:
+            eqind = range(self.n)
+        
+        self.eqind = np.array(eqind)
         
         # start first iteration
         self.iterate()
@@ -208,7 +187,8 @@ class Trajectory():
 
 
     def iterate(self):
-        '''This method is used to run one iteration
+        '''
+        This method is used to run one iteration
         '''
         self.nIt += 1
 
@@ -221,8 +201,8 @@ class Trajectory():
             self.getGuess()
 
         # create equation system --> [3.1.1]
-        with log.Timer("equation_system()"):
-            self.equation_system()
+        with log.Timer("buildEQS()"):
+            self.buildEQS()
 
         # solve it --> [4.3]
         with log.Timer("solve()"):
@@ -238,7 +218,8 @@ class Trajectory():
 
 
     def getGuess(self):
-        '''This method is used to determine a starting value (guess) for the
+        '''
+        This method is used to determine a starting value (guess) for the
         solver of the collocation equation system --> docu p. 24
         '''
 
@@ -295,68 +276,11 @@ class Trajectory():
 
         # the new guess
         self.guess = guess
-
-
-    def findIntegChains(self):
-        '''This method calls the symbolic vectorfield and looks for equations like
-        d/dt x_i = x_[i+1]
-        to find integrator chains
-        '''
-
-        log.info( "Looking for integrator chains")
-
-        fi = self.ff_sym(self.x_sym,self.u_sym)
-
-        chaindict = {}
-        for i in xrange(self.n):
-            for xx in self.x_sym:
-                if ((fi[i].subs(1.0, 1)) == xx):
-                    # substitution because of sympy difference betw. 1.0 and 1
-                    chaindict[xx] = self.x_sym[i]
-            if (self.find_u_chains):
-                for uu in self.u_sym:
-                    if ((fi[i]) == uu):
-                        chaindict[uu] = self.x_sym[i]
-
-        # dic looks like this:  {u_1: x_2, x_4: x_3, x_2:x_1}
-        # where x_4 = d x_3 / dt and so on
-        self.chains = chaindict
-        
-        # find upper ends of integrator chains
-        uppers = []
-        for vv in chaindict.values():
-            if (not chaindict.has_key(vv)):
-                uppers.append(vv)
-        
-        # create ordered lists that temporarily represent the integrator chains
-        tmpchains = []
-        
-        # therefor we flip the dictionary to work our way through its keys (former values)
-        dictchain = {v:k for k,v in chaindict.items()}
-        
-        for var in uppers:
-            tmpchain = []
-            vv = var
-            tmpchain.append(vv)
-            
-            while dictchain.has_key(vv):
-                vv = dictchain[vv]
-                tmpchain.append(vv)
-            
-            tmpchains.append(tmpchain)
-        
-        # create an integrator chain object for every temporary chain
-        chains = []
-        for lst in tmpchains:
-            chains.append(IntegChain(lst))
-        
-        self.chains = chains
-        
-        
     
     
     def initSplines(self):
-        '''This method is used to initialise the temporary splines
+        '''
+        This method is used to initialise the temporary splines
         '''
         log.info( 40*"#")
         log.info( "#########  Initialise Splines  #########")
@@ -439,8 +363,10 @@ class Trajectory():
         self.dx_fnc = dx_fnc
 
 
-    def equation_system(self):
-        '''This method is used to build the equation system which will be solved later'''
+    def buildEQS(self):
+        '''
+        This method is used to build the equation system which will be solved later.
+        '''
         
         log.info( 40*"#")
         log.info("####  Building the equation system  ####")
@@ -547,7 +473,9 @@ class Trajectory():
 
 
     def solve(self):
-        '''This method is used to solve the collocation equation system.'''
+        '''
+        This method is used to solve the collocation equation system.
+        '''
         
         log.info( 40*"#")
         log.info("#####  Solving the equation system  ####")
@@ -564,10 +492,12 @@ class Trajectory():
 
 
     def G(self, c):
-        '''This is the callable function that represents the collocation system.'''
+        '''
+        This is the callable function that represents the collocation system.
+        '''
         
         ff = self.ff
-        eqind = np.array(self.eqind)
+        eqind = self.eqind
 
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
@@ -586,9 +516,10 @@ class Trajectory():
         # evaluate system equations and select those related
         # to lower ends of integrator chains (via eqind)
         # other equations need not to be solved
-
-        F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float)[:,eqind]
-        #F = np.array([ff(*np.hstack((x,u))) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
+        try:
+            F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
+        except:
+            IPS()
 
         # DENSE
         dX = np.dot(self.Mdx,c) + self.Mdx_abs
@@ -604,10 +535,12 @@ class Trajectory():
 
 
     def DG(self, c):
-        '''This is the callable function that returns the jacobian matrix of the collocation system.'''
+        '''
+        This is the callable function that returns the jacobian matrix of the collocation system.
+        '''
         
         Df = self.Df
-        eqind = np.array(self.eqind)
+        eqind = self.eqind
 
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
@@ -660,9 +593,9 @@ class Trajectory():
 
 
     def setCoeff(self):
-        '''This method is used to create the actual splines by using
-        the numerical solutions to set up the coefficients of the polynomial
-        spline parts of every created spline.
+        '''
+        This method is used to create the actual splines by using the numerical solutions
+        to set up the coefficients of the polynomial spline parts of every created spline.
         '''
         
         log.info("Set spline coefficients")
@@ -741,7 +674,9 @@ class Trajectory():
 
 
     def simulate(self):
-        '''This method is used to solve the initial value problem.'''
+        '''
+        This method is used to solve the initial value problem.
+        '''
 
         log.info( 40*"#")
         log.info("##  Solving the initial value problem ##")
@@ -755,8 +690,7 @@ class Trajectory():
 
         T = self.b - self.a
 
-        #S = Simulation(self.ff, T, start, self.x_sym, self.u_sym, self.u_fnc)
-        S = Simulation(self.ff_sym, T, start, self.x_sym, self.u_sym, self.u_fnc)
+        S = Simulation(self.ff, T, start, self.x_sym, self.u_sym, self.u_fnc)
 
         self.A = S.simulate()
 
@@ -786,17 +720,22 @@ class Trajectory():
 
 
     def x(self, t):
-        '''This function returns the system state at a given (time-) point.'''
+        '''
+        This function returns the system state at a given (time-) point.
+        '''
         return np.array([self.x_fnc[xx](t) for xx in self.x_sym])
 
 
     def u(self, t):
-        '''This function returns the inputs state at a given (time-) point.'''
+        '''
+        This function returns the inputs state at a given (time-) point.
+        '''
         return np.array([self.u_fnc[uu](t) for uu in self.u_sym])
 
 
     def plot(self):
-        '''This method provides graphics for each system variable, manipulated
+        '''
+        This method provides graphics for each system variable, manipulated
         variable and error function and plots the solution of the simulation.
         '''
 
@@ -916,6 +855,157 @@ class Trajectory():
         plt.show()
 
 
+def analyseSystem(ff):
+    '''
+    This function analyses the system given by the callable vectorfield ``ff(x, u)``
+    and returns values for some of the method parameters.
+    
+    
+    :param callable ff: Vectorfield of a system of ode`s
+    
+    :returns: res -- Dictionary with the results of the system analysis
+            
+            ======  =================================
+            key     meaning
+            ======  =================================
+            n       Dimension of the system variables
+            m       Dimension of the input variables
+            chains  Integrator chains
+            ======  =================================
+    
+    '''
+    
+    res = dict()
+    
+    # first, determine system dimensions
+    n, m = getDimensions(ff)
+    
+    res['n'] = n
+    res['m'] = m
+    
+    # next, we look for integrator chains
+    chains = getIntegChains(ff, (n,m))
+    
+    res['chains'] = chains
+    
+    # get minimal neccessary number of spline parts for the manipulated variables
+    # --> (3.35)      ?????
+    #nu = -1
+    #...
+    #self.su = self.n - 3 + 2*(nu + 1)  ?????
+    
+    
+    return res
+
+
+def getDimensions(ff):
+    '''
+    This function determines the dimensions of the system and input variables.
+    
+    
+    :param callable ff: Vectorfield of a system of ode`s
+    
+    :returns: int n -- Dimension of the system variables
+    :returns: int m -- Dimension of the input variables
+    '''
+    
+    i = -1
+    j = -1
+    found_nm = False
+    
+    while not found_nm:
+        i += 1
+        j += 1
+        
+        for jj in xrange(j):
+            for ii in xrange(i):
+                x = np.ones(ii)
+                u = np.ones(jj)
+                
+                try:
+                    ff(x,u)
+                    found_nm = True
+                    n = ii
+                    m = jj
+                    break
+                except:
+                    pass
+            
+            if found_nm:
+                break
+    
+    return n, m
+
+
+def getIntegChains(ff, dim):
+    '''This function calls the vectorfield and looks for equations like
+    d/dt x_i = x_[i+1]
+    to find integrator chains
+    
+    
+    :param callable ff: Vectorfield of a system of ode`s
+    :param tuple dim: (n,m) Dimensions of the system (n) and input (m) variables
+    
+    :returns: list chains -- List with objects of found integrator chains
+    '''
+
+    log.info( "Looking for integrator chains")
+    
+    n, m = dim
+    
+    # create symbolic variables to find integrator chains
+    x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,n+1)])
+    u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,m+1)])
+    
+    fi = ff(x_sym, u_sym)
+
+    chaindict = {}
+    for i in xrange(len(fi)):
+        for xx in x_sym:
+            if ((fi[i].subs(1.0, 1)) == xx):
+                # substitution because of sympy difference betw. 1.0 and 1
+                chaindict[xx] = x_sym[i]
+        
+        for uu in u_sym:
+            if ((fi[i].subs(1.0, 1)) == uu):
+                chaindict[uu] = x_sym[i]
+
+    # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
+    # where x_4 = d x_3 / dt and so on
+    
+    # find upper ends of integrator chains
+    uppers = []
+    for vv in chaindict.values():
+        if (not chaindict.has_key(vv)):
+            uppers.append(vv)
+    
+    # create ordered lists that temporarily represent the integrator chains
+    tmpchains = []
+    
+    # therefor we flip the dictionary to work our way through its keys (former values)
+    dictchain = {v:k for k,v in chaindict.items()}
+    
+    for var in uppers:
+        tmpchain = []
+        vv = var
+        tmpchain.append(vv)
+        
+        while dictchain.has_key(vv):
+            vv = dictchain[vv]
+            tmpchain.append(vv)
+        
+        tmpchains.append(tmpchain)
+    
+    # create an integrator chain object for every temporary chain
+    chains = []
+    for lst in tmpchains:
+        chains.append(IntegChain(lst))
+    
+    return chains
+
+
+
+
 if __name__ == '__main__':
     from sympy import cos, sin
     from numpy import pi
@@ -958,11 +1048,11 @@ if __name__ == '__main__':
         g = [0,0]
         eps = 0.05
 
-        T = Trajectory(f,xa,xb,a=a,b=b,sx=sx,su=su,kx=kx,
+        T = Trajectory(f,a=a,b=b,xa=xa,xb=xb,sx=sx,su=su,kx=kx,
                         maxIt=maxIt,g=g,eps=eps)
 
-        with log.Timer("iteration"):
-            T.iteration()
+        with log.Timer("startIteration"):
+            T.startIteration()
     IPS()
     sys.exit()
 

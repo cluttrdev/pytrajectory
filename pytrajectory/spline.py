@@ -79,8 +79,8 @@ class CubicSpline():
 
 
     def makesteady(self):
-        '''This method sets up and solves equations that ensure steadiness and
-        smoothness conditions of the spline in every joining point satisfy boundary conditions.
+        '''This method sets up and solves equations that satisfy boundary conditions and
+        ensure steadiness and smoothness conditions of the spline in every joining point.
         '''
         
         log.info("makesteady: "+self.tag)
@@ -114,8 +114,14 @@ class CubicSpline():
             a = coeffs[:-3,v]
 
         # b is what is not in a
-        b = np.array(list(set(coeffs.flatten())-set(a)))
-        b = np.array(sorted(b,key=lambda x:x.name))
+        coeffs_set = set(coeffs.flatten())
+        a_set = set(a)
+        b_set = coeffs_set - a_set
+        
+        b = np.array(sorted(list(b_set), key = lambda c: c.name))
+        
+        #b = np.array(list(set(coeffs.flatten())-set(a)))
+        #b = np.array(sorted(b,key=lambda x:x.name))
 
         # Build Matrix for equation system of smoothness conditions --> p. 13
 
@@ -181,9 +187,8 @@ class CubicSpline():
         B = M.dot(b_mat)
 
         # do the inversion
-        #   np.float16 to avoid factors like 1e-16
-        tmp1 = np.array(solve(B,r.T),dtype=np.float)#16)
-        tmp2 = np.array(solve(B,-A),dtype=np.float)#16)
+        tmp1 = np.array(solve(B,r.T),dtype=np.float)
+        tmp2 = np.array(solve(B,-A),dtype=np.float)
 
         tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
         tmp_coeffs_abs = np.zeros((self.n,4))

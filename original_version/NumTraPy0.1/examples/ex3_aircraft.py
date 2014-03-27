@@ -1,5 +1,8 @@
 # coding: utf8
 
+import sys
+sys.path.append('..')
+
 from sympy import cos, sin
 import sympy as sp
 import numpy as np

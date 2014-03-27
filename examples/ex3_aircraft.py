@@ -5,9 +5,9 @@ sys.path.append('..')
 
 from sympy import cos, sin
 
-from lib.trajectory import Trajectory
+from pytrajectory.trajectory import Trajectory
 from numpy import pi
-import lib.log as log
+import pytrajectory.log as log
 #from lib.log import IPS
 from IPython import embed as IPS
 
@@ -50,7 +50,7 @@ xb=[10.0,0.0,5.0,0.0,0.0,0.0]
 
 if(calc):
 
-    T=Trajectory(f,xa,xb,n=6,m=2)
+    T=Trajectory(f,xa,xb)#,n=6,m=2)
     
     T.a=0.0
     T.b=3.0

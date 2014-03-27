@@ -128,8 +128,8 @@
 
 
 <div class="viewcode-block" id="CubicSpline.makesteady"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.makesteady">[docs]</a>    <span class="k">def</span> <span class="nf">makesteady</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This method sets up and solves equations that ensure steadiness and</span>
-<span class="sd">        smoothness conditions of the spline in every joining point satisfy boundary conditions.</span>
+        <span class="sd">&#39;&#39;&#39;This method sets up and solves equations that satisfy boundary conditions and</span>
+<span class="sd">        ensure steadiness and smoothness conditions of the spline in every joining point.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;makesteady: &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
@@ -163,8 +163,14 @@
             <span class="n">a</span> <span class="o">=</span> <span class="n">coeffs</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="n">v</span><span class="p">]</span>
 
         <span class="c"># b is what is not in a</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">coeffs</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">coeffs_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">coeffs</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">a_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">b_set</span> <span class="o">=</span> <span class="n">coeffs_set</span> <span class="o">-</span> <span class="n">a_set</span>
+        
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">b_set</span><span class="p">),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        
+        <span class="c">#b = np.array(list(set(coeffs.flatten())-set(a)))</span>
+        <span class="c">#b = np.array(sorted(b,key=lambda x:x.name))</span>
 
         <span class="c"># Build Matrix for equation system of smoothness conditions --&gt; p. 13</span>
 
@@ -230,9 +236,8 @@
         <span class="n">B</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_mat</span><span class="p">)</span>
 
         <span class="c"># do the inversion</span>
-        <span class="c">#   np.float16 to avoid factors like 1e-16</span>
-        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="c">#16)</span>
-        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="c">#16)</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 
         <span class="n">tmp_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
         <span class="n">tmp_coeffs_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
