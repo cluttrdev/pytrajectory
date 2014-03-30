@@ -9,45 +9,43 @@ from time import time
 
 
 class Solver:
-    def __init__(self, n, F, DF, var, x0, tol=1e-2, maxx=10, algo='leven'):
-        """
-        # F should be a numpy array of sympy expressions
-        # var should be a numpy array of all symbolic variables been used in GLS
-        # x0 should be a numpy array of a guess
-        # algo ... newton, gauss, leven
-        # tol ... tolerance for the solver
-        # maxx ... maximum number of iterations
-        """
-
+    '''
+    This class provides solver for the collocation equation system.
+    
+    :param callable F: The callable function that represents the equation system
+    :param callable DF: The function for the jacobian matrix of the eqs
+    :param ndarray x0: The start value for the sover
+    :param real tol: The (absolute) tolerance of the solver
+    :param int maxx: The maximum number of iterations of the solver
+    :param str algo: The solver to use
+    '''
+    def __init__(self, F, DF, x0, tol=1e-2, maxx=10, algo='leven'):
+        self.F = F
+        self.DF = DF
         self.x0 = x0
-        self.sol = None
-        self.var = var
         self.tol = tol
         self.reltol = tol #1e-3
         self.maxx = maxx
         self.algo = algo
-        self.n = n
-        if (not n == len(x0) and algo == 'newton'):
-            log.warn("Newton needs square equation systems")
-            return x0.tolist()
-
-
-        self.F = F
-        self.DF = DF
+        
+        self.sol = None
     
 
     def solve(self):
-
+        '''
+        This is just a wrapper to call the chosen algorithm for solving the
+        equation system
+        '''
         if (self.algo == 'newton'):
             log.info( "Run Newton solver")
             log.warn(" ... not implemented")
             #self.newton()
-            return
+            return self.x0
         elif (self.algo == 'gauss'):
             log.info( "Run Gauss solver")
             log.warn(" ... not implemented")
             #self.gauss()
-            return
+            return self.x0
         elif (self.algo == 'leven'):
             log.info( "Run Levenberg-Marquardt method")
             self.leven()
@@ -60,10 +58,17 @@ class Solver:
 
 
     def leven(self):
+        '''
+        This method is an implementation of the Levenberg-Marquardt-Method
+        to approximatively solve a system of non-linear equations by minimizing \n
+        :math:`\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \\mu^2 \|x_{k+1} - x_k \|`
+        '''
         i = 0
         x = self.x0
         res = 1
         res_alt = 1e10
+        
+        eye = np.eye(len(self.x0))
 
         mu = 0.1
 
@@ -73,11 +78,8 @@ class Solver:
 
         roh = 0.0
 
-        n = len(self.x0)
-
         ##?? warum Bed. 1 und 3? (--> retol und abstol)
         while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > self.reltol)):
-
             i += 1
             
             Fx = self.F(x)
@@ -90,7 +92,7 @@ class Solver:
                 ##?? warum J.T*F? (Gleichung (4.18) sagt: J*F)
                 ## -> .T gehoert eigentlich oben hin
                 
-                A = DFx.T.dot(DFx) + mu**3*np.eye(n)
+                A = DFx.T.dot(DFx) + mu**2*eye
                 b = DFx.T.dot(Fx)
                 
                 s = -solve(A, b)
@@ -104,12 +106,8 @@ class Solver:
 
                 roh = (normFx**2 - normFxs**2) / (normFx**2 - (norm(Fx+DFx.dot(s)))**2)
                 
-                #if (roh<0):
-                    #print "roh<0"
-                    #IPS(locals())
-                    #break
-                if (roh<=b0): mu = 1.5*mu
-                if (roh>=b1): mu = 0.75*mu
+                if (roh<=b0): mu = 2.0*mu
+                if (roh>=b1): mu = 0.5*mu
                 #log.info("  roh= %f    mu= %f"%(roh,mu))
 
             roh = 0.0

@@ -56,13 +56,21 @@
 
 
 <div class="viewcode-block" id="Simulation"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.simulation.Simulation">[docs]</a><span class="k">class</span> <span class="nc">Simulation</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">x_sym</span><span class="p">,</span><span class="n">u_sym</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff</span>         <span class="c"># ff    ... vectorfield</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span>           <span class="c"># T     ... simulation time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span> <span class="o">=</span> <span class="n">x_sym</span>   <span class="c"># x_sym ... symbolic system variables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span> <span class="o">=</span> <span class="n">u_sym</span>   <span class="c"># u_sym ... symbolic manipulated variables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>           <span class="c"># u     ... callable function</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>         <span class="c"># dt    ... time step</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class does something ...</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    :param callable ff: Vectorfield of the control system</span>
+<span class="sd">    :param real T: Simulation time</span>
+<span class="sd">    :param callable u: Function of the input variables</span>
+<span class="sd">    :param real dt: Time step</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
         
         <span class="c">#this is where the solutions go</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xt</span> <span class="o">=</span> <span class="p">[]</span>
@@ -73,9 +81,8 @@
 
         <span class="c">#get the values at t=0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-        <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="n">u_sym</span><span class="p">:</span>
-            <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="mf">0.0</span><span class="p">))</span>
+        
+        <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">ut</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
@@ -88,14 +95,10 @@
         
 <div class="viewcode-block" id="Simulation.rhs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.simulation.Simulation.rhs">[docs]</a>    <span class="k">def</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
         <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">:</span>
-                <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="n">t</span><span class="p">))</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">:</span>
-                <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dx</span>
     
@@ -106,10 +109,8 @@
         
         <span class="k">if</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">:</span>
-                <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="n">t</span><span class="p">))</span>
-
+            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            
             <span class="bp">self</span><span class="o">.</span><span class="n">ut</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         

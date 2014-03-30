@@ -56,28 +56,28 @@ to achieve a transition between desired states of a nonlinear control system.</p
 <span id="trajectory-module"></span><h2>Trajectory Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.trajectory.Trajectory">
-<em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>xa=None</em>, <em>xb=None</em>, <em>g=None</em>, <em>sx=5</em>, <em>su=5</em>, <em>kx=2</em>, <em>delta=2</em>, <em>maxIt=7</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>algo='leven'</em>, <em>use_chains=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>xa=None</em>, <em>xb=None</em>, <em>g=None</em>, <em>sx=5</em>, <em>su=5</em>, <em>kx=5</em>, <em>delta=2</em>, <em>maxIt=7</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>algo='leven'</em>, <em>use_chains=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class of the PyTrajectory project.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield (rhs) of the control system</li>
+<li><strong>ff</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Vectorfield (rhs) of the control system</li>
 <li><strong>a</strong> (<em>real</em>) &#8211; Left border</li>
 <li><strong>b</strong> (<em>real</em>) &#8211; Right border</li>
-<li><strong>xa</strong> (<em>list</em>) &#8211; Boundary values at the left border</li>
-<li><strong>xb</strong> (<em>list</em>) &#8211; Boundary values at the right border</li>
-<li><strong>g</strong> (<em>list</em>) &#8211; Boundary values of the input variables</li>
-<li><strong>sx</strong> (<em>int</em>) &#8211; Initial number of spline parts for the system variables</li>
-<li><strong>su</strong> (<em>int</em>) &#8211; Initial number of spline parts for the input variables</li>
-<li><strong>kx</strong> (<em>int</em>) &#8211; Factor for raising the number of spline parts for the system variables</li>
-<li><strong>delta</strong> (<em>int</em>) &#8211; Constant for calculation of collocation points</li>
-<li><strong>maxIt</strong> (<em>int</em>) &#8211; Maximum number of iterations</li>
+<li><strong>xa</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; Boundary values at the left border</li>
+<li><strong>xb</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; Boundary values at the right border</li>
+<li><strong>g</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; Boundary values of the input variables</li>
+<li><strong>sx</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Initial number of spline parts for the system variables</li>
+<li><strong>su</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Initial number of spline parts for the input variables</li>
+<li><strong>kx</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Factor for raising the number of spline parts for the system variables</li>
+<li><strong>delta</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Constant for calculation of collocation points</li>
+<li><strong>maxIt</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum number of iterations</li>
 <li><strong>eps</strong> (<em>real</em>) &#8211; Tolerance for the solution of the initial value problem</li>
 <li><strong>tol</strong> (<em>real</em>) &#8211; Tolerance for the solver of the equation system</li>
-<li><strong>algo</strong> (<em>str</em>) &#8211; Solver to use</li>
-<li><strong>use_chains</strong> (<em>bool</em>) &#8211; Whether or not to use integrator chains</li>
+<li><strong>algo</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Solver to use</li>
+<li><strong>use_chains</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether or not to use integrator chains</li>
 </ul>
 </td>
 </tr>
@@ -121,12 +121,6 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.trajectory.Trajectory.iteration">
-<tt class="descname">iteration</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.iteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.iteration" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the main loop &#8211;&gt; [5.1]</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.plot">
 <tt class="descname">plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method provides graphics for each system variable, manipulated
@@ -153,6 +147,12 @@ to set up the coefficients of the polynomial spline parts of every created splin
 </dd></dl>
 
 <dl class="method">
+<dt id="pytrajectory.trajectory.Trajectory.startIteration">
+<tt class="descname">startIteration</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.startIteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.startIteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main loop &#8211;&gt; [5.1]</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.u">
 <tt class="descname">u</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.u"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.u" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function returns the inputs state at a given (time-) point.</p>
@@ -175,7 +175,7 @@ and returns values for some of the method parameters.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Vectorfield of a system of ode`s</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">res &#8211; Dictionary with the results of the system analysis<table border="1" class="docutils">
 <colgroup>
@@ -213,7 +213,7 @@ and returns values for some of the method parameters.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ff</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Vectorfield of a system of ode`s</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">int n &#8211; Dimension of the system variables</td>
 </tr>
@@ -234,8 +234,8 @@ to find integrator chains</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of a system of ode`s</li>
-<li><strong>dim</strong> (<em>tuple</em>) &#8211; (n,m) Dimensions of the system (n) and input (m) variables</li>
+<li><strong>ff</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Vectorfield of a system of ode`s</li>
+<li><strong>dim</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a>) &#8211; (n,m) Dimensions of the system (n) and input (m) variables</li>
 </ul>
 </td>
 </tr>
@@ -297,7 +297,7 @@ ensure steadiness and smoothness conditions of the spline in every joining point
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>c_sol</strong> (<em>dict</em>) &#8211; Dictionary with coefficient and numerical value</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>c_sol</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Dictionary with coefficient and numerical value</td>
 </tr>
 </tbody>
 </table>
@@ -333,7 +333,7 @@ and adding the vector.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>x</strong> (<em>real</em>) &#8211; The point to evaluate the spline at</li>
-<li><strong>d</strong> (<em>int</em>) &#8211; The derivation order</li>
+<li><strong>d</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The derivation order</li>
 </ul>
 </td>
 </tr>
@@ -371,16 +371,38 @@ and adding the vector.</p>
 <span id="solver-module"></span><h2>Solver Module<a class="headerlink" href="#module-pytrajectory.solver" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.solver.Solver">
-<em class="property">class </em><tt class="descclassname">pytrajectory.solver.</tt><tt class="descname">Solver</tt><big>(</big><em>n</em>, <em>F</em>, <em>DF</em>, <em>var</em>, <em>x0</em>, <em>tol=0.01</em>, <em>maxx=10</em>, <em>algo='leven'</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><tt class="descclassname">pytrajectory.solver.</tt><tt class="descname">Solver</tt><big>(</big><em>F</em>, <em>DF</em>, <em>x0</em>, <em>tol=0.01</em>, <em>maxx=10</em>, <em>algo='leven'</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides solver for the collocation equation system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>F</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable function that represents the equation system</li>
+<li><strong>DF</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The function for the jacobian matrix of the eqs</li>
+<li><strong>x0</strong> (<em>ndarray</em>) &#8211; The start value for the sover</li>
+<li><strong>tol</strong> (<em>real</em>) &#8211; The (absolute) tolerance of the solver</li>
+<li><strong>maxx</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The maximum number of iterations of the solver</li>
+<li><strong>algo</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The solver to use</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
 <dt id="pytrajectory.solver.Solver.leven">
 <tt class="descname">leven</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver.leven"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver.leven" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This method is an implementation of the Levenberg-Marquardt-Method
+to approximatively solve a system of non-linear equations by minimizing</p>
+<p><img class="math" src="_images/math/dcc9b6f163af72cdf15f0d77bef3baec8fbb82ef.png" alt="\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|"/></p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.solver.Solver.solve">
 <tt class="descname">solve</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver.solve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This is just a wrapper to call the chosen algorithm for solving the
+equation system</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -389,8 +411,23 @@ and adding the vector.</p>
 <span id="simulation-module"></span><h2>Simulation Module<a class="headerlink" href="#module-pytrajectory.simulation" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.simulation.Simulation">
-<em class="property">class </em><tt class="descclassname">pytrajectory.simulation.</tt><tt class="descname">Simulation</tt><big>(</big><em>ff</em>, <em>T</em>, <em>start</em>, <em>x_sym</em>, <em>u_sym</em>, <em>u</em>, <em>dt=0.01</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><tt class="descclassname">pytrajectory.simulation.</tt><tt class="descname">Simulation</tt><big>(</big><em>ff</em>, <em>T</em>, <em>start</em>, <em>u</em>, <em>dt=0.01</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class does something ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ff</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Vectorfield of the control system</li>
+<li><strong>T</strong> (<em>real</em>) &#8211; Simulation time</li>
+<li><strong>u</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; Function of the input variables</li>
+<li><strong>dt</strong> (<em>real</em>) &#8211; Time step</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
 <dt id="pytrajectory.simulation.Simulation.calcStep">
 <tt class="descname">calcStep</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation.calcStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation.calcStep" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -417,12 +454,32 @@ and adding the vector.</p>
 <dl class="method">
 <dt id="pytrajectory.tools.IntegChain.predecessor">
 <tt class="descname">predecessor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.predecessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.predecessor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This method returns the predecessor of the given element of the
+integrator chains, i.e. it returns <img class="math" src="_images/math/d7fad783f4568edf0ff146c16e101c8c095de5f6.png" alt="\int [elem]"/></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>elem</strong> (<em>sympy.Symbol</em>) &#8211; An element of the integrator chain</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.tools.IntegChain.successor">
 <tt class="descname">successor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.successor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.successor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This method returns the successor of the given element of the
+integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192f825ebdc549ab63679672853eec2513.png" alt="\frac{d}{dt}[elem]"/></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>elem</strong> (<em>sympy.Symbol</em>) &#8211; An element of the integrator chain</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -481,7 +538,7 @@ and adding the vector.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140327-194834.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/local/bin/sphinx-build_140330-141709.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

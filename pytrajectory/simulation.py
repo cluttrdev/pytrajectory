@@ -7,13 +7,21 @@ from scipy.integrate import ode
 
 
 class Simulation:
-    def __init__(self,ff,T,start,x_sym,u_sym,u,dt=0.01):
-        self.ff = ff         # ff    ... vectorfield
-        self.T = T           # T     ... simulation time
-        self.x_sym = x_sym   # x_sym ... symbolic system variables
-        self.u_sym = u_sym   # u_sym ... symbolic manipulated variables
-        self.u = u           # u     ... callable function
-        self.dt = dt         # dt    ... time step
+    '''
+    This class does something ...
+    
+    
+    :param callable ff: Vectorfield of the control system
+    :param real T: Simulation time
+    :param callable u: Function of the input variables
+    :param real dt: Time step
+    '''
+    
+    def __init__(self,ff,T,start,u,dt=0.01):
+        self.ff = ff
+        self.T = T
+        self.u = u
+        self.dt = dt
         
         #this is where the solutions go
         self.xt = []
@@ -24,9 +32,8 @@ class Simulation:
 
         #get the values at t=0
         self.xt.append(start)
-        u = []
-        for uu in u_sym:
-            u.append(self.u[uu](0.0))
+        
+        u = self.u(0.0)
         
         self.ut.append(u)
         self.t.append(0.0)
@@ -39,14 +46,10 @@ class Simulation:
         
     def rhs(self,t,x):
         if (0 <= t <= self.T):
-            u = []
-            for uu in self.u_sym:
-                u.append(self.u[uu](t))
+            u = self.u(t)
             dx = self.ff(x,u)
         else:
-            u = []
-            for uu in self.u_sym:
-                u.append(0.0)
+            u = self.u(t)
             dx = self.ff(x,u)
         return dx
     
@@ -57,10 +60,8 @@ class Simulation:
         
         if(0 <= t <= self.T):
             self.xt.append(x)
-            u = []
-            for uu in self.u_sym:
-                u.append(self.u[uu](t))
-
+            u = self.u(t)
+            
             self.ut.append(u)
             self.t.append(t)
         

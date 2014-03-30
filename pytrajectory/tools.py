@@ -5,7 +5,8 @@ from IPython import embed as IPS
 
 
 class IntegChain():
-    '''This class provides a representation of a integrator chain consisting of sympy symbols ...
+    '''
+    This class provides a representation of a integrator chain consisting of sympy symbols ...
     '''
     
     def __init__(self, lst):
@@ -23,6 +24,12 @@ class IntegChain():
         return (item in self.elements)
     
     def successor(self, elem):
+        '''
+        This method returns the successor of the given element of the
+        integrator chains, i.e. it returns :math:`\\frac{d}{dt}[elem]`
+        
+        :param sympy.Symbol elem: An element of the integrator chain
+        '''
         if not elem == self.bottom:
             i = self.elements.index(elem)
             succ = self.elements[i+1]
@@ -33,6 +40,12 @@ class IntegChain():
         return succ
     
     def predecessor(self, elem):
+        '''
+        This method returns the predecessor of the given element of the
+        integrator chains, i.e. it returns :math:`\\int [elem]`
+        
+        :param sympy.Symbol elem: An element of the integrator chain
+        '''
         if not elem == self.top:
             i = self.elements.index(elem)
             pred = self.elements[i-1]

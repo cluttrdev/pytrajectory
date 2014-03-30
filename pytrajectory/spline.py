@@ -17,7 +17,7 @@ def fdiff(func):
     '''
     
     # Return derivative of temporary function
-    # im_func is the functions id
+    # im_func is the function's id
     # im_self is the object of which func is the method
     if(func.im_func == CubicSpline.tmp_f.im_func):
         return func.im_self.tmp_df
@@ -79,7 +79,8 @@ class CubicSpline():
 
 
     def makesteady(self):
-        '''This method sets up and solves equations that satisfy boundary conditions and
+        '''
+        This method sets up and solves equations that satisfy boundary conditions and
         ensure steadiness and smoothness conditions of the spline in every joining point.
         '''
         
@@ -118,11 +119,9 @@ class CubicSpline():
         a_set = set(a)
         b_set = coeffs_set - a_set
         
-        b = np.array(sorted(list(b_set), key = lambda c: c.name))
+        # transfer b_set to ordered list
+        b = sorted(list(b_set), key = lambda c: c.name)
         
-        #b = np.array(list(set(coeffs.flatten())-set(a)))
-        #b = np.array(sorted(b,key=lambda x:x.name))
-
         # Build Matrix for equation system of smoothness conditions --> p. 13
 
         # get matrix dimensions --> (3.21) & (3.22)

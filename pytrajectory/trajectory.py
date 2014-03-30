@@ -41,7 +41,7 @@ class Trajectory():
     :param bool use_chains: Whether or not to use integrator chains
     '''
     
-    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=2,
+    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=5,
                 delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
         
         # save symbolic vectorfield
@@ -91,12 +91,15 @@ class Trajectory():
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
         
         # transform symbolic ff to numeric ff
-        F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        _ff_num = sp.lambdify((self.x_sym,self.u_sym), F, modules='numpy')
+        # --> does not work under OS X ???
+        #F = sp.Matrix(ff(self.x_sym,self.u_sym))
+        #_ff_num = sp.lambdify((self.x_sym,self.u_sym), F, modules='numpy')
+        #
+        #ff_num = lambda x, u: np.array(_ff_num(x,u))
+        #
+        #self.ff = _ff_num
         
-        ff_num = lambda x, u: np.array(_ff_num(x,u))
-        
-        self.ff = _ff_num
+        self.ff = ff
 
         # dictionaries for boundary conditions
         self.xa = dict()
@@ -482,10 +485,8 @@ class Trajectory():
         log.info( 40*"#")
 
         # create our solver
-        dim = len(self.cpts)*len(self.eqind)
-        #IPS()
-        solver = Solver(dim, self.G, self.DG, self.c_list, self.guess,
-                        maxx= 20, tol= self.tol, algo=self.algo)
+        solver = Solver(self.G, self.DG, self.guess, maxx= 20, tol= self.tol,
+                        algo=self.algo)
 
         # solve the equation system
         self.sol = solver.solve()
@@ -690,7 +691,7 @@ class Trajectory():
 
         T = self.b - self.a
 
-        S = Simulation(self.ff, T, start, self.x_sym, self.u_sym, self.u_fnc)
+        S = Simulation(self.ff, T, start, self.u)
 
         self.A = S.simulate()
 
@@ -938,9 +939,8 @@ def getDimensions(ff):
 
 
 def getIntegChains(ff, dim):
-    '''This function calls the vectorfield and looks for equations like
-    d/dt x_i = x_[i+1]
-    to find integrator chains
+    '''This function calls the vectorfield and looks for equations like 
+    :math:`\\dot{x}_i = x_{i+1}` to find integrator chains
     
     
     :param callable ff: Vectorfield of a system of ode`s
@@ -1041,17 +1041,15 @@ if __name__ == '__main__':
     if(calc):
         a = 0.0
         b = 2.0
-        sx = 5
         su = 5
-        kx = 5
-        maxIt  = 5
         g = [0,0]
         eps = 0.05
+        use_chains = True
 
-        T = Trajectory(f,a=a,b=b,xa=xa,xb=xb,sx=sx,su=su,kx=kx,
-                        maxIt=maxIt,g=g,eps=eps)
+        T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, su=su, g=g, eps=eps,
+                       use_chains=use_chains)
 
-        with log.Timer("startIteration"):
+        with log.Timer("Iteration"):
             T.startIteration()
     IPS()
     sys.exit()

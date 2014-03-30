@@ -54,7 +54,8 @@
 
 
 <div class="viewcode-block" id="IntegChain"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.tools.IntegChain">[docs]</a><span class="k">class</span> <span class="nc">IntegChain</span><span class="p">():</span>
-    <span class="sd">&#39;&#39;&#39;This class provides a representation of a integrator chain consisting of sympy symbols ...</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class provides a representation of a integrator chain consisting of sympy symbols ...</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lst</span><span class="p">):</span>
@@ -72,6 +73,12 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
     
 <div class="viewcode-block" id="IntegChain.successor"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.tools.IntegChain.successor">[docs]</a>    <span class="k">def</span> <span class="nf">successor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This method returns the successor of the given element of the</span>
+<span class="sd">        integrator chains, i.e. it returns :math:`\\frac{d}{dt}[elem]`</span>
+<span class="sd">        </span>
+<span class="sd">        :param sympy.Symbol elem: An element of the integrator chain</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
             <span class="n">succ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
@@ -82,6 +89,12 @@
         <span class="k">return</span> <span class="n">succ</span>
     </div>
 <div class="viewcode-block" id="IntegChain.predecessor"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.tools.IntegChain.predecessor">[docs]</a>    <span class="k">def</span> <span class="nf">predecessor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This method returns the predecessor of the given element of the</span>
+<span class="sd">        integrator chains, i.e. it returns :math:`\\int [elem]`</span>
+<span class="sd">        </span>
+<span class="sd">        :param sympy.Symbol elem: An element of the integrator chain</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
             <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
