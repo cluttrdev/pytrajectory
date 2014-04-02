@@ -121,6 +121,7 @@ class CubicSpline():
         
         # transfer b_set to ordered list
         b = sorted(list(b_set), key = lambda c: c.name)
+        #b = np.array(sorted(list(b_set), key = lambda c: c.name))
         
         # Build Matrix for equation system of smoothness conditions --> p. 13
 
@@ -224,7 +225,8 @@ class CubicSpline():
         
         :param real x: The point to evaluate the spline at
         :param int d: The derivation order
-        :returns: M, m -- Matrix and vector that represent how the splines coefficients depend on the free parameters.
+        :returns: Matrix and vector that represent how the splines coefficients depend on the free parameters.
+        :rtype: tuple
         '''
         
         # Get the spline part where x is in

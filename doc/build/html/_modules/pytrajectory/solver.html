@@ -87,18 +87,14 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;newton&#39;</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Newton solver&quot;</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot; ... not implemented&quot;</span><span class="p">)</span>
-            <span class="c">#self.newton()</span>
-            <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">newton</span><span class="p">()</span>
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;gauss&#39;</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Gauss solver&quot;</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot; ... not implemented&quot;</span><span class="p">)</span>
-            <span class="c">#self.gauss()</span>
-            <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gauss</span><span class="p">()</span>
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;leven&#39;</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Levenberg-Marquardt method&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
-
+        
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">==</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Wrong solver&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span>
@@ -141,7 +137,7 @@
                 <span class="c">##?? warum J.T*F? (Gleichung (4.18) sagt: J*F)</span>
                 <span class="c">## -&gt; .T gehoert eigentlich oben hin</span>
                 
-                <span class="n">A</span> <span class="o">=</span> <span class="n">DFx</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DFx</span><span class="p">)</span> <span class="o">+</span> <span class="n">mu</span><span class="o">**</span><span class="mi">3</span><span class="o">*</span><span class="n">eye</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="n">DFx</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DFx</span><span class="p">)</span> <span class="o">+</span> <span class="n">mu</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">eye</span>
                 <span class="n">b</span> <span class="o">=</span> <span class="n">DFx</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Fx</span><span class="p">)</span>
                 
                 <span class="n">s</span> <span class="o">=</span> <span class="o">-</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
@@ -155,8 +151,8 @@
 
                 <span class="n">roh</span> <span class="o">=</span> <span class="p">(</span><span class="n">normFx</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">normFxs</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">normFx</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">Fx</span><span class="o">+</span><span class="n">DFx</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                 
-                <span class="k">if</span> <span class="p">(</span><span class="n">roh</span><span class="o">&lt;=</span><span class="n">b0</span><span class="p">):</span> <span class="n">mu</span> <span class="o">=</span> <span class="mf">1.5</span><span class="o">*</span><span class="n">mu</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">roh</span><span class="o">&gt;=</span><span class="n">b1</span><span class="p">):</span> <span class="n">mu</span> <span class="o">=</span> <span class="mf">0.75</span><span class="o">*</span><span class="n">mu</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">roh</span><span class="o">&lt;=</span><span class="n">b0</span><span class="p">):</span> <span class="n">mu</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">mu</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">roh</span><span class="o">&gt;=</span><span class="n">b1</span><span class="p">):</span> <span class="n">mu</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">mu</span>
                 <span class="c">#log.info(&quot;  roh= %f    mu= %f&quot;%(roh,mu))</span>
 
             <span class="n">roh</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -165,6 +161,48 @@
             <span class="n">res</span> <span class="o">=</span> <span class="n">normFx</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;nIt= </span><span class="si">%d</span><span class="s">    res= </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">res</span><span class="p">))</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span>
+    
+    </div>
+<div class="viewcode-block" id="Solver.gauss"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.solver.Solver.gauss">[docs]</a>    <span class="k">def</span> <span class="nf">gauss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">res_alt</span> <span class="o">=</span> <span class="mf">10e10</span>
+        <span class="k">while</span><span class="p">((</span><span class="n">res</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxx</span><span class="o">&gt;</span><span class="n">i</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="o">-</span><span class="n">res_alt</span><span class="p">)</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)):</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">DD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">T</span><span class="o">*</span><span class="n">D</span><span class="p">,</span><span class="n">D</span><span class="o">.</span><span class="n">T</span><span class="o">*</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> 
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">DD</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">res_alt</span> <span class="o">=</span> <span class="n">res</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">i</span><span class="p">,</span><span class="s">&#39;: &#39;</span><span class="p">,</span><span class="n">res</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span>
+    
+    </div>
+<div class="viewcode-block" id="Solver.newton"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.solver.Solver.newton">[docs]</a>    <span class="k">def</span> <span class="nf">newton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span>
+        <span class="n">Fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">while</span><span class="p">(</span><span class="n">res</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxx</span><span class="o">&gt;</span><span class="n">i</span><span class="p">):</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">DFx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="n">h</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">DFx</span><span class="p">,</span><span class="n">Fx</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span> 
+
+            <span class="n">x</span> <span class="o">-=</span> <span class="n">h</span>
+
+            <span class="n">Fx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Fx</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">i</span><span class="p">,</span><span class="s">&#39;: &#39;</span><span class="p">,</span><span class="n">res</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span></div></div>
 </pre></div>
 
