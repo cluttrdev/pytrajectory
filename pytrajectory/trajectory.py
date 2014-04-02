@@ -5,7 +5,7 @@ import numpy as np
 import sympy as sp
 from scipy import sparse
 
-import pylab as plt
+import matplotlib.pyplot as plt
 
 from spline import CubicSpline, fdiff
 from solver import Solver
@@ -22,8 +22,8 @@ from IPython import embed as IPS
 class Trajectory():
     '''
     Base class of the PyTrajectory project.
-    
-    
+
+
     :param callable ff: Vectorfield (rhs) of the control system
     :param real a: Left border
     :param real b: Right border
@@ -40,13 +40,14 @@ class Trajectory():
     :param str algo: Solver to use
     :param bool use_chains: Whether or not to use integrator chains
     '''
-    
-    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=5,
-                delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
-        
+
+    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, 
+                 kx=5, delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', 
+                 use_chains=True):
+
         # save symbolic vectorfield
         self.ff_sym = ff
-        
+
         self.algo = algo
         self.delta = delta
         self.sx = sx
@@ -59,15 +60,15 @@ class Trajectory():
         self.tol = tol
         self.use_chains = use_chains
         self.g = g
-        
+
         # system analysis
         sys_ana = analyseSystem(ff)
-        
+
         self.n = sys_ana['n']
         self.m = sys_ana['m']
         self.chains = sys_ana['chains']
-        #self.su = sys_ana['su'] --> not implemented
-        
+        #self.su = sys_ana['su'] --> not implemented yet
+
         # a little check
         if not (len(xa) == len(xb) == self.n):
             raise ValueError, 'Dimension mismatch xa,xb'
@@ -87,31 +88,30 @@ class Trajectory():
         self.u_fnc = dict()
 
         # create symbolic variables
-        self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
-        self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
+        self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1, self.n+1)])
+        self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1, self.m+1)])
+
+        # transform symbolic ff to numeric ff for faster evaluation
+        F = sp.Matrix(ff(self.x_sym,self.u_sym))
+        _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
         
-        # transform symbolic ff to numeric ff
-        # --> does not work under OS X ???
-        #F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        #_ff_num = sp.lambdify((self.x_sym,self.u_sym), F, modules='numpy')
-        #
-        #ff_num = lambda x, u: np.array(_ff_num(x,u))
-        #
-        #self.ff = _ff_num
+        def ff_num(x, u):
+            xu = np.hstack((x, u))
+            return _ff_num(*xu)
         
-        self.ff = ff
+        self.ff = ff_num
 
         # dictionaries for boundary conditions
         self.xa = dict()
         self.xb = dict()
-        for i,xx in enumerate(self.x_sym):
+        for i, xx in enumerate(self.x_sym):
             self.xa[xx] = xa[i]
             self.xb[xx] = xb[i]
 
         # set logfile
         #log.set_file()
-    
-    
+
+
     def startIteration(self):
         '''
         This is the main loop --> [5.1]
@@ -127,9 +127,8 @@ class Trajectory():
             self.chains = dict()
 
         # determine which equations have to be solved by collocation
-        # --> 
         eqind = []
-        
+
         if self.chains:
             for ic in self.chains:
                 if ic.lower.name.startswith('x'):
@@ -138,9 +137,9 @@ class Trajectory():
                     eqind.sort()
         else:
             eqind = range(self.n)
-        
+
         self.eqind = np.array(eqind)
-        
+
         # start first iteration
         self.iterate()
 
@@ -151,11 +150,12 @@ class Trajectory():
 
         # what is the error
         log.info("Difference:")
-        for i,xx in enumerate(self.x_sym):
+        for i, xx in enumerate(self.x_sym):
             self.err[i] = self.xb[xx] - xt[-1:][0][i]
             log.info(str(xx)+" : %f"%self.err[i])
-
-        log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
+        
+        errmax = max(abs(self.err))
+        log.info("--> reached desired accuracy: "+str(errmax <= self.eps))
         ######################
 
         # this was the first iteration
@@ -182,13 +182,16 @@ class Trajectory():
 
             # what is the error
             log.info("Difference:")
-            for i,xx in enumerate(self.x_sym):
+            for i, xx in enumerate(self.x_sym):
                 self.err[i] = abs(self.xb[xx] - xt[-1:][0][i])
                 log.info(str(xx)+" : %f"%self.err[i])
-
-            log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
-
-
+            
+            errmax = max(abs(self.err))
+            log.info("--> reached desired accuracy: "+str(errmax <= self.eps))
+        
+        log.info(40*"#")
+    
+    
     def iterate(self):
         '''
         This method is used to run one iteration
@@ -229,9 +232,9 @@ class Trajectory():
         if (self.nIt == 1):
             self.c_list = np.empty(0)
 
-            for cc in sorted(self.indep_coeffs, key = lambda c: c.name):
-                self.c_list = np.hstack((self.c_list,self.indep_coeffs[cc]))
-            guess = np.ones(len(self.c_list))*0.1
+            for k, v in sorted(self.indep_coeffs.items(), key = lambda (k, v): k.name):
+                self.c_list = np.hstack((self.c_list, v))
+            guess = 0.1*np.ones(len(self.c_list))
         else:
             # make splines local
             old_splines = self.old_splines
@@ -241,20 +244,19 @@ class Trajectory():
             self.c_list = np.empty(0)
 
             # get new guess for every independent variable
-            for cc in sorted(self.coeffs_sol,key = lambda c: c.name):
-                self.c_list = np.hstack((self.c_list,self.indep_coeffs[cc]))
+            for k, v in sorted(self.coeffs_sol.items(), key = lambda (k, v): k.name):
+                self.c_list = np.hstack((self.c_list, self.indep_coeffs[k]))
 
-                if (1 and new_splines[cc].type == 'x'):
-                    log.info("get new guess for spline %s"%cc.name)
+                if (new_splines[k].type == 'x'):
+                    log.info("get new guess for spline %s"%k.name)
 
                     # how many unknown coefficients does the new spline have
-                    nn = len(self.indep_coeffs[cc])
+                    nn = len(self.indep_coeffs[k])
 
-                    # and this will be the number of equations or points to
-                    # evaluate the old spline
-                    #   but we dont want to use the borders because they got
+                    # and this will be the points to evaluate the old spline in
+                    #   but we don't want to use the borders because they got
                     #   the boundary values already
-                    gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+                    gpts = np.linspace(self.a, self.b, (nn+1))[1:]
 
                     # evaluate the old and new spline at all points in gpts
                     #   they should be equal in these points
@@ -262,25 +264,43 @@ class Trajectory():
                     OLD = [None]*len(gpts)
                     NEW = [None]*len(gpts)
                     NEW_abs = [None]*len(gpts)
-                    for i,p in enumerate(gpts):
-                        OLD[i] = old_splines[cc].f(p)
-                        NEW[i], NEW_abs[i] = new_splines[cc].tmp_f(p)
+                    for i, p in enumerate(gpts):
+                        OLD[i] = old_splines[k].f(p)
+                        NEW[i], NEW_abs[i] = new_splines[k].tmp_f(p)
 
                     OLD = np.array(OLD)
                     NEW = np.array(NEW)
                     NEW_abs = np.array(NEW_abs)
+                    
+                    try:
+                        TT = np.linalg.solve(NEW, OLD-NEW_abs)
+                    except Exception as err:
+                        if not isinstance(err, np.linalg.linalg.LinAlgError):
+                            print type(err)
+                            raise err
+                        else:
+                            log.warn("numpy encountered singular matrix")
+                            #F = lambda c: np.dot(NEW, c) + NEW_abs - OLD
+                            #DF = lambda c: NEW
+                            #x0 = np.zeros(OLD.shape)
+                            #S = Solver(F=F, DF=DF, x0=x0, algo='newton')
+                            #TT = S.solve()
+                            #IPS()
+                            
+                            # --> try to fix this
+                            NEW = NEW[:-1,:-1]
+                            TT = np.linalg.solve(NEW, (OLD-NEW_abs)[:-1])
+                            TT = np.hstack((TT, TT.mean()))
 
-                    TT = np.linalg.solve(NEW,OLD-NEW_abs)
-
-                    guess = np.hstack((guess,TT))
+                    guess = np.hstack((guess, TT))
                 else:
                     #if it is a manipulated variable, just take the old solution
-                    guess = np.hstack((guess,self.coeffs_sol[cc]))
+                    guess = np.hstack((guess, self.coeffs_sol[k]))
 
         # the new guess
         self.guess = guess
-    
-    
+
+
     def initSplines(self):
         '''
         This method is used to initialise the temporary splines
@@ -294,22 +314,26 @@ class Trajectory():
         x_fnc = dict()
         u_fnc = dict()
         dx_fnc = dict()
-        
+
         chains = self.chains
-        
+
         # first handle variables that are part of an integrator chain
         for ic in chains:
             upper = ic.upper
-            
+
             # here we just create a spline object for the upper ends of every chain
             # w.r.t. its lower end
             if ic.lower.name.startswith('x'):
-                splines[upper] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=self.sx,
+                                            bc=[self.xa[upper],self.xb[upper]],
+                                            steady=False,tag=upper.name)
                 splines[upper].type = 'x'
             elif ic.lower.name.startswith('u'):
-                splines[upper] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=self.su,
+                                            bc=self.g,steady=False,
+                                            tag=upper.name)
                 splines[upper].type = 'u'
-            
+
             for i,elem in enumerate(ic.elements):
                 if elem in self.u_sym:
                     if (i == 0):
@@ -332,17 +356,20 @@ class Trajectory():
                     if (i == 2):
                         splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
                         x_fnc[elem] = splines[upper].tmp_ddf
-        
+
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:
             if (not x_fnc.has_key(xx)):
-                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[xx],self.xb[xx]],steady=False,tag=str(xx))
+                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,
+                                        bc=[self.xa[xx],self.xb[xx]],
+                                        steady=False,tag=str(xx))
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx].tmp_f
 
         for uu in self.u_sym:
             if (not u_fnc.has_key(uu)):
-                splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=str(uu))
+                splines[uu] = CubicSpline(self.a,self.b,n=self.su,
+                                        bc=self.g,steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].tmp_f
 
@@ -354,7 +381,7 @@ class Trajectory():
         for xx in self.x_sym:
             dx_fnc[xx] = fdiff(x_fnc[xx])
 
-        indep_coeffs= dict()
+        indep_coeffs = dict()
         for ss in splines:
             indep_coeffs[ss] = splines[ss].c_indep
 
@@ -368,9 +395,10 @@ class Trajectory():
 
     def buildEQS(self):
         '''
-        This method is used to build the equation system which will be solved later.
+        This method is used to build the collocation equation system 
+        that will be solved later.
         '''
-        
+
         log.info( 40*"#")
         log.info("####  Building the equation system  ####")
         log.info( 40*"#")
@@ -389,7 +417,7 @@ class Trajectory():
         delta = self.delta
 
         # generate collocation points ---> [3.3]
-        cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
+        cpts = np.linspace(a, b, (self.sx*delta+1), endpoint=True)
         self.cpts = cpts
 
         lx = len(cpts)*len(x_sym)
@@ -406,11 +434,10 @@ class Trajectory():
         i = 0
         j = 0
         # iterate over spline quantities
-        for sq in sorted(self.indep_coeffs, key=lambda c: c.name):
-            # sq = system quantity
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
-            j += len(self.indep_coeffs[sq])
-            indic[sq] = (i,j)
+            j += len(v)
+            indic[k] = (i, j)
             i = j
 
         # iterate over all quantities including inputs
@@ -418,18 +445,18 @@ class Trajectory():
             for ic in self.chains:
                 if sq in ic:
                     indic[sq] = indic[ic.upper]
-        
+
         # total number of indep coeffs
         c_len = len(self.c_list)
 
         eqx = 0
         equ = 0
-        for i,p in enumerate(cpts):
+        for i, p in enumerate(cpts):
             for xx in x_sym:
                 mx = np.zeros(c_len)
                 mdx = np.zeros(c_len)
 
-                i,j= indic[xx]
+                i, j = indic[xx]
 
                 mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
                 mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
@@ -441,7 +468,7 @@ class Trajectory():
             for uu in u_sym:
                 mu = np.zeros(c_len)
 
-                i,j = indic[uu]
+                i, j = indic[uu]
 
                 mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
 
@@ -467,7 +494,7 @@ class Trajectory():
         ################################################################
         # for creation of the jacobian matrix
 
-        f = self.ff_sym(x_sym,u_sym)
+        f = self.ff_sym(x_sym, u_sym)
         Df = sp.Matrix(f).jacobian(self.x_sym+self.u_sym)
 
         self.Df = sp.lambdify(self.x_sym+self.u_sym, Df, modules='numpy')
@@ -479,7 +506,7 @@ class Trajectory():
         '''
         This method is used to solve the collocation equation system.
         '''
-        
+
         log.info( 40*"#")
         log.info("#####  Solving the equation system  ####")
         log.info( 40*"#")
@@ -496,7 +523,7 @@ class Trajectory():
         '''
         This is the callable function that represents the collocation system.
         '''
-        
+
         ff = self.ff
         eqind = self.eqind
 
@@ -504,23 +531,20 @@ class Trajectory():
         u_len = len(self.u_sym)
 
         # DENSE
-        X = np.dot(self.Mx,c) + self.Mx_abs
-        U = np.dot(self.Mu,c) + self.Mu_abs
+        X = np.dot(self.Mx, c) + self.Mx_abs
+        U = np.dot(self.Mu, c) + self.Mu_abs
 
         # SPARSE
-        #X = Mx.dot(c)+Mx_abs
-        #U = Mu.dot(c)+Mu_abs
+        #X = Mx.dot(c) + Mx_abs
+        #U = Mu.dot(c) + Mu_abs
 
-        X = np.array(X).reshape((-1,x_len))
-        U = np.array(U).reshape((-1,u_len))
+        X = np.array(X).reshape((-1, x_len))
+        U = np.array(U).reshape((-1, u_len))
 
         # evaluate system equations and select those related
         # to lower ends of integrator chains (via eqind)
         # other equations need not to be solved
-        try:
-            F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
-        except:
-            IPS()
+        F = np.array([ff(x, u) for x, u in zip(X, U)], dtype=float).squeeze()[:,eqind]
 
         # DENSE
         dX = np.dot(self.Mdx,c) + self.Mdx_abs
@@ -537,9 +561,10 @@ class Trajectory():
 
     def DG(self, c):
         '''
-        This is the callable function that returns the jacobian matrix of the collocation system.
+        This is the callable function that returns the jacobian matrix 
+        of the collocation system.
         '''
-        
+
         Df = self.Df
         eqind = self.eqind
 
@@ -572,7 +597,7 @@ class Trajectory():
         for i,df in enumerate(DF_blocks):
             J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
             res = np.dot(df,J_XU)
-            assert res.shape == (x_len,len(self.c_list))
+            #assert res.shape == (x_len,len(self.c_list))
             DF.append(res)
 
         DF = np.array(DF)[:,eqind,:]
@@ -595,26 +620,26 @@ class Trajectory():
 
     def setCoeff(self):
         '''
-        This method is used to create the actual splines by using the numerical solutions
-        to set up the coefficients of the polynomial spline parts of every created spline.
+        This method is used to create the actual splines by using the numerical 
+        solutions to set up the coefficients of the polynomial spline parts of 
+        every created spline.
         '''
-        
+
         log.info("Set spline coefficients")
 
         sol = self.sol
         subs = dict()
-        chains = self.chains
 
-        for cc in sorted(self.indep_coeffs, key=lambda c: c.name):
-            i = len(self.indep_coeffs[cc])
-            subs[cc] = sol[:i]
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
+            i = len(v)
+            subs[k] = sol[:i]
             sol = sol[i:]
-        
+
         for var in self.x_sym + self.u_sym:
             for ic in self.chains:
                 if var in ic:
                     subs[var] = subs[ic.upper]
-        
+
         # set numerical coefficients for each spline
         for cc in self.splines:
             self.splines[cc].set_coeffs(subs[cc])
@@ -623,37 +648,35 @@ class Trajectory():
         self.x_fnc = dict()
         self.u_fnc = dict()
         self.dx_fnc = dict()
-        
-        splines = self.splines
-        
+
         # again we handle variables that are part of an integrator chain first
-        for ic in chains:
+        for ic in self.chains:
             upper = ic.upper
-            
+
             for i,elem in enumerate(ic.elements):
                 if elem in self.u_sym:
                     if (i == 0):
-                        self.u_fnc[elem] = splines[upper].f
+                        self.u_fnc[elem] = self.splines[upper].f
                     if (i == 1):
-                        self.u_fnc[elem] = splines[upper].df
+                        self.u_fnc[elem] = self.splines[upper].df
                     if (i == 2):
-                        self.u_fnc[elem] = splines[upper].ddf
+                        self.u_fnc[elem] = self.splines[upper].ddf
                 elif elem in self.x_sym:
                     if (i == 0):
-                        self.x_fnc[elem] = splines[upper].f
+                        self.x_fnc[elem] = self.splines[upper].f
                     if (i == 1):
-                        self.x_fnc[elem] = splines[upper].df
+                        self.x_fnc[elem] = self.splines[upper].df
                     if (i == 2):
-                        self.x_fnc[elem] = splines[upper].ddf
+                        self.x_fnc[elem] = self.splines[upper].ddf
 
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:
             if (not self.x_fnc.has_key(xx)):
-                self.x_fnc[xx] = splines[xx].f
+                self.x_fnc[xx] = self.splines[xx].f
 
         for uu in self.u_sym:
             if (not self.u_fnc.has_key(uu)):
-                self.u_fnc[uu] = splines[uu].f
+                self.u_fnc[uu] = self.splines[uu].f
 
         for xx in self.x_sym:
             self.dx_fnc[xx] = fdiff(self.x_fnc[xx])
@@ -662,14 +685,14 @@ class Trajectory():
         coeffs_sol = dict()
 
         # used for indexing
+        i = 0
         j = 0
-        k = 0
 
         # take solution and write back the coefficients for each spline
-        for cc in sorted(self.indep_coeffs, key=lambda c: c.name):
-            k += len(self.indep_coeffs[cc])
-            coeffs_sol[cc] = self.sol[j:k]
-            j = k
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
+            j += len(v)
+            coeffs_sol[k] = self.sol[i:j]
+            i = j
 
         self.coeffs_sol = coeffs_sol
 
@@ -860,12 +883,12 @@ def analyseSystem(ff):
     '''
     This function analyses the system given by the callable vectorfield ``ff(x, u)``
     and returns values for some of the method parameters.
-    
-    
+
+
     :param callable ff: Vectorfield of a system of ode`s
-    
+
     :returns: res -- Dictionary with the results of the system analysis
-            
+
             ======  =================================
             key     meaning
             ======  =================================
@@ -873,47 +896,47 @@ def analyseSystem(ff):
             m       Dimension of the input variables
             chains  Integrator chains
             ======  =================================
-    
+
     '''
-    
+
     res = dict()
-    
+
     # first, determine system dimensions
     n, m = getDimensions(ff)
-    
+
     res['n'] = n
     res['m'] = m
-    
+
     # next, we look for integrator chains
     chains = getIntegChains(ff, (n,m))
-    
+
     res['chains'] = chains
-    
+
     # get minimal neccessary number of spline parts for the manipulated variables
     # --> (3.35)      ?????
     #nu = -1
     #...
     #self.su = self.n - 3 + 2*(nu + 1)  ?????
-    
-    
+
+
     return res
 
 
 def getDimensions(ff):
     '''
     This function determines the dimensions of the system and input variables.
-    
-    
+
+
     :param callable ff: Vectorfield of a system of ode`s
-    
+
     :returns: int n -- Dimension of the system variables
     :returns: int m -- Dimension of the input variables
     '''
-    
+
     i = -1
     j = -1
     found_nm = False
-    
+
     while not found_nm:
         i += 1
         j += 1
@@ -931,32 +954,32 @@ def getDimensions(ff):
                     break
                 except:
                     pass
-            
+
             if found_nm:
                 break
-    
+
     return n, m
 
 
 def getIntegChains(ff, dim):
-    '''This function calls the vectorfield and looks for equations like 
+    '''This function calls the vectorfield and looks for equations like
     :math:`\\dot{x}_i = x_{i+1}` to find integrator chains
-    
-    
+
+
     :param callable ff: Vectorfield of a system of ode`s
     :param tuple dim: (n,m) Dimensions of the system (n) and input (m) variables
-    
+
     :returns: list chains -- List with objects of found integrator chains
     '''
 
     log.info( "Looking for integrator chains")
-    
+
     n, m = dim
-    
+
     # create symbolic variables to find integrator chains
     x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,n+1)])
     u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,m+1)])
-    
+
     fi = ff(x_sym, u_sym)
 
     chaindict = {}
@@ -965,42 +988,42 @@ def getIntegChains(ff, dim):
             if ((fi[i].subs(1.0, 1)) == xx):
                 # substitution because of sympy difference betw. 1.0 and 1
                 chaindict[xx] = x_sym[i]
-        
+
         for uu in u_sym:
             if ((fi[i].subs(1.0, 1)) == uu):
                 chaindict[uu] = x_sym[i]
 
     # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
     # where x_4 = d x_3 / dt and so on
-    
+
     # find upper ends of integrator chains
     uppers = []
     for vv in chaindict.values():
         if (not chaindict.has_key(vv)):
             uppers.append(vv)
-    
+
     # create ordered lists that temporarily represent the integrator chains
     tmpchains = []
-    
+
     # therefor we flip the dictionary to work our way through its keys (former values)
     dictchain = {v:k for k,v in chaindict.items()}
-    
+
     for var in uppers:
         tmpchain = []
         vv = var
         tmpchain.append(vv)
-        
+
         while dictchain.has_key(vv):
             vv = dictchain[vv]
             tmpchain.append(vv)
-        
+
         tmpchains.append(tmpchain)
-    
+
     # create an integrator chain object for every temporary chain
     chains = []
     for lst in tmpchains:
         chains.append(IntegChain(lst))
-    
+
     return chains
 
 
@@ -1037,17 +1060,15 @@ if __name__ == '__main__':
             0.0,
             0.0,
             0.0]
-    
+
     if(calc):
         a = 0.0
         b = 2.0
         su = 5
         g = [0,0]
         eps = 0.05
-        use_chains = True
 
-        T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, su=su, g=g, eps=eps,
-                       use_chains=use_chains)
+        T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, su=su, g=g, eps=eps)
 
         with log.Timer("Iteration"):
             T.startIteration()

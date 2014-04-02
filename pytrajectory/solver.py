@@ -38,9 +38,7 @@ class Solver:
         '''
         if (self.algo == 'newton'):
             log.info( "Run Newton solver")
-            log.warn(" ... not implemented")
-            #self.newton()
-            return self.x0
+            self.newton()
         elif (self.algo == 'gauss'):
             log.info( "Run Gauss solver")
             log.warn(" ... not implemented")
@@ -49,7 +47,7 @@ class Solver:
         elif (self.algo == 'leven'):
             log.info( "Run Levenberg-Marquardt method")
             self.leven()
-
+        
         if (self.sol == None):
             log.warn("Wrong solver")
             return self.x0
@@ -116,4 +114,25 @@ class Solver:
             res = normFx
             log.info("nIt= %d    res= %f"%(i,res))
 
+        self.sol = x
+    
+    
+    def newton(self):
+        res = 1
+        i = 0
+        x = self.x0
+        Fx = self.F(x)
+        
+        while(res>self.tol and self.maxx>i):
+            i += 1
+            DFx = self.DF(x)
+
+            h=np.array(np.linalg.solve(DFx,Fx.T).flatten())[0] 
+
+            x -= h
+
+            Fx = np.matrix(self.F(x))
+            res = np.linalg.norm(Fx)
+            print i,': ',res
+        
         self.sol = x

@@ -3,8 +3,8 @@
 import sys
 sys.path.append('..')
 
-from lib.trajectory import Trajectory
-import lib.log as log
+from pytrajectory.trajectory import Trajectory
+import pytrajectory.log as log
 #from lib.log import IPS
 from IPython import embed as IPS
 
@@ -20,39 +20,34 @@ os.environ['SYMPY_USE_CACHE']='no'
 calc=True
 
 def f(x,u):
-	x1,x2,x3,x4,x5,x6 = x
-	u=u[0]
-	l1=0.7
-	l2=0.5
-	g=9.81
-	ff = np.array([	x2,
-			u,
-			x4,
+	x1, x2, x3, x4, x5, x6 = x
+	u, = u
+	l1 = 0.7
+	l2 = 0.5
+	g = 9.81
+	ff = np.array([   x2,
+                        u,
+                        x4,
 			(1/l1)*(g*sin(x3)+u*cos(x3)),
-			x6,
+            		  x6,
 			(1/l2)*(g*sin(x5)+u*cos(x5))])
 	return ff
 
-xa=[0.0 ,0.0 ,pi ,0.0 ,pi ,0.0]
-xb=[0.0 ,0.0 ,0.0 ,0.0 ,0.0 ,0.0]
+xa = [0.0 ,0.0 ,pi ,0.0 ,pi ,0.0]
+xb = [0.0 ,0.0 ,0.0 ,0.0 ,0.0 ,0.0]
 
 
 if(calc):
-
-    T=Trajectory(f,xa,xb,n=6,m=1)
+    a, b = (0.0, 2.0)
+    sx = 4
+    su = 10
+    kx = 2
+    use_chains = True
+    #g = [0.0,0.0]
+    eps = 8e-2
     
-    T.a = 0.0
-    T.b = 2.0
-    T.sx = 4
-    T.su = 10
-    T.delta = 2
-    T.kx = 2
-    T.maxIt  = 6
-    T.find_x_chains = True
-    T.algo = 'leven'
-    #T.gamma = [0.0,0.0]
-    T.eps = 8e-2
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx, eps=eps,
+                   use_chains=use_chains)
 
-    with log.Timer("iteration()"):
-        T.iteration()
-    IPS()
+    with log.Timer("Iteration()"):
+        T.startIteration()
