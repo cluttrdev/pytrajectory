@@ -24,38 +24,39 @@ class Trajectory():
     Base class of the PyTrajectory project.
     
     
-    :param callable ff: Vectorfield (rhs) of the control system
-    :param float a: Left border
-    :param float b: Right border
-    :param list xa: Boundary values at the left border
-    :param list xb: Boundary values at the right border
-    :param list g: Boundary values of the input variables
-    :param int sx: Initial number of spline parts for the system variables
-    :param int su: Initial number of spline parts for the input variables
-    :param int kx: Factor for raising the number of spline parts for the system variables
-    :param int delta: Constant for calculation of collocation points
-    :param int maxIt: Maximum number of iterations
-    :param float eps: Tolerance for the solution of the initial value problem
-    :param float tol: Tolerance for the solver of the equation system
-    :param str algo: Solver to use
-    :param bool use_chains: Whether or not to use integrator chains
+    Parameters
+    ----------
+        ff :  callable
+            Vectorfield (rhs) of the control system
+        a : float
+            Left border 
+        b : float
+            Right border
+        xa : list
+            Boundary values at the left border
+        xb : list
+            Boundary values at the right border
+        g : list
+            Boundary values of the input variables
+        sx : int
+            Initial number of spline parts for the system variables
+        su : int
+            Initial number of spline parts for the input variables
+        kx : int
+            Factor for raising the number of spline parts for the system variables
+        delta : int
+            Constant for calculation of collocation points
+        maxIt : int
+            Maximum number of iterations
+        eps : float
+            Tolerance for the solution of the initial value problem
+        tol : float
+            Tolerance for the solver of the equation system
+        algo : str
+            Solver to use
+        use_chains : bool
+            Whether or not to use integrator chains
     '''
-    #~ Args:
-        #~ ff  (callable)  : Vectorfield (rhs) of the control system
-        #~ a   (float)     : Left border 
-        #~ b   (float)     : Right border
-        #~ xa  (list)      : Boundary values at the left border
-        #~ xb  (list)      : Boundary values at the right border
-        #~ g   (list)      : Boundary values of the input variables
-        #~ sx  (int)       : Initial number of spline parts for the system variables
-        #~ su  (int)       : Initial number of spline parts for the input variables
-        #~ kx  (int)       : Factor for raising the number of spline parts for the system variables
-        #~ delta (int)     : Constant for calculation of collocation points
-        #~ maxIt (int)     : Maximum number of iterations
-        #~ eps (float)     : Tolerance for the solution of the initial value problem
-        #~ tol (float)     : Tolerance for the solver of the equation system
-        #~ algo  (str)     : Solver to use
-        #~ use_chains (bool) : Whether or not to use integrator chains
     
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=2,
@@ -138,7 +139,7 @@ class Trajectory():
             self.chains = dict()
 
         # determine which equations have to be solved by collocation
-        # --> 
+        # --> lower ends of integrator chains
         eqind = []
         
         if self.chains:
@@ -146,7 +147,7 @@ class Trajectory():
                 if ic.lower.name.startswith('x'):
                     lower = ic.lower
                     eqind.append(self.x_sym.index(lower))
-                    eqind.sort()
+            eqind.sort()
         else:
             eqind = range(self.n)
         
@@ -154,21 +155,9 @@ class Trajectory():
         
         # start first iteration
         self.iterate()
-
-        ######################
+        
+        # check if desired accuracy is already reached
         self.checkAccuracy()
-        #~ # this is the solution of the simulation
-        #~ xt = self.A[1]
-        #~ self.err = np.empty(self.n)
-#~ 
-        #~ # what is the error
-        #~ log.info("Difference:")
-        #~ for i,xx in enumerate(self.x_sym):
-            #~ self.err[i] = self.xb[xx] - xt[-1:][0][i]
-            #~ log.info(str(xx)+" : %f"%self.err[i])
-#~ 
-        #~ log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
-        ######################
 
         # this was the first iteration
         # now we are getting into the loop, see fig [8]
@@ -188,18 +177,8 @@ class Trajectory():
             # start next iteration
             self.iterate()
 
-            # this is the solution of the simulation
+            # check if desired accuracy is reached
             self.checkAccuracy()
-            #~ xt = self.A[1]
-            #~ self.err = np.empty(self.n)
-#~ 
-            #~ # what is the error
-            #~ log.info("Difference:")
-            #~ for i,xx in enumerate(self.x_sym):
-                #~ self.err[i] = abs(self.xb[xx] - xt[-1:][0][i])
-                #~ log.info(str(xx)+" : %f"%self.err[i])
-#~ 
-            #~ log.info("--> reached desired accuracy: "+str(max(abs(self.err)) <= self.eps))
     
     
     def analyseSystem(self):
@@ -207,8 +186,9 @@ class Trajectory():
         Analyses the system given by the callable vectorfield ``ff(x, u)``
         and set values for some of the method parameters.
         '''
-        
+        ###
         # first, determine system dimensions
+        ###
         i = -1
         found_nm = False
         
@@ -233,8 +213,10 @@ class Trajectory():
         self.n = n
         self.m = m
         
+        ###
         # next, we look for integrator chains
-        log.info( "Looking for integrator chains")
+        ###
+        log.info("Looking for integrator chains")
         
         # create symbolic variables to find integrator chains
         x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,n+1)])
@@ -282,12 +264,17 @@ class Trajectory():
         # create an integrator chain object for every temporary chain
         chains = []
         for lst in tmpchains:
-            chains.append(IntegChain(lst))
+            ic = IntegChain(lst)
+            chains.append(ic)
+            log.info("found integrator chain: " + str(ic))
+        
+        
         
         self.chains = chains
         
         # get minimal neccessary number of spline parts for the manipulated variables
         # --> (3.35)      ?????
+        #IPS()
         #nu = -1
         #...
         #self.su = self.n - 3 + 2*(nu + 1)  ?????
@@ -575,8 +562,6 @@ class Trajectory():
 
         self.Df = sp.lambdify(self.x_sym+self.u_sym, Df, modules='numpy')
 
-        ################################################################
-
 
     def solve(self):
         '''
@@ -588,8 +573,6 @@ class Trajectory():
         log.info( 40*"#")
 
         # create our solver
-        dim = len(self.cpts)*len(self.eqind)
-        #IPS()
         solver = Solver(self.G, self.DG, self.guess, tol= self.tol,
                         maxx= 20, algo=self.algo)
 
@@ -800,7 +783,6 @@ class Trajectory():
         S = Simulation(self.ff, T, start, self.u)
         
         self.sim = S.simulate()
-        #self.A = self.sim
 
         # calculate the error functions H_i(t)
         H = dict()
@@ -848,21 +830,21 @@ class Trajectory():
     
     def x(self, t):
         '''
-        This function returns the system state at a given (time-) point.
+        This function returns the system state at a given (time-) point :attr:`t`.
         '''
         return np.array([self.x_fnc[xx](t) for xx in self.x_sym])
     
 
     def u(self, t):
         '''
-        This function returns the inputs state at a given (time-) point.
+        This function returns the inputs state at a given (time-) point :attr:`t`.
         '''
         return np.array([self.u_fnc[uu](t) for uu in self.u_sym])
     
     
     def dx(self, t):
         '''
-        This function returns the left hand sites state at a given (time-) point.
+        This function returns the left hand sites state at a given (time-) point :attr:`t`.
         '''
         return np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
 
@@ -1031,7 +1013,7 @@ if __name__ == '__main__':
         maxIt  = 5
         g = [0,0]
         eps = 0.05
-        use_chains = False
+        use_chains = True
 
         T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                         maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)

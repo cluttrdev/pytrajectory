@@ -7,10 +7,10 @@ Welcome to PyTrajectory's documentation!
 ========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   introduction
-
+   guide/index
+   
    pytrajectory
 
 

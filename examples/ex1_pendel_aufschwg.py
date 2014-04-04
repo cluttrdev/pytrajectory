@@ -1,11 +1,9 @@
-# coding: utf8
-
 import sys
 sys.path.append('..')
 
 from pytrajectory.trajectory import Trajectory
 import pytrajectory.log as log
-#from lib.log import IPS
+#from pytrajectory.log import IPS
 from IPython import embed as IPS
 
 import numpy as np
@@ -19,13 +17,13 @@ calc = True
 animate = False
 
 def f(x,u):
-    x1,x2,x3,x4 = x
+    x1, x2, x3, x4 = x
     u1, = u
     l = 0.5
     g = 9.81
     ff = np.array([     x2,
-                         u1,
-                         x4,
+                        u1,
+                        x4,
                     (1/l)*(g*sin(x3)+u1*cos(x3))])
     return ff
 

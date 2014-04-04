@@ -27,6 +27,12 @@ class IntegChain():
     def __contains__(self, item):
         return (item in self.elements)
     
+    def __str__(self):
+        s = ''
+        for elem in self.elements[::-1]:
+            s += ' -> ' + elem.name
+        return s[4:]
+    
     def successor(self, elem):
         '''
         This method returns the successor of the given element of the
@@ -61,33 +67,26 @@ class IntegChain():
 
 
 
-class struct():
-    def __init__(self):
-        return
-
-
 class Modell:
     def __init__(self):
         self.fig=plt.figure()
         self.ax=plt.axes()
     
         mng = plt.get_current_fig_manager()
-    
-        #mng.window.wm_geometry("1000x700+50+50")  
+     
         mng.window.setGeometry(0, 0, 1000, 700)
-        
-        self.ax.set_xlim(-1.2,0.3);
-        self.ax.set_ylim(-0.6,0.6);
+    
+        self.ax.set_xlim(-1.2,0.3)
+        self.ax.set_ylim(-0.6,0.6)
         self.ax.set_yticks([])
         self.ax.set_xticks([])
-        self.ax.set_position([0.01,0.01,0.98,0.98]);
-        self.ax.set_frame_on(True);
+        self.ax.set_position([0.01,0.01,0.98,0.98])
+        self.ax.set_frame_on(True)
         self.ax.set_aspect('equal')
-        self.ax.set_axis_bgcolor('w');
+        self.ax.set_axis_bgcolor('w')
     
         self.image=0
-        self.npic = 0
-    
+
     def draw(self,x,phi,frame,image=0):
         L=0.5
         
@@ -101,15 +100,15 @@ class Modell:
         x_pendel=-L*sin(phi)+x_car
         y_pendel= L*cos(phi)
         
-        #Init
         if (image==0):
+            # init
             image=struct()
-        
-        # #update
-        # else:
-        #   image.sphere.remove()
-        #   image.stab.remove()
-        #   image.car.remove()
+        else:
+            # update
+            image.sphere.remove()
+            image.stab.remove()
+            image.car.remove()
+            image.gelenk.remove()
         
         #Ball
         image.sphere=mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
@@ -130,8 +129,8 @@ class Modell:
         self.image = image
         
         plt.draw()
-        self.npic += 1
-        plt.savefig('pics/pic%d.png'%self.npic)
+
+
 
 
 def plot(self):

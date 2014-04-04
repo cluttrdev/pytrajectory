@@ -61,12 +61,22 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class provides solver for the collocation equation system.</span>
 <span class="sd">    </span>
-<span class="sd">    :param callable F: The callable function that represents the equation system</span>
-<span class="sd">    :param callable DF: The function for the jacobian matrix of the eqs</span>
-<span class="sd">    :param ndarray x0: The start value for the sover</span>
-<span class="sd">    :param real tol: The (absolute) tolerance of the solver</span>
-<span class="sd">    :param int maxx: The maximum number of iterations of the solver</span>
-<span class="sd">    :param str algo: The solver to use</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    F : callable</span>
+<span class="sd">        The callable function that represents the equation system</span>
+<span class="sd">    DF : callable</span>
+<span class="sd">        The function for the jacobian matrix of the eqs</span>
+<span class="sd">    x0: numpy.ndarray</span>
+<span class="sd">        The start value for the sover</span>
+<span class="sd">    tol : float</span>
+<span class="sd">        The (absolute) tolerance of the solver</span>
+<span class="sd">    maxx : int</span>
+<span class="sd">        The maximum number of iterations of the solver</span>
+<span class="sd">    algo : str</span>
+<span class="sd">        The solver to use</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">DF</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">maxx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s">&#39;leven&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="n">F</span>

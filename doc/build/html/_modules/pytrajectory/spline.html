@@ -61,8 +61,11 @@
 <div class="viewcode-block" id="fdiff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.fdiff">[docs]</a><span class="k">def</span> <span class="nf">fdiff</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;This function is used to get the derivative of of a callable splinefunction.</span>
 <span class="sd">    </span>
-<span class="sd">    :param func: The spline function to derivate.</span>
-<span class="sd">    :type func: instancemethod</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    func : callable - The spline function to derivate.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="c"># Return derivative of temporary function</span>
@@ -268,14 +271,25 @@
 
 </div>
 <div class="viewcode-block" id="CubicSpline.tmp_evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_evalf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This function returns a matrix and vector to evaluate the spline or a derivative at x</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function returns a matrix and vector to evaluate the spline or a derivative at x</span>
 <span class="sd">        by multiplying the matrix with numerical values of the independent variables</span>
 <span class="sd">        and adding the vector.</span>
 <span class="sd">        </span>
-<span class="sd">        :param real x: The point to evaluate the spline at</span>
-<span class="sd">        :param int d: The derivation order</span>
-<span class="sd">        :returns: Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
-<span class="sd">        :rtype: tuple</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        x : real</span>
+<span class="sd">            The point to evaluate the spline at</span>
+<span class="sd">        d : int</span>
+<span class="sd">            The derivation order</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">        tuple</span>
+<span class="sd">            Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="c"># Get the spline part where x is in</span>
@@ -323,7 +337,11 @@
 <div class="viewcode-block" id="CubicSpline.set_coeffs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.set_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_sol</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;This function is used to set up numerical values for the spline coefficients.</span>
 <span class="sd">        </span>
-<span class="sd">        :param dict c_sol: Dictionary with coefficient and numerical value</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        c_sol : dict</span>
+<span class="sd">            Dictionary with coefficient and numerical value</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
@@ -332,6 +350,19 @@
 
 </div>
 <div class="viewcode-block" id="CubicSpline.evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.evalf">[docs]</a>    <span class="k">def</span> <span class="nf">evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        bla bla bla</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        x : float</span>
+<span class="sd">            The point to evaluate the spline at</span>
+<span class="sd">        d : int</span>
+<span class="sd">            The derivation order</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
         <span class="c"># get polynomial part where x is in</span>
         <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>

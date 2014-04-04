@@ -12,12 +12,22 @@ class Solver:
     '''
     This class provides solver for the collocation equation system.
     
-    :param callable F: The callable function that represents the equation system
-    :param callable DF: The function for the jacobian matrix of the eqs
-    :param ndarray x0: The start value for the sover
-    :param real tol: The (absolute) tolerance of the solver
-    :param int maxx: The maximum number of iterations of the solver
-    :param str algo: The solver to use
+    
+    Parameters
+    ----------
+    
+    F : callable
+        The callable function that represents the equation system
+    DF : callable
+        The function for the jacobian matrix of the eqs
+    x0: numpy.ndarray
+        The start value for the sover
+    tol : float
+        The (absolute) tolerance of the solver
+    maxx : int
+        The maximum number of iterations of the solver
+    algo : str
+        The solver to use
     '''
     def __init__(self, F, DF, x0, tol=1e-2, maxx=10, algo='leven'):
         self.F = F

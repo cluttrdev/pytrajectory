@@ -11,10 +11,17 @@ class Simulation:
     This class does something ...
     
     
-    :param callable ff: Vectorfield of the control system
-    :param real T: Simulation time
-    :param callable u: Function of the input variables
-    :param real dt: Time step
+    Parameters
+    ----------
+    
+    ff : callable
+        Vectorfield of the control system
+    T : float
+        Simulation time
+    u : callable
+        Function of the input variables
+    dt : float
+        Time step
     '''
     
     def __init__(self,ff,T,start,u,dt=0.01):

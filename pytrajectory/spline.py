@@ -12,8 +12,11 @@ from IPython import embed as IPS
 def fdiff(func):
     '''This function is used to get the derivative of of a callable splinefunction.
     
-    :param func: The spline function to derivate.
-    :type func: instancemethod
+    
+    Parameters
+    ----------
+    
+    func : callable - The spline function to derivate.
     '''
     
     # Return derivative of temporary function
@@ -219,14 +222,25 @@ class CubicSpline():
 
 
     def tmp_evalf(self, x, d):
-        '''This function returns a matrix and vector to evaluate the spline or a derivative at x
+        '''
+        This function returns a matrix and vector to evaluate the spline or a derivative at x
         by multiplying the matrix with numerical values of the independent variables
         and adding the vector.
         
-        :param real x: The point to evaluate the spline at
-        :param int d: The derivation order
-        :returns: Matrix and vector that represent how the splines coefficients depend on the free parameters.
-        :rtype: tuple
+        Parameters
+        ----------
+        
+        x : real
+            The point to evaluate the spline at
+        d : int
+            The derivation order
+        
+        
+        Returns
+        -------
+        
+        tuple
+            Matrix and vector that represent how the splines coefficients depend on the free parameters.
         '''
         
         # Get the spline part where x is in
@@ -274,7 +288,11 @@ class CubicSpline():
     def set_coeffs(self, c_sol):
         '''This function is used to set up numerical values for the spline coefficients.
         
-        :param dict c_sol: Dictionary with coefficient and numerical value
+        Parameters
+        ----------
+        
+        c_sol : dict
+            Dictionary with coefficient and numerical value
         '''
         
         for i in xrange(self.n):
@@ -283,6 +301,19 @@ class CubicSpline():
 
 
     def evalf(self, x, d):
+        '''
+        bla bla bla
+        
+        
+        Parameters
+        ----------
+        
+        x : float
+            The point to evaluate the spline at
+        d : int
+            The derivation order
+        '''
+        
         # get polynomial part where x is in
         i = int(np.floor(x*self.n/(self.b)))
         if (i == self.n): i-= 1

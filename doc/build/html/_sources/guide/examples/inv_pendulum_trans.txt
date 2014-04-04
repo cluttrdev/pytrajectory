@@ -1,0 +1,28 @@
+Translation of the inverse pendulum
+-----------------------------------
+
+An example often used in literature is the inverse pendulum. Here a 
+force :math:`F` acts on a cart with
+mass :math:`M`. In addition the cart is connected by a massless rod with 
+a pendulum mass :math:`m_p`.
+The mass of the pendulum is concentrated in :math:`P_2` and that of the 
+cart in :math:`P_1`. The state vector of the system can be specified 
+using the carts position :math:`x_w(t)` and the pendulum deflection 
+:math:`\varphi(t)` and their derivatives. 
+
+.. image:: /../../pic/inv_pendulum.png
+
+With the *Lagrangian Formalism* the model has the following state space 
+representation where :math:`u_1 = F` and 
+:math:`x = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]`
+
+.. math::
+   :nowrap:
+   
+   \begin{eqnarray*}
+      \dot{x}_1 & = & x_2 \\
+      \dot{x}_2 & = & \frac{m_p \sin(x_3)(-l x_4^2 + g \cos x_3)}{M_w l + m_p \sin^2(x_3)} + \frac{\cos(x_3)}{M_w l + m_p l \sin^2(x_3)} u_1 \\
+      \dot{x}_3 & = & x_4 \\
+      \dot{x}_4 & = & \frac{\sin(x_3)(-m_p l x_4^2 \cos(x_3) + g(M_w + m_p))}{M_w l + m_p \sin^2(x_3)} + \frac{\cos(x_3)}{M_w l + m_p l \sin^2(x_3)} u_1
+   \end{eqnarray*}
+
