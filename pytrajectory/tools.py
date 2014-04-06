@@ -1,10 +1,12 @@
 import numpy as np
+import sympy as sp
+import scipy as scp
+
 import pylab as plt
 from sympy.core.symbol import Symbol
 from IPython import embed as IPS
 
 from numpy import sin,cos
-import pylab as plt
 import matplotlib as mpl
 
 
@@ -65,6 +67,54 @@ class IntegChain():
         
         return pred
 
+
+class Grid():
+    def __init__(self):
+        pass
+
+
+class BetweenDict(dict):
+    ##?? Quelle? Lizenz?
+    def __init__(self, d = {}):
+        for k,v in d.items():
+            self[k] = v
+
+    def __getitem__(self, key):
+
+        if (key<=0.0):
+            key=10e-10 #sehr unschoen
+
+        for k, v in self.items():
+            if k[0] < key <= k[1]:
+                return v
+        raise KeyError("Key '%s' is not between any values in the BetweenDict" % key)
+
+    def __setitem__(self, key, value):
+        try:
+            if len(key) == 2:
+                if key[0] < key[1]:
+                    dict.__setitem__(self, (key[0], key[1]), value)
+                else:
+                    raise RuntimeError('First element of a BetweenDict key '
+                                       'must be strictly less than the '
+                                       'second element')
+            else:
+                raise ValueError('Key of a BetweenDict must be an iterable '
+                                 'with length two')
+        except TypeError:
+            raise TypeError('Key of a BetweenDict must be an iterable '
+                             'with length two')
+
+    def __contains__(self, key):
+        try:
+            return bool(self[key]) or True
+        except KeyError:
+            return False
+
+
+class struct():
+    def __init__(self):
+        return
 
 
 class Modell:
@@ -130,6 +180,62 @@ class Modell:
         
         plt.draw()
 
+
+def blockdiag(M, bshape=None, sparse=False):
+    '''
+    Takes block of shape :attr:`shape`  from matrix :attr:`M` and creates 
+    block diagonal matrix out of them.
+    
+    Parameters
+    ----------
+    
+    M : numpy.ndarray
+        Matrix to take blocks from
+    bshape : tuple
+        Shape of one block
+    sparse : bool
+        Whether or not to return created matrix as sparse matrix
+    
+    Examples
+    --------
+    
+    >>> A = np.ones((4, 2))
+    >>> print A
+    [[ 1.  1.]
+     [ 1.  1.]
+     [ 1.  1.]
+     [ 1.  1.]]
+    >>> B = blockdiag(A, (2, 2))
+    >>> print B
+    [[ 1.  1.  0.  0.]
+     [ 1.  1.  0.  0.]
+     [ 0.  0.  1.  1.]
+     [ 0.  0.  1.  1.]]
+    '''
+    
+    if type(M) == 'list':
+        pass
+    else:
+        nrow, ncol = bshape
+        Mrow, Mcol = M.shape
+        
+        if not Mcol == ncol:
+            print 'ERROR: ncol /= #col of M'
+            return M
+        if not Mrow % nrow == 0:
+            print 'ERROR: nrow has to be teiler of #row of M'
+            return M
+        
+        n = Mrow / nrow
+        Mb = np.zeros((Mrow, n*ncol))
+        
+        for i in xrange(n):
+            Mb[i*nrow : (i+1)*nrow, i*ncol : (i+1)*ncol] = M[i*nrow : (i+1)*nrow, :]
+    
+    if sparse:
+        Mb = scp.sparse.csr_matrix(Mb)
+    
+    return Mb
 
 
 

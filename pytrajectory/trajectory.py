@@ -12,6 +12,11 @@ from solver import Solver
 from simulation import Simulation
 from tools import IntegChain
 
+#####
+#NEW
+from tools import blockdiag as bdiag
+#####
+
 import log
 #from log import IPS
 from time import time
@@ -480,9 +485,21 @@ class Trajectory():
         delta = self.delta
 
         # generate collocation points ---> [3.3]
-        cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
+        if 0:
+            cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
+        else:
+            ########
+            nc = int(self.sx*delta - 1)
+            cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
+            cheb_cpts.sort()
+            a = self.a
+            b = self.b
+            chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
+            cpts = np.hstack((a, chpts, b))
+            ########
+        
         self.cpts = cpts
-
+        
         lx = len(cpts)*len(x_sym)
         lu = len(cpts)*len(u_sym)
 
@@ -558,10 +575,22 @@ class Trajectory():
         # for creation of the jacobian matrix
 
         f = self.ff_sym(x_sym,u_sym)
-        Df = sp.Matrix(f).jacobian(self.x_sym+self.u_sym)
-
-        self.Df = sp.lambdify(self.x_sym+self.u_sym, Df, modules='numpy')
-
+        Df_mat = sp.Matrix(f).jacobian(self.x_sym+self.u_sym)
+        
+        self.Df = sp.lambdify(self.x_sym+self.u_sym, Df_mat, modules='numpy')
+        
+        #####
+        J_XU = []
+        x_len = len(self.x_sym)
+        u_len = len(self.u_sym)
+        
+        for i in xrange(len(cpts)):
+            J_XU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
+        
+        #self.J_XU = np.array(J_XU)
+        self.J_XU = J_XU
+        self.J_XU2 = np.vstack(np.array(J_XU))
+    
 
     def solve(self):
         '''
@@ -605,11 +634,8 @@ class Trajectory():
         # evaluate system equations and select those related
         # to lower ends of integrator chains (via eqind)
         # other equations need not to be solved
-        try:
-            F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
-        except:
-            IPS()
-
+        F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
+        
         # DENSE
         dX = np.dot(self.Mdx,c) + self.Mdx_abs
         dX = np.reshape(dX,(-1,x_len))[:,eqind]
@@ -639,35 +665,55 @@ class Trajectory():
         X = np.array(X).reshape((-1,x_len)) # one column for every state component
         U = self.Mu.dot(c) + self.Mu_abs
         U = np.array(U).reshape((-1,u_len)) # one column for every input component
-
+        
+        ##########
+        # The following two loops are time consuming
+        #
+        
         # construct jacobian of rhs w.r.t. indep coeffs
         DF_blocks = []
         for x,u in zip(X,U):
             # get one row of U and X respectively
             tmp_xu = np.hstack((x,u))
-
+        
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
-
+        
         #tmp= np.array(tmp)
         #assert tmp.shape== (len(self.cpts), x_len, len(self.c_list))
 
         # SPARSE
         #Mu = Mu.toarray()
         #Mx = Mx.toarray()
-
+        
         DF = []
-        for i,df in enumerate(DF_blocks):
-            J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
-            res = np.dot(df,J_XU)
+        #for i,df in enumerate(DF_blocks):
+            # np.vstack is done in every call --> do it once in buildEQS...???
+            #J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
+            #res = np.dot(df,J_XU)
+        for i in xrange(len(DF_blocks)):
+            res = np.dot(DF_blocks[i], self.J_XU[i])
             assert res.shape == (x_len,len(self.c_list))
             DF.append(res)
-
+        #IPS()
         DF = np.array(DF)[:,eqind,:]
         # 1st index : collocation point
         # 2nd index : equations that have to be solved --> end of an integrator chain
         # 3rd index : component of c
-
+        
+        #
+        ##########
+        
+        #####
+        # NEW - experimental
+        #block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
+        #J_XU = self.J_XU2
+        #
+        #DF2 = block_DF.dot(J_XU).reshape((-1,x_len,len(c)))
+        #DF = DF2[:,eqind,:]
+        #####
+        
+        
         # now compute jacobian of x_dot w.r.t. to indep coeffs
         # DENSE
         DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]

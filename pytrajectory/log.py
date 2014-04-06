@@ -39,17 +39,6 @@ class Timer():
             logtime("---> [%s elapsed %f s]"%(self.label, self.delta))
 
 
-class CumTimer():
-    def __init__(self, ctimer):
-        self.ctimer = ctimer
-
-    def __enter__(self):
-        self.start = time.time()
-
-    def __exit__(self):
-        self.ctimer += time.time() - self.start
-
-
 def set_file(fname=sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log", suppress=False):
     sys.stdout = Logger(fname, "w", suppress)
 

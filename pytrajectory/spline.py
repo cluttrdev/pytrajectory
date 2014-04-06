@@ -43,7 +43,30 @@ def fdiff(func):
 
 
 class CubicSpline():
-    '''This class provides an object that represents a cubic spline ...'''
+    '''
+    This class provides an object that represents a cubic spline ...
+    
+    Parameters
+    ----------
+    
+    a : float
+        Left border of spline interval.
+    b : float
+        Right border of spline interval.
+    n : int
+        Number of polynomial parts the spline will be devided into.
+    tag : str
+        The 'name' of the spline object.
+    bc : tuple
+        Boundary values for the spline function itself.
+    bcd : tuple
+        Boundary values for the splines 1st derivative
+    bcdd : tuple
+        Boundary values for the splines 2nd derivative
+    steady : bool
+        Whether or not to call :func:`makesteady()` when instanciated.
+    
+    '''
     
     def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
         # [a,b] ... interval
