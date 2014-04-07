@@ -562,16 +562,6 @@ class Trajectory():
         self.Mu = np.array(Mu)
         self.Mu_abs = np.array(Mu_abs)
 
-        ################################################################
-        # SPARSE
-        #self.Mx = sparse.csr_matrix(self.Mx)
-        #self.Mx_abs = sparse.csr_matrix(self.Mx_abs)
-        #self.Mdx = sparse.csr_matrix(self.Mdx)
-        #self.Mdx_abs = sparse.csr_matrix(self.Mdx_abs)
-        #self.Mu = sparse.csr_matrix(self.Mu)
-        #self.Mu_abs = sparse.csr_matrix(self.Mu_abs)
-
-        ################################################################
         # for creation of the jacobian matrix
 
         f = self.ff_sym(x_sym,u_sym)
@@ -579,7 +569,12 @@ class Trajectory():
         
         self.Df = sp.lambdify(self.x_sym+self.u_sym, Df_mat, modules='numpy')
         
-        #####
+        # following is needed in self.DG but it is possible to only create it once
+        # and not with every call to self.DG
+        self.DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,self.eqind,:]
+        
+        ##########
+        # NEW
         J_XU = []
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
@@ -589,7 +584,19 @@ class Trajectory():
         
         #self.J_XU = np.array(J_XU)
         self.J_XU = J_XU
-        self.J_XU2 = np.vstack(np.array(J_XU))
+        J_XU2 = np.vstack(np.array(J_XU))
+        self.J_XU2 = sparse.csr_matrix(J_XU2)
+        ##########
+        
+        ################################################################
+        # SPARSE
+        self.Mx = sparse.csr_matrix(self.Mx)
+        self.Mx_abs = sparse.csr_matrix(self.Mx_abs)
+        self.Mdx = sparse.csr_matrix(self.Mdx)
+        self.Mdx_abs = sparse.csr_matrix(self.Mdx_abs)
+        self.Mu = sparse.csr_matrix(self.Mu)
+        self.Mu_abs = sparse.csr_matrix(self.Mu_abs)
+        ################################################################
     
 
     def solve(self):
@@ -621,12 +628,12 @@ class Trajectory():
         u_len = len(self.u_sym)
 
         # DENSE
-        X = np.dot(self.Mx,c) + self.Mx_abs
-        U = np.dot(self.Mu,c) + self.Mu_abs
+        #X = np.dot(self.Mx,c) + self.Mx_abs
+        #U = np.dot(self.Mu,c) + self.Mu_abs
 
         # SPARSE
-        #X = Mx.dot(c)+Mx_abs
-        #U = Mu.dot(c)+Mu_abs
+        X = self.Mx.dot(c) + self.Mx_abs
+        U = self.Mu.dot(c) + self.Mu_abs
 
         X = np.array(X).reshape((-1,x_len))
         U = np.array(U).reshape((-1,u_len))
@@ -637,12 +644,12 @@ class Trajectory():
         F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
         
         # DENSE
-        dX = np.dot(self.Mdx,c) + self.Mdx_abs
-        dX = np.reshape(dX,(-1,x_len))[:,eqind]
+        #dX = np.dot(self.Mdx,c) + self.Mdx_abs
+        #dX = np.reshape(dX,(-1,x_len))[:,eqind]
 
         # SPARSE
-        #dX = Mdx.dot(c) + Mdx_abs
-        #dX = np.array(dX).reshape((-1,x_len))[:,eqind]
+        dX = self.Mdx.dot(c) + self.Mdx_abs
+        dX = np.array(dX).reshape((-1,x_len))[:,eqind]
 
         G = F-dX
 
@@ -679,48 +686,48 @@ class Trajectory():
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
         
-        #tmp= np.array(tmp)
-        #assert tmp.shape== (len(self.cpts), x_len, len(self.c_list))
-
-        # SPARSE
-        #Mu = Mu.toarray()
-        #Mx = Mx.toarray()
-        
-        DF = []
-        #for i,df in enumerate(DF_blocks):
-            # np.vstack is done in every call --> do it once in buildEQS...???
-            #J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
-            #res = np.dot(df,J_XU)
-        for i in xrange(len(DF_blocks)):
-            res = np.dot(DF_blocks[i], self.J_XU[i])
-            assert res.shape == (x_len,len(self.c_list))
-            DF.append(res)
-        #IPS()
-        DF = np.array(DF)[:,eqind,:]
-        # 1st index : collocation point
-        # 2nd index : equations that have to be solved --> end of an integrator chain
-        # 3rd index : component of c
-        
-        #
-        ##########
-        
-        #####
-        # NEW - experimental
-        #block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
-        #J_XU = self.J_XU2
-        #
-        #DF2 = block_DF.dot(J_XU).reshape((-1,x_len,len(c)))
-        #DF = DF2[:,eqind,:]
-        #####
+        if 1:
+            ###############################################
+            ###############################################
+            # OLD - working
+            ###############################################
+            DF = []
+            #for i,df in enumerate(DF_blocks):
+                # np.vstack is done in every call --> do it once in buildEQS...???
+                #J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
+                #res = np.dot(df,J_XU)
+            for i in xrange(len(DF_blocks)):
+                res = np.dot(DF_blocks[i], self.J_XU[i])
+                assert res.shape == (x_len,len(self.c_list))
+                DF.append(res)
+            #IPS()
+            DF = np.array(DF)[:,eqind,:]
+            # 1st index : collocation point
+            # 2nd index : equations that have to be solved --> end of an integrator chain
+            # 3rd index : component of c
+        else:
+            ###############################################
+            ###############################################
+            # NEW - experimental (sparse possible for Mx,Mu...?)
+            ###############################################
+            block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
+            J_XU = self.J_XU2
+            DF2 = block_DF.dot(J_XU)
+            #DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions
+            DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
+            DF = DF2[:,eqind,:]
+            ###############################################
+            ###############################################
         
         
         # now compute jacobian of x_dot w.r.t. to indep coeffs
         # DENSE
-        DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+        #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
 
         # SPARSE
-        #DdX = Mdx.toarray().reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
-
+        #DdX = self.Mdx.toarray().reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+        DdX = self.DdX
+        
         # stack matrices in vertical direction
         DG = np.vstack(DF) - np.vstack(DdX)
 
