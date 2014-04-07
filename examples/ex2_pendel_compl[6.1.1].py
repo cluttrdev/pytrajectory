@@ -21,12 +21,15 @@ animate = False
 def f(x,u):
     x1, x2, x3, x4 = x
     u1, = u
-    l = 0.5
-    g = 9.81
-    M = 1.0
-    m = 0.1
+    
+    l = 0.5     # length of the pendulum rod
+    g = 9.81    # gravitational acceleration
+    M = 1.0     # mass of the cart
+    m = 0.1     # mass of the pendulum
+    
     s = sin(x3)
     c = cos(x3)
+    
     ff = np.array([                     x2,
                    m*s*(-l*x4**2+g*c)/(M+m*s**2)+1/(M+m*s**2)*u1,
                                         x4,
@@ -35,12 +38,12 @@ def f(x,u):
     return ff
 
 
-xa=[    0.0,
+xa = [  0.0,
         0.0,
         0.0,
         0.0]
 
-xb=[    0.5,
+xb = [  0.5,
         0.0,
         0.0,
         0.0]

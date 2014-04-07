@@ -83,7 +83,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">DF</span> <span class="o">=</span> <span class="n">DF</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reltol</span> <span class="o">=</span> <span class="n">tol</span> <span class="c">#1e-3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reltol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="c">#self.reltol = 1e-2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxx</span> <span class="o">=</span> <span class="n">maxx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">=</span> <span class="n">algo</span>
         
@@ -115,7 +116,8 @@
 <div class="viewcode-block" id="Solver.leven"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.solver.Solver.leven">[docs]</a>    <span class="k">def</span> <span class="nf">leven</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is an implementation of the Levenberg-Marquardt-Method</span>
-<span class="sd">        to approximatively solve a system of non-linear equations by minimizing \n</span>
+<span class="sd">        to approximatively solve a system of non-linear equations by minimizing</span>
+<span class="sd">        </span>
 <span class="sd">        :math:`\| F&#39;(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \\mu^2 \|x_{k+1} - x_k \|`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -134,7 +136,8 @@
         <span class="n">roh</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="c">##?? warum Bed. 1 und 3? (--&gt; retol und abstol)</span>
-        <span class="k">while</span><span class="p">((</span><span class="n">res</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxx</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="o">-</span><span class="n">res_alt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reltol</span><span class="p">)):</span>
+        <span class="n">reltol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reltol</span>
+        <span class="k">while</span><span class="p">((</span><span class="n">res</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxx</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">res</span><span class="o">-</span><span class="n">res_alt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">reltol</span><span class="p">)):</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
             
             <span class="n">Fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -170,6 +173,10 @@
             <span class="n">res_alt</span> <span class="o">=</span> <span class="n">res</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">normFx</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;nIt= </span><span class="si">%d</span><span class="s">    res= </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">res</span><span class="p">))</span>
+            
+            <span class="c"># NEW - experimental</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">&lt;</span><span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">reltol</span> <span class="o">=</span> <span class="mf">1e-2</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span>
     

@@ -53,7 +53,7 @@
 <p>PyTrajectory is a Python library for the determination of the feed forward control
 to achieve a transition between desired states of a nonlinear control system.</p>
 <div class="section" id="module-pytrajectory.trajectory">
-<span id="trajectory-module"></span><h2>Trajectory Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
+<span id="trajectory-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">trajectory</span></tt> Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.trajectory.Trajectory">
 <em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>xa=None</em>, <em>xb=None</em>, <em>g=None</em>, <em>sx=5</em>, <em>su=5</em>, <em>kx=2</em>, <em>delta=2</em>, <em>maxIt=7</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>algo='leven'</em>, <em>use_chains=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
@@ -98,14 +98,13 @@ to achieve a transition between desired states of a nonlinear control system.</p
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.analyseSystem">
 <tt class="descname">analyseSystem</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.analyseSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.analyseSystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Analyses the system given by the callable vectorfield <tt class="docutils literal"><span class="pre">ff(x,</span> <span class="pre">u)</span></tt>
-and set values for some of the method parameters.</p>
+<dd><p>Analyses the systems structure and sets values for some of the method parameters.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.buildEQS">
 <tt class="descname">buildEQS</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.buildEQS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.buildEQS" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to build the equation system which will be solved later.</p>
+<dd><p>Builds the collocation equation system.</p>
 </dd></dl>
 
 <dl class="method">
@@ -142,8 +141,7 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.plot">
 <tt class="descname">plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method provides graphics for each system variable, manipulated
-variable and error function and plots the solution of the simulation.</p>
+<dd><p>Just calls <a class="reference internal" href="#pytrajectory.trajectory.Trajectory.plot" title="pytrajectory.trajectory.Trajectory.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function from <tt class="xref py py-mod docutils literal"><span class="pre">tools</span></tt></p>
 </dd></dl>
 
 <dl class="method">
@@ -188,11 +186,29 @@ every created spline.</p>
 
 </div>
 <div class="section" id="module-pytrajectory.spline">
-<span id="spline-module"></span><h2>Spline Module<a class="headerlink" href="#module-pytrajectory.spline" title="Permalink to this headline">¶</a></h2>
+<span id="spline-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">spline</span></tt> Module<a class="headerlink" href="#module-pytrajectory.spline" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.spline.CubicSpline">
 <em class="property">class </em><tt class="descclassname">pytrajectory.spline.</tt><tt class="descname">CubicSpline</tt><big>(</big><em>a=0.0</em>, <em>b=1.0</em>, <em>n=10</em>, <em>tag=''</em>, <em>bc=None</em>, <em>bcd=None</em>, <em>bcdd=None</em>, <em>steady=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides an object that represents a cubic spline ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>a</strong> (<em>float</em>) &#8211; Left border of spline interval.</li>
+<li><strong>b</strong> (<em>float</em>) &#8211; Right border of spline interval.</li>
+<li><strong>n</strong> (<em>int</em>) &#8211; Number of polynomial parts the spline will be devided into.</li>
+<li><strong>tag</strong> (<em>str</em>) &#8211; The &#8216;name&#8217; of the spline object.</li>
+<li><strong>bc</strong> (<em>tuple</em>) &#8211; Boundary values for the spline function itself.</li>
+<li><strong>bcd</strong> (<em>tuple</em>) &#8211; Boundary values for the splines 1st derivative</li>
+<li><strong>bcdd</strong> (<em>tuple</em>) &#8211; Boundary values for the splines 2nd derivative</li>
+<li><strong>steady</strong> (<em>bool</em>) &#8211; Whether or not to call <a class="reference internal" href="#pytrajectory.spline.CubicSpline.makesteady" title="pytrajectory.spline.CubicSpline.makesteady"><tt class="xref py py-func docutils literal"><span class="pre">makesteady()</span></tt></a> when instanciated.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.dddf">
 <tt class="descname">dddf</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.dddf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.dddf" title="Permalink to this definition">¶</a></dt>
@@ -322,7 +338,7 @@ and adding the vector.</p>
 
 </div>
 <div class="section" id="module-pytrajectory.solver">
-<span id="solver-module"></span><h2>Solver Module<a class="headerlink" href="#module-pytrajectory.solver" title="Permalink to this headline">¶</a></h2>
+<span id="solver-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">solver</span></tt> Module<a class="headerlink" href="#module-pytrajectory.solver" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.solver.Solver">
 <em class="property">class </em><tt class="descclassname">pytrajectory.solver.</tt><tt class="descname">Solver</tt><big>(</big><em>F</em>, <em>DF</em>, <em>x0</em>, <em>tol=0.01</em>, <em>maxx=10</em>, <em>algo='leven'</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver" title="Permalink to this definition">¶</a></dt>
@@ -372,7 +388,7 @@ equation system</p>
 
 </div>
 <div class="section" id="module-pytrajectory.simulation">
-<span id="simulation-module"></span><h2>Simulation Module<a class="headerlink" href="#module-pytrajectory.simulation" title="Permalink to this headline">¶</a></h2>
+<span id="simulation-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">simulation</span></tt> Module<a class="headerlink" href="#module-pytrajectory.simulation" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.simulation.Simulation">
 <em class="property">class </em><tt class="descclassname">pytrajectory.simulation.</tt><tt class="descname">Simulation</tt><big>(</big><em>ff</em>, <em>T</em>, <em>start</em>, <em>u</em>, <em>dt=0.01</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation" title="Permalink to this definition">¶</a></dt>
@@ -409,15 +425,34 @@ equation system</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-pytrajectory.tools">
-<span id="tools-module"></span><h2>Tools Module<a class="headerlink" href="#module-pytrajectory.tools" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytrajectory.utilities">
+<span id="utilities-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt> Module<a class="headerlink" href="#module-pytrajectory.utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="pytrajectory.tools.IntegChain">
-<em class="property">class </em><tt class="descclassname">pytrajectory.tools.</tt><tt class="descname">IntegChain</tt><big>(</big><em>lst</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.BetweenDict">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">BetweenDict</tt><big>(</big><em>d={}</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#BetweenDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.BetweenDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytrajectory.utilities.Grid">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">Grid</tt><a class="reference internal" href="_modules/pytrajectory/utilities.html#Grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="pytrajectory.utilities.IntegChain">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">IntegChain</tt><big>(</big><em>lst</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#IntegChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.IntegChain" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides a representation of a integrator chain consisting of sympy symbols ...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lst</strong> (<em>lst</em>) &#8211; Ordered list of elements for the integrator chain</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
-<dt id="pytrajectory.tools.IntegChain.predecessor">
-<tt class="descname">predecessor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.predecessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.predecessor" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.IntegChain.predecessor">
+<tt class="descname">predecessor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#IntegChain.predecessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.IntegChain.predecessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method returns the predecessor of the given element of the
 integrator chains, i.e. it returns <img class="math" src="_images/math/d7fad783f4568edf0ff146c16e101c8c095de5f6.png" alt="\int [elem]"/></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -431,8 +466,8 @@ integrator chains, i.e. it returns <img class="math" src="_images/math/d7fad783f
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.tools.IntegChain.successor">
-<tt class="descname">successor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#IntegChain.successor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.IntegChain.successor" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.IntegChain.successor">
+<tt class="descname">successor</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#IntegChain.successor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.IntegChain.successor" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method returns the successor of the given element of the
 integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192f825ebdc549ab63679672853eec2513.png" alt="\frac{d}{dt}[elem]"/></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -448,28 +483,78 @@ integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192
 </dd></dl>
 
 <dl class="class">
-<dt id="pytrajectory.tools.Modell">
-<em class="property">class </em><tt class="descclassname">pytrajectory.tools.</tt><tt class="descname">Modell</tt><a class="reference internal" href="_modules/pytrajectory/tools.html#Modell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.Modell" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.Modell">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">Modell</tt><a class="reference internal" href="_modules/pytrajectory/utilities.html#Modell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Modell" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="pytrajectory.tools.Modell.draw">
-<tt class="descname">draw</tt><big>(</big><em>x</em>, <em>phi</em>, <em>frame</em>, <em>image=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#Modell.draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.Modell.draw" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.Modell.draw">
+<tt class="descname">draw</tt><big>(</big><em>x</em>, <em>phi</em>, <em>frame</em>, <em>image=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Modell.draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Modell.draw" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="pytrajectory.tools.plot">
-<tt class="descclassname">pytrajectory.tools.</tt><tt class="descname">plot</tt><big>(</big><em>self</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/tools.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.tools.plot" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.blockdiag">
+<tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">blockdiag</tt><big>(</big><em>M</em>, <em>bshape=None</em>, <em>sparse=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#blockdiag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.blockdiag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes block of shape <tt class="xref py py-attr docutils literal"><span class="pre">bshape</span></tt>  from matrix <tt class="xref py py-attr docutils literal"><span class="pre">M</span></tt> and creates
+block diagonal matrix out of them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>M</strong> (<em>numpy.ndarray</em>) &#8211; Matrix to take blocks from</li>
+<li><strong>bshape</strong> (<em>tuple</em>) &#8211; Shape of one block</li>
+<li><strong>sparse</strong> (<em>bool</em>) &#8211; Whether or not to return created matrix as sparse matrix</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">A</span>
+<span class="go">[[ 1.  1.]</span>
+<span class="go"> [ 1.  1.]</span>
+<span class="go"> [ 1.  1.]</span>
+<span class="go"> [ 1.  1.]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">blockdiag</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
+<span class="go">[[ 1.  1.  0.  0.]</span>
+<span class="go"> [ 1.  1.  0.  0.]</span>
+<span class="go"> [ 0.  0.  1.  1.]</span>
+<span class="go"> [ 0.  0.  1.  1.]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytrajectory.utilities.plot">
+<tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">plot</tt><big>(</big><em>sim</em>, <em>H</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method provides graphics for each system variable, manipulated
+variable and error function and plots the solution of the simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sim</strong> (<em>tuple</em>) &#8211; Contains collocation points, and simulation results of system and input variables</li>
+<li><strong>H</strong> (<em>dict</em>) &#8211; Dictionary of the callable error functions</li>
+<li><strong>fname</strong> (<em>str (optional)</em>) &#8211; If not None, plot will be saved as &lt;fname&gt;.png</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytrajectory.utilities.struct">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">struct</tt><a class="reference internal" href="_modules/pytrajectory/utilities.html#struct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.struct" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-pytrajectory.log">
-<span id="log-module"></span><h2>Log Module<a class="headerlink" href="#module-pytrajectory.log" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pytrajectory.log.CumTimer">
-<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">CumTimer</tt><big>(</big><em>ctimer</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#CumTimer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.CumTimer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<span id="log-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">log</span></tt> Module<a class="headerlink" href="#module-pytrajectory.log" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytrajectory.log.IPS">
 <tt class="descclassname">pytrajectory.log.</tt><tt class="descname">IPS</tt><big>(</big><em>loc=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#IPS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.IPS" title="Permalink to this definition">¶</a></dt>
@@ -492,32 +577,32 @@ integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192
 
 <dl class="function">
 <dt id="pytrajectory.log.err">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">err</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#err"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.err" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">err</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#err"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.err" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.info">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">info</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.info" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">info</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.info" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.logtime">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">logtime</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#logtime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.logtime" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">logtime</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#logtime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.logtime" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.msg">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">msg</tt><big>(</big><em>label</em>, <em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.msg" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">msg</tt><big>(</big><em>label</em>, <em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.msg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140404-102231.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140407-195631.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.warn">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">warn</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.warn" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">warn</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.warn" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -532,12 +617,12 @@ integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyTrajectory Modules Reference</a><ul>
-<li><a class="reference internal" href="#module-pytrajectory.trajectory">Trajectory Module</a></li>
-<li><a class="reference internal" href="#module-pytrajectory.spline">Spline Module</a></li>
-<li><a class="reference internal" href="#module-pytrajectory.solver">Solver Module</a></li>
-<li><a class="reference internal" href="#module-pytrajectory.simulation">Simulation Module</a></li>
-<li><a class="reference internal" href="#module-pytrajectory.tools">Tools Module</a></li>
-<li><a class="reference internal" href="#module-pytrajectory.log">Log Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.trajectory"><tt class="docutils literal"><span class="pre">trajectory</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.spline"><tt class="docutils literal"><span class="pre">spline</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.solver"><tt class="docutils literal"><span class="pre">solver</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.simulation"><tt class="docutils literal"><span class="pre">simulation</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.utilities"><tt class="docutils literal"><span class="pre">utilities</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pytrajectory.log"><tt class="docutils literal"><span class="pre">log</span></tt> Module</a></li>
 </ul>
 </li>
 </ul>

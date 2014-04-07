@@ -1,0 +1,112 @@
+INFO:	Looking for integrator chains
+INFO:	found integrator chain: x4 -> x3
+INFO:	found integrator chain: u1 -> x2 -> x1
+INFO:	########################################
+INFO:	       ---- First Iteration ----
+INFO:	########################################
+INFO:	# spline parts: 5
+INFO:	########################################
+INFO:	#########  Initialise Splines  #########
+INFO:	########################################
+INFO:	makesteady: u1
+TIME:	---> [makesteady() elapsed 0.001477 s]
+INFO:	makesteady: x3
+TIME:	---> [makesteady() elapsed 0.001141 s]
+INFO:	makesteady: x4
+TIME:	---> [makesteady() elapsed 0.001115 s]
+INFO:	makesteady: x1
+TIME:	---> [makesteady() elapsed 0.001096 s]
+INFO:	makesteady: x2
+TIME:	---> [makesteady() elapsed 0.001110 s]
+TIME:	---> [initSplines() elapsed 0.012257 s]
+TIME:	---> [getGuess() elapsed 0.000111 s]
+INFO:	########################################
+INFO:	####  Building the equation system  ####
+INFO:	########################################
+TIME:	---> [buildEQS() elapsed 0.016523 s]
+INFO:	########################################
+INFO:	#####  Solving the equation system  ####
+INFO:	########################################
+INFO:	Run Levenberg-Marquardt method
+INFO:	nIt= 1    res= 33.935902
+INFO:	nIt= 2    res= 9.457886
+INFO:	nIt= 3    res= 6.666415
+INFO:	nIt= 4    res= 4.668149
+INFO:	nIt= 5    res= 4.408501
+INFO:	nIt= 6    res= 4.377073
+INFO:	nIt= 7    res= 4.375328
+INFO:	nIt= 8    res= 4.375308
+INFO:	nIt= 9    res= 4.375307
+TIME:	---> [solve() elapsed 0.055395 s]
+INFO:	Set spline coefficients
+TIME:	---> [setCoeff() elapsed 0.001088 s]
+INFO:	########################################
+INFO:	##  Solving the initial value problem ##
+INFO:	########################################
+INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0]
+INFO:	----------------------------------------
+TIME:	---> [simulate() elapsed 0.232293 s]
+INFO:	Difference:
+INFO:	x1 : 1.104439
+INFO:	x2 : 0.007083
+INFO:	x3 : -4.115791
+INFO:	x4 : -6.481691
+INFO:	--> reached desired accuracy: False
+INFO:	########################################
+INFO:	       ---- Next Iteration ----
+INFO:	########################################
+INFO:	# spline parts: 25
+INFO:	########################################
+INFO:	#########  Initialise Splines  #########
+INFO:	########################################
+INFO:	makesteady: u1
+TIME:	---> [makesteady() elapsed 0.001027 s]
+INFO:	makesteady: x3
+TIME:	---> [makesteady() elapsed 0.003535 s]
+INFO:	makesteady: x4
+TIME:	---> [makesteady() elapsed 0.003323 s]
+INFO:	makesteady: x1
+TIME:	---> [makesteady() elapsed 0.003623 s]
+INFO:	makesteady: x2
+TIME:	---> [makesteady() elapsed 0.003477 s]
+TIME:	---> [initSplines() elapsed 0.034482 s]
+INFO:	get new guess for spline x1
+INFO:	get new guess for spline x2
+INFO:	get new guess for spline x3
+INFO:	get new guess for spline x4
+TIME:	---> [getGuess() elapsed 0.016934 s]
+INFO:	########################################
+INFO:	####  Building the equation system  ####
+INFO:	########################################
+TIME:	---> [buildEQS() elapsed 0.056841 s]
+INFO:	########################################
+INFO:	#####  Solving the equation system  ####
+INFO:	########################################
+INFO:	Run Levenberg-Marquardt method
+INFO:	nIt= 1    res= 9.756510
+INFO:	nIt= 2    res= 9.120775
+INFO:	nIt= 3    res= 8.371995
+INFO:	nIt= 4    res= 7.279602
+INFO:	nIt= 5    res= 6.079002
+INFO:	nIt= 6    res= 4.445115
+INFO:	nIt= 7    res= 2.355592
+INFO:	nIt= 8    res= 1.252496
+INFO:	nIt= 9    res= 0.251744
+INFO:	nIt= 10    res= 0.156118
+INFO:	nIt= 11    res= 0.153677
+TIME:	---> [solve() elapsed 0.248702 s]
+INFO:	Set spline coefficients
+TIME:	---> [setCoeff() elapsed 0.004068 s]
+INFO:	########################################
+INFO:	##  Solving the initial value problem ##
+INFO:	########################################
+INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0]
+INFO:	----------------------------------------
+TIME:	---> [simulate() elapsed 0.238110 s]
+INFO:	Difference:
+INFO:	x1 : -0.000225
+INFO:	x2 : -0.000479
+INFO:	x3 : -0.007082
+INFO:	x4 : -0.030778
+INFO:	--> reached desired accuracy: True
+TIME:	---> [startIteration elapsed 0.917527 s]

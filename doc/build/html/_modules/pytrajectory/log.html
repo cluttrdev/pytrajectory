@@ -88,17 +88,6 @@
             <span class="n">logtime</span><span class="p">(</span><span class="s">&quot;---&gt; [</span><span class="si">%s</span><span class="s"> elapsed </span><span class="si">%f</span><span class="s"> s]&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="CumTimer"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.CumTimer">[docs]</a><span class="k">class</span> <span class="nc">CumTimer</span><span class="p">():</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctimer</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ctimer</span> <span class="o">=</span> <span class="n">ctimer</span>
-
-    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ctimer</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
-
-</div>
 <div class="viewcode-block" id="set_file"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.set_file">[docs]</a><span class="k">def</span> <span class="nf">set_file</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%y%m</span><span class="si">%d</span><span class="s">-%H%M%S&#39;</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.log&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="p">)</span>
 
@@ -118,21 +107,22 @@
     <span class="n">logtime</span><span class="p">(</span><span class="s">&quot;---&gt; [</span><span class="si">%s</span><span class="s"> elapsed </span><span class="si">%f</span><span class="s"> s]&quot;</span><span class="o">%</span><span class="p">(</span><span class="s">&quot;IPS&quot;</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">shelltime</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="msg"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.msg">[docs]</a><span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
-    <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="msg"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.msg">[docs]</a><span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">lvl</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;INFO:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;INFO:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="logtime"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.logtime">[docs]</a><span class="k">def</span> <span class="nf">logtime</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;TIME:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<div class="viewcode-block" id="logtime"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.logtime">[docs]</a><span class="k">def</span> <span class="nf">logtime</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;TIME:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="warn"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.warn">[docs]</a><span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;WARN:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<div class="viewcode-block" id="warn"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.warn">[docs]</a><span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;WARN:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="err"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.err">[docs]</a><span class="k">def</span> <span class="nf">err</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;ERROR:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<div class="viewcode-block" id="err"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.err">[docs]</a><span class="k">def</span> <span class="nf">err</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;ERROR:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
 
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>

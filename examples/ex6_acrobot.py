@@ -125,8 +125,6 @@ if animate:
             image.sphere2=mpl.patches.Circle((0,0),0.01,color='k')
             self.ax.add_patch(image.sphere2)
         
-            #txt = plt.text(x_pendel+0.05,y_pendel,frame)
-        
             self.image = image
         
             plt.draw()

@@ -73,45 +73,6 @@ class Grid():
         pass
 
 
-class BetweenDict(dict):
-    ##?? Quelle? Lizenz?
-    def __init__(self, d = {}):
-        for k,v in d.items():
-            self[k] = v
-
-    def __getitem__(self, key):
-
-        if (key<=0.0):
-            key=10e-10 #sehr unschoen
-
-        for k, v in self.items():
-            if k[0] < key <= k[1]:
-                return v
-        raise KeyError("Key '%s' is not between any values in the BetweenDict" % key)
-
-    def __setitem__(self, key, value):
-        try:
-            if len(key) == 2:
-                if key[0] < key[1]:
-                    dict.__setitem__(self, (key[0], key[1]), value)
-                else:
-                    raise RuntimeError('First element of a BetweenDict key '
-                                       'must be strictly less than the '
-                                       'second element')
-            else:
-                raise ValueError('Key of a BetweenDict must be an iterable '
-                                 'with length two')
-        except TypeError:
-            raise TypeError('Key of a BetweenDict must be an iterable '
-                             'with length two')
-
-    def __contains__(self, key):
-        try:
-            return bool(self[key]) or True
-        except KeyError:
-            return False
-
-
 class struct():
     def __init__(self):
         return
@@ -183,7 +144,7 @@ class Modell:
 
 def blockdiag(M, bshape=None, sparse=False):
     '''
-    Takes block of shape :attr:`shape`  from matrix :attr:`M` and creates 
+    Takes block of shape :attr:`bshape`  from matrix :attr:`M` and creates 
     block diagonal matrix out of them.
     
     Parameters
@@ -239,45 +200,31 @@ def blockdiag(M, bshape=None, sparse=False):
 
 
 
-def plot(self):
-    #provides graphics for each system variable, manipulated variable and error function
-    #plots the solution of the simulation
-    #at the end the error at the final state will be calculated
+def plot(sim, H):
+    '''
+    This method provides graphics for each system variable, manipulated
+    variable and error function and plots the solution of the simulation.
+    '''
+
+    #log.info("Plot")
     
-    log.info("Plot")
+    t, xt, ut = sim
+    n = xt.shape[1]
+    m = ut.shape[1]
     
-    z=self.n+self.m+len(self.eqind)
-    z1=np.floor(np.sqrt(z))
-    z2=np.ceil(z/z1)
-    t=self.A[0]
-    xt = self.A[1]
-    ut= self.A[2]
-    
-    
-    log.info("Ending up with:")
-    for i,xx in enumerate(self.x_sym):
-        log.info(str(xx)+" : "+str(xt[-1:][0][i]))
-    
-    log.info("Shoul be:")
-    for i,xx in enumerate(self.x_sym):
-        log.info(str(xx)+" : "+str(self.xb[xx]))
-    
-    log.info("Difference")
-    for i,xx in enumerate(self.x_sym):
-        log.info(str(xx)+" : "+str(self.xb[xx]-xt[-1:][0][i]))
-    
-    
-    if not __name__=='__main__':
-        return
-    
+    z = n + m + len(H.keys())
+    z1 = np.floor(np.sqrt(z))
+    z2 = np.ceil(z/z1)
+
+
     def setAxLinesBW(ax):
         """
-        Take each Line2D in the axes, ax, and convert the line style to be 
+        Take each Line2D in the axes, ax, and convert the line style to be
         suitable for black and white viewing.
         """
         MARKERSIZE = 3
-    
-    
+
+
         ##?? was bedeuten die Zahlen bei dash[...]?
         COLORMAP = {
             'b': {'marker': None, 'dash': (None,None)},
@@ -288,14 +235,14 @@ def plot(self):
             'y': {'marker': None, 'dash': [5,3,1,2,1,10]},
             'k': {'marker': 'o', 'dash': (None,None)} #[1,2,1,10]}
             }
-    
+
         for line in ax.get_lines():
             origColor = line.get_color()
             line.set_color('black')
             line.set_dashes(COLORMAP[origColor]['dash'])
             line.set_marker(COLORMAP[origColor]['marker'])
             line.set_markersize(MARKERSIZE)
-    
+
     def setFigLinesBW(fig):
         """
         Take each axes in the figure, and for each line in the axes, make the
@@ -303,61 +250,100 @@ def plot(self):
         """
         for ax in fig.get_axes():
             setAxLinesBW(ax)
-    
-    
+
+
     plt.rcParams['figure.subplot.bottom']=.2
     plt.rcParams['figure.subplot.top']= .95
     plt.rcParams['figure.subplot.left']=.13
     plt.rcParams['figure.subplot.right']=.95
-    
+
     plt.rcParams['font.size']=16
-    
+
     plt.rcParams['legend.fontsize']=16
     plt.rc('text', usetex=True)
-    
-    
+
+
     plt.rcParams['xtick.labelsize']=16
     plt.rcParams['ytick.labelsize']=16
     plt.rcParams['legend.fontsize']=20
-    
+
     plt.rcParams['axes.titlesize']=26
     plt.rcParams['axes.labelsize']=26
-    
-    
+
+
     plt.rcParams['xtick.major.pad']='8'
     plt.rcParams['ytick.major.pad']='8'
-    
+
     mm = 1./25.4 #mm to inch
     scale = 3
     fs = [100*mm*scale, 60*mm*scale]
-    
+
     fff=plt.figure(figsize=fs, dpi=80)
-    
-    
+
+
     PP=1
-    for i,xx in enumerate(self.x_sym):
+    for i in xrange(n):
         plt.subplot(int(z1),int(z2),PP)
         PP+=1
         plt.plot(t,xt[:,i])
         plt.xlabel(r'$t$')
-        plt.title(r'$'+str(xx)+'(t)$')
-    
-    for i,uu in enumerate(self.u_sym):
+        plt.title(r'$'+'x%d'%i+'(t)$')
+
+    for i in xrange(m):
         plt.subplot(int(z1),int(z2),PP)
         PP+=1
         plt.plot(t,ut[:,i])
         plt.xlabel(r'$t$')
-        plt.title(r'$'+str(uu)+'(t)$')
-    
-    for hh in self.H:
+        plt.title(r'$'+'u%d'%i+'(t)$')
+
+    for hh in H:
         plt.subplot(int(z1),int(z2),PP)
         PP+=1
-        plt.plot(t,self.H[hh])
+        plt.plot(t,H[hh])
         plt.xlabel(r'$t$')
         plt.title(r'$H_'+str(hh+1)+'(t)$')
-    
+
     setFigLinesBW(fff)
-    
+
     plt.tight_layout()
-    
+
     plt.show()
+
+
+class BetweenDict(dict):
+    ##?? Quelle? Lizenz?
+    def __init__(self, d = {}):
+        for k,v in d.items():
+            self[k] = v
+
+    def __getitem__(self, key):
+
+        if (key<=0.0):
+            key=10e-10 #sehr unschoen
+
+        for k, v in self.items():
+            if k[0] < key <= k[1]:
+                return v
+        raise KeyError("Key '%s' is not between any values in the BetweenDict" % key)
+
+    def __setitem__(self, key, value):
+        try:
+            if len(key) == 2:
+                if key[0] < key[1]:
+                    dict.__setitem__(self, (key[0], key[1]), value)
+                else:
+                    raise RuntimeError('First element of a BetweenDict key '
+                                       'must be strictly less than the '
+                                       'second element')
+            else:
+                raise ValueError('Key of a BetweenDict must be an iterable '
+                                 'with length two')
+        except TypeError:
+            raise TypeError('Key of a BetweenDict must be an iterable '
+                             'with length two')
+
+    def __contains__(self, key):
+        try:
+            return bool(self[key]) or True
+        except KeyError:
+            return False

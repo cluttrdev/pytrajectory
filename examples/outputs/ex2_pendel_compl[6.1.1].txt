@@ -1,0 +1,176 @@
+INFO:	Looking for integrator chains
+INFO:	found integrator chain: x4 -> x3
+INFO:	found integrator chain: x2 -> x1
+INFO:	########################################
+INFO:	       ---- First Iteration ----
+INFO:	########################################
+INFO:	# spline parts: 4
+INFO:	########################################
+INFO:	#########  Initialise Splines  #########
+INFO:	########################################
+INFO:	makesteady: u1
+TIME:	---> [makesteady() elapsed 0.001298 s]
+INFO:	makesteady: x3
+TIME:	---> [makesteady() elapsed 0.001046 s]
+INFO:	makesteady: x4
+TIME:	---> [makesteady() elapsed 0.001015 s]
+INFO:	makesteady: x1
+TIME:	---> [makesteady() elapsed 0.001040 s]
+INFO:	makesteady: x2
+TIME:	---> [makesteady() elapsed 0.001008 s]
+TIME:	---> [initSplines() elapsed 0.010242 s]
+TIME:	---> [getGuess() elapsed 0.000140 s]
+INFO:	########################################
+INFO:	####  Building the equation system  ####
+INFO:	########################################
+TIME:	---> [buildEQS() elapsed 0.090700 s]
+INFO:	########################################
+INFO:	#####  Solving the equation system  ####
+INFO:	########################################
+INFO:	Run Levenberg-Marquardt method
+INFO:	nIt= 1    res= 3.542554
+INFO:	nIt= 2    res= 1.379115
+INFO:	nIt= 3    res= 1.297899
+INFO:	nIt= 4    res= 1.175910
+INFO:	nIt= 5    res= 1.111137
+INFO:	nIt= 6    res= 1.103459
+INFO:	nIt= 7    res= 1.095958
+INFO:	nIt= 8    res= 1.085538
+INFO:	nIt= 9    res= 1.081948
+INFO:	nIt= 10    res= 1.081782
+INFO:	nIt= 11    res= 1.081781
+TIME:	---> [solve() elapsed 0.091572 s]
+INFO:	Set spline coefficients
+TIME:	---> [setCoeff() elapsed 0.000880 s]
+INFO:	########################################
+INFO:	##  Solving the initial value problem ##
+INFO:	########################################
+INFO:	start: [0.0, 0.0, 0.0, 0.0]
+INFO:	----------------------------------------
+TIME:	---> [simulate() elapsed 0.131438 s]
+INFO:	Difference:
+INFO:	x1 : 0.286084
+INFO:	x2 : 0.259739
+INFO:	x3 : -2.340055
+INFO:	x4 : -8.214933
+INFO:	--> reached desired accuracy: False
+INFO:	########################################
+INFO:	       ---- Next Iteration ----
+INFO:	########################################
+INFO:	# spline parts: 12
+INFO:	########################################
+INFO:	#########  Initialise Splines  #########
+INFO:	########################################
+INFO:	makesteady: u1
+TIME:	---> [makesteady() elapsed 0.000904 s]
+INFO:	makesteady: x3
+TIME:	---> [makesteady() elapsed 0.001649 s]
+INFO:	makesteady: x4
+TIME:	---> [makesteady() elapsed 0.001653 s]
+INFO:	makesteady: x1
+TIME:	---> [makesteady() elapsed 0.001906 s]
+INFO:	makesteady: x2
+TIME:	---> [makesteady() elapsed 0.001826 s]
+TIME:	---> [initSplines() elapsed 0.016986 s]
+INFO:	get new guess for spline x1
+INFO:	get new guess for spline x2
+INFO:	get new guess for spline x3
+INFO:	get new guess for spline x4
+TIME:	---> [getGuess() elapsed 0.007669 s]
+INFO:	########################################
+INFO:	####  Building the equation system  ####
+INFO:	########################################
+TIME:	---> [buildEQS() elapsed 0.054335 s]
+INFO:	########################################
+INFO:	#####  Solving the equation system  ####
+INFO:	########################################
+INFO:	Run Levenberg-Marquardt method
+INFO:	nIt= 1    res= 1.907837
+INFO:	nIt= 2    res= 1.884985
+INFO:	nIt= 3    res= 1.868617
+INFO:	nIt= 4    res= 1.848067
+INFO:	nIt= 5    res= 1.825739
+INFO:	nIt= 6    res= 1.809579
+INFO:	nIt= 7    res= 1.792131
+INFO:	nIt= 8    res= 1.737884
+INFO:	nIt= 9    res= 1.551713
+INFO:	nIt= 10    res= 1.298867
+INFO:	nIt= 11    res= 0.911122
+INFO:	nIt= 12    res= 0.592204
+INFO:	nIt= 13    res= 0.484708
+INFO:	nIt= 14    res= 0.395346
+INFO:	nIt= 15    res= 0.394675
+TIME:	---> [solve() elapsed 0.259292 s]
+INFO:	Set spline coefficients
+TIME:	---> [setCoeff() elapsed 0.002019 s]
+INFO:	########################################
+INFO:	##  Solving the initial value problem ##
+INFO:	########################################
+INFO:	start: [0.0, 0.0, 0.0, 0.0]
+INFO:	----------------------------------------
+TIME:	---> [simulate() elapsed 0.141329 s]
+INFO:	Difference:
+INFO:	x1 : 0.000923
+INFO:	x2 : -0.018355
+INFO:	x3 : -0.087468
+INFO:	x4 : -0.405365
+INFO:	--> reached desired accuracy: False
+INFO:	########################################
+INFO:	       ---- Next Iteration ----
+INFO:	########################################
+INFO:	# spline parts: 36
+INFO:	########################################
+INFO:	#########  Initialise Splines  #########
+INFO:	########################################
+INFO:	makesteady: u1
+TIME:	---> [makesteady() elapsed 0.000938 s]
+INFO:	makesteady: x3
+TIME:	---> [makesteady() elapsed 0.005481 s]
+INFO:	makesteady: x4
+TIME:	---> [makesteady() elapsed 0.005308 s]
+INFO:	makesteady: x1
+TIME:	---> [makesteady() elapsed 0.005063 s]
+INFO:	makesteady: x2
+TIME:	---> [makesteady() elapsed 0.005009 s]
+TIME:	---> [initSplines() elapsed 0.047550 s]
+INFO:	get new guess for spline x1
+INFO:	get new guess for spline x2
+INFO:	get new guess for spline x3
+INFO:	get new guess for spline x4
+TIME:	---> [getGuess() elapsed 0.024445 s]
+INFO:	########################################
+INFO:	####  Building the equation system  ####
+INFO:	########################################
+TIME:	---> [buildEQS() elapsed 0.120652 s]
+INFO:	########################################
+INFO:	#####  Solving the equation system  ####
+INFO:	########################################
+INFO:	Run Levenberg-Marquardt method
+INFO:	nIt= 1    res= 1.217945
+INFO:	nIt= 2    res= 1.208197
+INFO:	nIt= 3    res= 1.203373
+INFO:	nIt= 4    res= 1.191631
+INFO:	nIt= 5    res= 1.157763
+INFO:	nIt= 6    res= 1.065275
+INFO:	nIt= 7    res= 0.858905
+INFO:	nIt= 8    res= 0.507059
+INFO:	nIt= 9    res= 0.166773
+INFO:	nIt= 10    res= 0.038063
+INFO:	nIt= 11    res= 0.025870
+INFO:	nIt= 12    res= 0.025747
+TIME:	---> [solve() elapsed 0.765113 s]
+INFO:	Set spline coefficients
+TIME:	---> [setCoeff() elapsed 0.005715 s]
+INFO:	########################################
+INFO:	##  Solving the initial value problem ##
+INFO:	########################################
+INFO:	start: [0.0, 0.0, 0.0, 0.0]
+INFO:	----------------------------------------
+TIME:	---> [simulate() elapsed 0.142334 s]
+INFO:	Difference:
+INFO:	x1 : 0.000018
+INFO:	x2 : -0.000025
+INFO:	x3 : -0.000120
+INFO:	x4 : -0.000562
+INFO:	--> reached desired accuracy: True
+TIME:	---> [Iteration() elapsed 1.913586 s]

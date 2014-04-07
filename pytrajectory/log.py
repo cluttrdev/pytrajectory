@@ -58,21 +58,22 @@ def IPS(loc=None):
     logtime("---> [%s elapsed %f s]"%("IPS",time.time()-shelltime))
 
 
-def msg(label, text):
-    #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
-    sys.stdout.write(label+"\t"+text+"\n")
+def msg(label, text, lvl=0):
+    if lvl >= 0:
+        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
+        sys.stdout.write(label+"\t"+text+"\n")
 
-def info(text):
-    msg("INFO:", text)
+def info(text, lvl=0):
+    msg("INFO:", text, lvl)
 
-def logtime(text):
-    msg("TIME:", text)
+def logtime(text, lvl=0):
+    msg("TIME:", text, lvl)
 
-def warn(text):
-    msg("WARN:", text)
+def warn(text, lvl=0):
+    msg("WARN:", text, lvl)
 
-def err(text):
-    msg("ERROR:", text)
+def err(text, lvl=0):
+    msg("ERROR:", text, lvl)
 
 
 if __name__ == "__main__":

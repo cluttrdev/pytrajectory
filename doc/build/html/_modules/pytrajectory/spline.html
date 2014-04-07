@@ -92,7 +92,30 @@
 
 </div>
 <div class="viewcode-block" id="CubicSpline"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline">[docs]</a><span class="k">class</span> <span class="nc">CubicSpline</span><span class="p">():</span>
-    <span class="sd">&#39;&#39;&#39;This class provides an object that represents a cubic spline ...&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class provides an object that represents a cubic spline ...</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    a : float</span>
+<span class="sd">        Left border of spline interval.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        Right border of spline interval.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of polynomial parts the spline will be devided into.</span>
+<span class="sd">    tag : str</span>
+<span class="sd">        The &#39;name&#39; of the spline object.</span>
+<span class="sd">    bc : tuple</span>
+<span class="sd">        Boundary values for the spline function itself.</span>
+<span class="sd">    bcd : tuple</span>
+<span class="sd">        Boundary values for the splines 1st derivative</span>
+<span class="sd">    bcdd : tuple</span>
+<span class="sd">        Boundary values for the splines 2nd derivative</span>
+<span class="sd">    steady : bool</span>
+<span class="sd">        Whether or not to call :func:`makesteady()` when instanciated.</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">bc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bcd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bcdd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">steady</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="c"># [a,b] ... interval</span>

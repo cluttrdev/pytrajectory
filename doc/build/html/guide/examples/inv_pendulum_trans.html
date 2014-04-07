@@ -58,9 +58,8 @@
   <div class="section" id="translation-of-the-inverse-pendulum">
 <h1>Translation of the inverse pendulum<a class="headerlink" href="#translation-of-the-inverse-pendulum" title="Permalink to this headline">¶</a></h1>
 <p>An example often used in literature is the inverse pendulum. Here a
-force <img class="math" src="../../_images/math/183421431fcc0a42e22f825a33dcc3c51607fa6e.png" alt="F"/> acts on a cart with
-mass <img class="math" src="../../_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/>. In addition the cart is connected by a massless rod with
-a pendulum mass <img class="math" src="../../_images/math/a877a305b5188a6f2b60dd1f2591cc601956f0d9.png" alt="m_p"/>.
+force <img class="math" src="../../_images/math/183421431fcc0a42e22f825a33dcc3c51607fa6e.png" alt="F"/> acts on a cart with mass <img class="math" src="../../_images/math/406f7634fe28d6c2293548b82ef8e8ba71c8c6bd.png" alt="M_w"/>. In addition the
+cart is connected by a massless rod with a pendulum mass <img class="math" src="../../_images/math/a877a305b5188a6f2b60dd1f2591cc601956f0d9.png" alt="m_p"/>.
 The mass of the pendulum is concentrated in <img class="math" src="../../_images/math/6534eb155fcde09dbe8489e513d1925f86997578.png" alt="P_2"/> and that of the
 cart in <img class="math" src="../../_images/math/26a00c0666e9094d8aac94f0ef300011af9b38a5.png" alt="P_1"/>. The state vector of the system can be specified
 using the carts position <img class="math" src="../../_images/math/8f4117f82b4d0bf705d6d7cf4e3b5164e42335e4.png" alt="x_w(t)"/> and the pendulum deflection
@@ -68,7 +67,7 @@ using the carts position <img class="math" src="../../_images/math/8f4117f82b4d0
 <img alt="../../_images/inv_pendulum.png" src="../../_images/inv_pendulum.png" />
 <p>With the <em>Lagrangian Formalism</em> the model has the following state space
 representation where <img class="math" src="../../_images/math/2ae3245358b001429a077ec2599d726781f78262.png" alt="u_1 = F"/> and
-<img class="math" src="../../_images/math/3117182b1beecbd421eaad462636b3f6c0c55aa0.png" alt="x = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]"/></p>
+<img class="math" src="../../_images/math/71f6bb0fe3835795a48a76ce4e2f4950a69451d8.png" alt="x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]"/></p>
 <div class="math">
 <p><img src="../../_images/math/2b8ef368fca741f90e9437073893dd85ef755b00.png" alt="\begin{eqnarray*}
    \dot{x}_1 &amp; = &amp; x_2 \\
@@ -76,7 +75,61 @@ representation where <img class="math" src="../../_images/math/2ae3245358b001429
    \dot{x}_3 &amp; = &amp; x_4 \\
    \dot{x}_4 &amp; = &amp; \frac{\sin(x_3)(-m_p l x_4^2 \cos(x_3) + g(M_w + m_p))}{M_w l + m_p \sin^2(x_3)} + \frac{\cos(x_3)}{M_w l + m_p l \sin^2(x_3)} u_1
 \end{eqnarray*}"/></p>
-</div></div>
+</div><p>A possibly wanted trajectory is the translation of the cart along the
+x-axis (i.e. by <img class="math" src="../../_images/math/bc2e9723d9e28e9f6af0c3bc12b161960b469332.png" alt="0.5m"/>). In the beginning and end of the process
+the cart and pendulum should remain at rest and the pendulum should be
+aligned vertically upwards (<img class="math" src="../../_images/math/455f59eb1bb4256dadc224fb7637a62fee3e364e.png" alt="\varphi = 0"/>). As a further condition
+<img class="math" src="../../_images/math/e5fc41b391867da81606413e3389c7efc73abaf0.png" alt="u"/> should start and end steadily in the rest position
+(<img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d9fcbfc362be.png" alt="u(0) = u(T) = 0"/>).
+The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7abf068801d8dc7f21dcb2903400e60.png" alt="T = 1 [s]"/>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># import trajectory class and necessary dependencies</span>
+<span class="kn">from</span> <span class="nn">pytrajectory.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c"># define the function that returns the vectorfield</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>       <span class="c"># system state variables</span>
+    <span class="n">u1</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span>                  <span class="c"># input variable</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c"># length of the pendulum rod</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>    <span class="c"># gravitational acceleration</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="mf">1.0</span>     <span class="c"># mass of the cart</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">0.1</span>     <span class="c"># mass of the pendulum</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span>
+
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>                     <span class="n">x2</span><span class="p">,</span>
+                   <span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="o">*</span><span class="n">x4</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">u1</span><span class="p">,</span>
+                                        <span class="n">x4</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">x4</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">c</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">c</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="n">l</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">u1</span>
+                <span class="p">])</span>
+    <span class="k">return</span> <span class="n">ff</span>
+
+<span class="c"># boundary values at the start (a = 0.0 [s])</span>
+<span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># boundary values at the end (b = 1.0 [s])</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.5</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># create trajectory object</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">)</span>
+
+<span class="c"># run iteration</span>
+<span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+
+<span class="c"># show results</span>
+<span class="n">T</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
 
 
           </div>

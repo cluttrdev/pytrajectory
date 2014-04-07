@@ -34,7 +34,8 @@ class Solver:
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = tol #1e-3
+        self.reltol = tol
+        #self.reltol = 1e-2
         self.maxx = maxx
         self.algo = algo
         
@@ -66,7 +67,8 @@ class Solver:
     def leven(self):
         '''
         This method is an implementation of the Levenberg-Marquardt-Method
-        to approximatively solve a system of non-linear equations by minimizing \n
+        to approximatively solve a system of non-linear equations by minimizing
+        
         :math:`\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \\mu^2 \|x_{k+1} - x_k \|`
         '''
         i = 0
@@ -85,7 +87,8 @@ class Solver:
         roh = 0.0
 
         ##?? warum Bed. 1 und 3? (--> retol und abstol)
-        while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > self.reltol)):
+        reltol = self.reltol
+        while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
             Fx = self.F(x)
@@ -121,6 +124,10 @@ class Solver:
             res_alt = res
             res = normFx
             log.info("nIt= %d    res= %f"%(i,res))
+            
+            # NEW - experimental
+            if res<1.0:
+                reltol = 1e-2
 
         self.sol = x
     

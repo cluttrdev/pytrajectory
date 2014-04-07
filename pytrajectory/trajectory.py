@@ -5,16 +5,15 @@ import numpy as np
 import sympy as sp
 from scipy import sparse
 
-import pylab as plt
-
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
-from tools import IntegChain
+from utilities import IntegChain
 
 #####
 #NEW
-from tools import blockdiag as bdiag
+from utilities import blockdiag as bdiag
+from utilities import plot as _plot
 #####
 
 import log
@@ -89,7 +88,13 @@ class Trajectory():
         # a little check
         if not (len(xa) == len(xb) == self.n):
             raise ValueError, 'Dimension mismatch xa,xb'
-
+        
+        # type of collocation points to use
+        self.colltype = 'equidistant' #'chebychev'
+        
+        # whether or not to use sparse matrices
+        self.use_sparse = True
+        
         # iteration number
         self.nIt = 0
 
@@ -188,8 +193,7 @@ class Trajectory():
     
     def analyseSystem(self):
         '''
-        Analyses the system given by the callable vectorfield ``ff(x, u)``
-        and set values for some of the method parameters.
+        Analyses the systems structure and sets values for some of the method parameters.
         '''
         ###
         # first, determine system dimensions
@@ -464,7 +468,7 @@ class Trajectory():
 
     def buildEQS(self):
         '''
-        This method is used to build the equation system which will be solved later.
+        Builds the collocation equation system.
         '''
         
         log.info( 40*"#")
@@ -485,18 +489,25 @@ class Trajectory():
         delta = self.delta
 
         # generate collocation points ---> [3.3]
-        if 0:
+        if self.colltype == 'equidistant':
+            # get equidistant collocation points
             cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
-        else:
-            ########
+        elif self.colltype == 'chebychev':
+            # determine rank of chebychev polynomial to calculate zero points of
             nc = int(self.sx*delta - 1)
+            # calculate zero points of chebychev polynomial --> in [-1,1]
             cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
             cheb_cpts.sort()
+            # transfer chebychev knots from [-1,1] to our interval [a,b]
             a = self.a
             b = self.b
             chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
+            # add left and right borders
             cpts = np.hstack((a, chpts, b))
-            ########
+        else:
+            log.warn('Unknown type of collocation points.')
+            log.warn('--> will use equidistant points!')
+            cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
         
         self.cpts = cpts
         
@@ -569,7 +580,7 @@ class Trajectory():
         
         self.Df = sp.lambdify(self.x_sym+self.u_sym, Df_mat, modules='numpy')
         
-        # following is needed in self.DG but it is possible to only create it once
+        # the following is needed in self.DG but it is possible to only create it once
         # and not with every call to self.DG
         self.DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,self.eqind,:]
         
@@ -588,15 +599,15 @@ class Trajectory():
         self.J_XU2 = sparse.csr_matrix(J_XU2)
         ##########
         
-        ################################################################
-        # SPARSE
-        self.Mx = sparse.csr_matrix(self.Mx)
-        self.Mx_abs = sparse.csr_matrix(self.Mx_abs)
-        self.Mdx = sparse.csr_matrix(self.Mdx)
-        self.Mdx_abs = sparse.csr_matrix(self.Mdx_abs)
-        self.Mu = sparse.csr_matrix(self.Mu)
-        self.Mu_abs = sparse.csr_matrix(self.Mu_abs)
-        ################################################################
+        if self.use_sparse:
+            self.Mx = sparse.csr_matrix(self.Mx)
+            self.Mx_abs = sparse.csr_matrix(self.Mx_abs)
+            self.Mdx = sparse.csr_matrix(self.Mdx)
+            self.Mdx_abs = sparse.csr_matrix(self.Mdx_abs)
+            self.Mu = sparse.csr_matrix(self.Mu)
+            self.Mu_abs = sparse.csr_matrix(self.Mu_abs)
+            
+            self.DdX = sparse.csr_matrix(np.vstack(self.DdX))
     
 
     def solve(self):
@@ -627,11 +638,6 @@ class Trajectory():
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
 
-        # DENSE
-        #X = np.dot(self.Mx,c) + self.Mx_abs
-        #U = np.dot(self.Mu,c) + self.Mu_abs
-
-        # SPARSE
         X = self.Mx.dot(c) + self.Mx_abs
         U = self.Mu.dot(c) + self.Mu_abs
 
@@ -643,11 +649,6 @@ class Trajectory():
         # other equations need not to be solved
         F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
         
-        # DENSE
-        #dX = np.dot(self.Mdx,c) + self.Mdx_abs
-        #dX = np.reshape(dX,(-1,x_len))[:,eqind]
-
-        # SPARSE
         dX = self.Mdx.dot(c) + self.Mdx_abs
         dX = np.array(dX).reshape((-1,x_len))[:,eqind]
 
@@ -686,8 +687,7 @@ class Trajectory():
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
         
-        if 1:
-            ###############################################
+        if 0:
             ###############################################
             # OLD - working
             ###############################################
@@ -707,8 +707,7 @@ class Trajectory():
             # 3rd index : component of c
         else:
             ###############################################
-            ###############################################
-            # NEW - experimental (sparse possible for Mx,Mu...?)
+            # NEW - experimental
             ###############################################
             block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
             J_XU = self.J_XU2
@@ -716,21 +715,17 @@ class Trajectory():
             #DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions
             DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
             DF = DF2[:,eqind,:]
-            ###############################################
-            ###############################################
         
         
         # now compute jacobian of x_dot w.r.t. to indep coeffs
-        # DENSE
+        # --> see buildEQS()
         #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
-
-        # SPARSE
-        #DdX = self.Mdx.toarray().reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
         DdX = self.DdX
         
         # stack matrices in vertical direction
-        DG = np.vstack(DF) - np.vstack(DdX)
-
+        #DG = np.vstack(DF) - np.vstack(DdX)
+        DG = np.vstack(DF) - DdX
+        
         return DG
 
 
@@ -881,6 +876,13 @@ class Trajectory():
         log.info("--> reached desired accuracy: "+str(errmax <= self.eps))
     
     
+    def plot(self):
+        '''
+        Just calls :func:`plot` function from :mod:`tools`
+        '''
+        _plot(self.sim, self.H)
+    
+    
     def x(self, t):
         '''
         This function returns the system state at a given (time-) point :attr:`t`.
@@ -900,126 +902,6 @@ class Trajectory():
         This function returns the left hand sites state at a given (time-) point :attr:`t`.
         '''
         return np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
-
-
-    def plot(self):
-        '''
-        This method provides graphics for each system variable, manipulated
-        variable and error function and plots the solution of the simulation.
-        '''
-
-        log.info("Plot")
-
-        z=self.n+self.m+len(self.eqind)
-        z1=np.floor(np.sqrt(z))
-        z2=np.ceil(z/z1)
-        t, xt, ut = self.sim
-
-
-        log.info("Ending up with:")
-        for i,xx in enumerate(self.x_sym):
-            log.info(str(xx)+" : "+str(xt[-1:][0][i]))
-
-        log.info("Shoul be:")
-        for i,xx in enumerate(self.x_sym):
-            log.info(str(xx)+" : "+str(self.xb[xx]))
-
-        log.info("Difference")
-        for i,xx in enumerate(self.x_sym):
-            log.info(str(xx)+" : "+str(self.xb[xx]-xt[-1:][0][i]))
-
-
-        def setAxLinesBW(ax):
-            """
-            Take each Line2D in the axes, ax, and convert the line style to be
-            suitable for black and white viewing.
-            """
-            MARKERSIZE = 3
-
-
-            ##?? was bedeuten die Zahlen bei dash[...]?
-            COLORMAP = {
-                'b': {'marker': None, 'dash': (None,None)},
-                'g': {'marker': None, 'dash': [5,5]},
-                'r': {'marker': None, 'dash': [5,3,1,3]},
-                'c': {'marker': None, 'dash': [1,3]},
-                'm': {'marker': None, 'dash': [5,2,5,2,5,10]},
-                'y': {'marker': None, 'dash': [5,3,1,2,1,10]},
-                'k': {'marker': 'o', 'dash': (None,None)} #[1,2,1,10]}
-                }
-
-            for line in ax.get_lines():
-                origColor = line.get_color()
-                line.set_color('black')
-                line.set_dashes(COLORMAP[origColor]['dash'])
-                line.set_marker(COLORMAP[origColor]['marker'])
-                line.set_markersize(MARKERSIZE)
-
-        def setFigLinesBW(fig):
-            """
-            Take each axes in the figure, and for each line in the axes, make the
-            line viewable in black and white.
-            """
-            for ax in fig.get_axes():
-                setAxLinesBW(ax)
-
-
-        plt.rcParams['figure.subplot.bottom']=.2
-        plt.rcParams['figure.subplot.top']= .95
-        plt.rcParams['figure.subplot.left']=.13
-        plt.rcParams['figure.subplot.right']=.95
-
-        plt.rcParams['font.size']=16
-
-        plt.rcParams['legend.fontsize']=16
-        plt.rc('text', usetex=True)
-
-
-        plt.rcParams['xtick.labelsize']=16
-        plt.rcParams['ytick.labelsize']=16
-        plt.rcParams['legend.fontsize']=20
-
-        plt.rcParams['axes.titlesize']=26
-        plt.rcParams['axes.labelsize']=26
-
-
-        plt.rcParams['xtick.major.pad']='8'
-        plt.rcParams['ytick.major.pad']='8'
-
-        mm = 1./25.4 #mm to inch
-        scale = 3
-        fs = [100*mm*scale, 60*mm*scale]
-
-        fff=plt.figure(figsize=fs, dpi=80)
-
-
-        PP=1
-        for i,xx in enumerate(self.x_sym):
-            plt.subplot(int(z1),int(z2),PP)
-            PP+=1
-            plt.plot(t,xt[:,i])
-            plt.xlabel(r'$t$')
-            plt.title(r'$'+str(xx)+'(t)$')
-
-        for i,uu in enumerate(self.u_sym):
-            plt.subplot(int(z1),int(z2),PP)
-            PP+=1
-            plt.plot(t,ut[:,i])
-            plt.xlabel(r'$t$')
-            plt.title(r'$'+str(uu)+'(t)$')
-
-        for hh in self.H:
-            plt.subplot(int(z1),int(z2),PP)
-            PP+=1
-            plt.plot(t,self.H[hh])
-            plt.xlabel(r'$t$')
-            plt.title(r'$H_'+str(hh+1)+'(t)$')
-
-        setFigLinesBW(fff)
-
-        plt.tight_layout()
-
-        plt.show()
 
 
 
