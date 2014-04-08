@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 import sympy as sp
+import scipy as scp
 from scipy import sparse
 
 from spline import CubicSpline, fdiff
@@ -90,7 +91,8 @@ class Trajectory():
             raise ValueError, 'Dimension mismatch xa,xb'
         
         # type of collocation points to use
-        self.colltype = 'equidistant' #'chebychev'
+        self.colltype = 'equidistant'
+        #self.colltype = 'chebychev'
         
         # whether or not to use sparse matrices
         self.use_sparse = True
@@ -132,6 +134,11 @@ class Trajectory():
 
         # set logfile
         #log.set_file()
+        
+        # just for me
+        print np.__version__
+        print sp.__version__
+        print scp.__version__
     
     
     def startIteration(self):
@@ -687,7 +694,7 @@ class Trajectory():
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
         
-        if 0:
+        if 1:
             ###############################################
             # OLD - working
             ###############################################
