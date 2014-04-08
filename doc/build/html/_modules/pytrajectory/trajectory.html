@@ -52,6 +52,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">scp</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
 
 <span class="kn">from</span> <span class="nn">spline</span> <span class="kn">import</span> <span class="n">CubicSpline</span><span class="p">,</span> <span class="n">fdiff</span>
@@ -139,7 +140,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&#39;Dimension mismatch xa,xb&#39;</span>
         
         <span class="c"># type of collocation points to use</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">=</span> <span class="s">&#39;equidistant&#39;</span> <span class="c">#&#39;chebychev&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">=</span> <span class="s">&#39;equidistant&#39;</span>
+        <span class="c">#self.colltype = &#39;chebychev&#39;</span>
         
         <span class="c"># whether or not to use sparse matrices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_sparse</span> <span class="o">=</span> <span class="bp">True</span>
@@ -181,6 +183,11 @@
 
         <span class="c"># set logfile</span>
         <span class="c">#log.set_file()</span>
+        
+        <span class="c"># just for me</span>
+        <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="k">print</span> <span class="n">sp</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="k">print</span> <span class="n">scp</span><span class="o">.</span><span class="n">__version__</span>
     
     
 <div class="viewcode-block" id="Trajectory.startIteration"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.startIteration">[docs]</a>    <span class="k">def</span> <span class="nf">startIteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -244,6 +251,11 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Analyses the systems structure and sets values for some of the method parameters.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;####   Analysing System Strucutre   ####&quot;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
+        
         <span class="c">###</span>
         <span class="c"># first, determine system dimensions</span>
         <span class="c">###</span>
@@ -325,8 +337,6 @@
             <span class="n">ic</span> <span class="o">=</span> <span class="n">IntegChain</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
             <span class="n">chains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ic</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;found integrator chain: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ic</span><span class="p">))</span>
-        
-        
         
         <span class="bp">self</span><span class="o">.</span><span class="n">chains</span> <span class="o">=</span> <span class="n">chains</span>
         
@@ -736,7 +746,7 @@
             <span class="c"># evaluate jacobian at current collocation point</span>
             <span class="n">DF_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Df</span><span class="p">(</span><span class="o">*</span><span class="n">tmp_xu</span><span class="p">))</span>
         
-        <span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c">###############################################</span>
             <span class="c"># OLD - working</span>
             <span class="c">###############################################</span>

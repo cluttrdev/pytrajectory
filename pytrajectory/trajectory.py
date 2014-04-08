@@ -202,6 +202,11 @@ class Trajectory():
         '''
         Analyses the systems structure and sets values for some of the method parameters.
         '''
+        
+        log.info( 40*"#")
+        log.info("####   Analysing System Strucutre   ####")
+        log.info( 40*"#")
+        
         ###
         # first, determine system dimensions
         ###
@@ -283,8 +288,6 @@ class Trajectory():
             ic = IntegChain(lst)
             chains.append(ic)
             log.info("found integrator chain: " + str(ic))
-        
-        
         
         self.chains = chains
         

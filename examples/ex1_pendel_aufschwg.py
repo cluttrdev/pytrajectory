@@ -114,24 +114,23 @@ if animate:
                 image.car.remove()
                 image.gelenk.remove()
             
-            #Ball
-            image.sphere=mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
+            # build image
+            image.sphere=mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k') # Ball
+            image.car=mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth), # Car
+                                            car_width,car_heigth,fill=True,
+                                            facecolor='0.75',linewidth=2.0)
+            image.gelenk=mpl.patches.Circle((x_car,0),0.005,color='k') # Gelenk
+            image.stab=self.ax.add_line(mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel], # Stab
+                                        color='k',zorder=1,linewidth=2.0))
+            
+            # add patches
             self.ax.add_patch(image.sphere)
-            
-            #Car
-            image.car=mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
             self.ax.add_patch(image.car)
-            #IPS()
-            image.gelenk=mpl.patches.Circle((x_car,0),0.005,color='k')
             self.ax.add_patch(image.gelenk)
-            #self.ax.annotate(frame, xy=(x_pendel, y_pendel), xytext=(x_pendel+0.02, y_pendel))
-            #Stab
-            image.stab=self.ax.add_line(mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=1,linewidth=2.0))
-            
-            #txt = plt.text(x_pendel+0.05,y_pendel,frame)
             
             self.image = image
             
+            # draw image
             plt.draw()
     
     
@@ -150,7 +149,7 @@ if animate:
     def animate(frame):
         i = tt[frame]
         print frame
-        M.draw(xt[i,0],xt[i,2],str(round(t[i],2))+'s',image=M.image)
+        M.draw(xt[i,0],xt[i,2],image=M.image)
         #sleep(TT/float(pics))
     
     anim = animation.FuncAnimation(M.fig, animate, 

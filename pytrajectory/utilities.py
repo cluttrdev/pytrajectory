@@ -8,6 +8,7 @@ from IPython import embed as IPS
 from numpy import sin,cos
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib import animation
 
 
 class IntegChain():
@@ -156,6 +157,105 @@ class Modell:
         plt.draw()
 
 
+class Animation():
+    '''
+    Provides animation capabilities.
+    
+    Parameters
+    ----------
+    
+    drawfnc : callable
+        Function that returns an image of the current system state according to :attr:`data`
+    simdata : numpy.ndarray
+        Array that contains simulation data (time, system states, input states)
+    '''
+    
+    def __init__(self, drawfnc, simdata):
+        self.fig = plt.figure()
+        self.ax = plt.axes()
+    
+        #mng = plt.get_current_fig_manager()
+     
+        #mng.window.setGeometry(0, 0, 1000, 700)
+    
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+        self.ax.set_frame_on(True)
+        self.ax.set_aspect('equal')
+        self.ax.set_axis_bgcolor('w')
+    
+        self.image = 0
+        
+        self.nframes = 80
+        
+        self.draw = drawfnc
+        self.data = simdata
+    
+    
+    class Image():
+        def __init__(self):
+            self.patches = []
+            self.lines = []
+        
+        def reset(self):
+            self.patches = []
+            self.lines = []
+    
+    
+    def set_limits(self, xlim, ylim):
+        self.ax.set_xlim(*xlim)
+        self.ax.set_ylim(*ylim)
+    
+    
+    def set_pos(self, pos):
+        self.ax.set_position(pos)
+    
+    
+    def animate(self):
+        t = self.data[0]
+        xt = self.data[1]
+        
+        tt = np.linspace(0,(len(t)-1),self.nframes+1,endpoint=True)
+        
+        self.T = t[-1] - t[0]
+        
+        def _animate(frame):
+            i = tt[frame]
+            print frame
+            image = self.image
+            
+            if image == 0:
+                # init
+                image = self.Image()
+            else:
+                # update
+                for p in image.patches:
+                    p.remove()
+                for l in image.lines:
+                    l.remove()
+                image.reset()
+            
+            self.image = self.draw(xt[i,:], image=image)
+            
+            for p in self.image.patches:
+                self.ax.add_patch(p)
+            
+            for l in self.image.lines:
+                self.ax.add_line(l)
+            
+            plt.draw()
+            
+        
+        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes,
+                                                interval=1, blit=True)
+    
+    
+    def save(self, fname, fps=None):
+        if not fps:
+            fps = self.nframes/float(self.T)
+        self.anim.save(fname, fps=fps)
+
+
 def blockdiag(M, bshape=None, sparse=False):
     '''
     Takes block of shape :attr:`bshape`  from matrix :attr:`M` and creates 
@@ -199,7 +299,7 @@ def blockdiag(M, bshape=None, sparse=False):
             print 'ERROR: ncol /= #col of M'
             return M
         if not Mrow % nrow == 0:
-            print 'ERROR: nrow has to be teiler of #row of M'
+            print 'ERROR: nrow has to be a factor of #row of M'
             return M
         
         n = Mrow / nrow
@@ -228,7 +328,7 @@ def plot(sim, H, fname=None):
         Contains collocation points, and simulation results of system and input variables
     H : dict
         Dictionary of the callable error functions
-    fname : str (optional)
+    fname : str
         If not None, plot will be saved as <fname>.png
     '''
     

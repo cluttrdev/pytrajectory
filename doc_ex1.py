@@ -1,5 +1,5 @@
 # import trajectory class and necessary dependencies
-from pytrajectory.trajectory import Trajectory
+from pytrajectory import Trajectory
 from sympy import sin, cos
 import numpy as np
 
@@ -43,3 +43,58 @@ T.startIteration()
 
 # show results
 T.plot()
+
+
+####################################################################################################
+# EXPERIMENTAL
+
+# animate system
+
+import matplotlib as mpl
+from pytrajectory.utilities import Animation
+
+
+def draw(xti, image):
+    x = xti[0]
+    phi = xti[2]
+    
+    L = 0.5
+    car_width = 0.05
+    car_heigth = 0.02
+    pendel_size = 0.015
+
+    x_car = x
+    y_car = 0
+
+    x_pendel = -L*sin(phi)+x_car
+    y_pendel = L*cos(phi)
+    
+    #Stab
+    stab = mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0)
+    image.lines.append(stab)
+    
+    #Ball
+    sphere = mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
+    image.patches.append(sphere)
+    
+    #Car
+    car = mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
+    image.patches.append(car)
+    
+    #Gelenk
+    gelenk = mpl.patches.Circle((x_car,0),0.005,color='k')
+    image.patches.append(gelenk)
+    
+    return image
+
+# create animation object
+
+
+A = Animation(drawfnc=draw, simdata=T.sim)
+
+A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
+A.set_pos([0.01,0.01,0.98,0.98])
+
+A.animate()
+
+A.save('doc_ex1.mp4')

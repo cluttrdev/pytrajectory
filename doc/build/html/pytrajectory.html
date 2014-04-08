@@ -50,8 +50,11 @@
             
   <div class="section" id="module-pytrajectory">
 <span id="pytrajectory-modules-reference"></span><h1>PyTrajectory Modules Reference<a class="headerlink" href="#module-pytrajectory" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pytrajectory">
+<h2>PyTrajectory<a class="headerlink" href="#pytrajectory" title="Permalink to this headline">¶</a></h2>
 <p>PyTrajectory is a Python library for the determination of the feed forward control
 to achieve a transition between desired states of a nonlinear control system.</p>
+</div>
 <div class="section" id="module-pytrajectory.trajectory">
 <span id="trajectory-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">trajectory</span></tt> Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -428,6 +431,54 @@ equation system</p>
 <div class="section" id="module-pytrajectory.utilities">
 <span id="utilities-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt> Module<a class="headerlink" href="#module-pytrajectory.utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
+<dt id="pytrajectory.utilities.Animation">
+<em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">Animation</tt><big>(</big><em>drawfnc</em>, <em>simdata</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides animation capabilities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>drawfnc</strong> (<em>callable</em>) &#8211; Function that returns an image of the current system state according to <tt class="xref py py-attr docutils literal"><span class="pre">data</span></tt></li>
+<li><strong>simdata</strong> (<em>numpy.ndarray</em>) &#8211; Array that contains simulation data (time, system states, input states)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="pytrajectory.utilities.Animation.Image">
+<em class="property">class </em><tt class="descname">Image</tt><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.Image" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pytrajectory.utilities.Animation.Image.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.Image.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.Image.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.utilities.Animation.animate">
+<tt class="descclassname">Animation.</tt><tt class="descname">animate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.animate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.animate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.utilities.Animation.save">
+<tt class="descclassname">Animation.</tt><tt class="descname">save</tt><big>(</big><em>fname</em>, <em>fps=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.utilities.Animation.set_limits">
+<tt class="descclassname">Animation.</tt><tt class="descname">set_limits</tt><big>(</big><em>xlim</em>, <em>ylim</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.set_limits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.set_limits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.utilities.Animation.set_pos">
+<tt class="descclassname">Animation.</tt><tt class="descname">set_pos</tt><big>(</big><em>pos</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#Animation.set_pos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.Animation.set_pos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pytrajectory.utilities.BetweenDict">
 <em class="property">class </em><tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">BetweenDict</tt><big>(</big><em>d={}</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#BetweenDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.BetweenDict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
@@ -539,7 +590,7 @@ variable and error function and plots the solution of the simulation.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>sim</strong> (<em>tuple</em>) &#8211; Contains collocation points, and simulation results of system and input variables</li>
 <li><strong>H</strong> (<em>dict</em>) &#8211; Dictionary of the callable error functions</li>
-<li><strong>fname</strong> (<em>str (optional)</em>) &#8211; If not None, plot will be saved as &lt;fname&gt;.png</li>
+<li><strong>fname</strong> (<em>str</em>) &#8211; If not None, plot will be saved as &lt;fname&gt;.png</li>
 </ul>
 </td>
 </tr>
@@ -597,7 +648,7 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140407-195631.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140408-215536.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -617,6 +668,7 @@ variable and error function and plots the solution of the simulation.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyTrajectory Modules Reference</a><ul>
+<li><a class="reference internal" href="#pytrajectory">PyTrajectory</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.trajectory"><tt class="docutils literal"><span class="pre">trajectory</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.spline"><tt class="docutils literal"><span class="pre">spline</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.solver"><tt class="docutils literal"><span class="pre">solver</span></tt> Module</a></li>

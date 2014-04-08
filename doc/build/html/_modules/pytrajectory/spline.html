@@ -59,7 +59,8 @@
 
 
 <div class="viewcode-block" id="fdiff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.fdiff">[docs]</a><span class="k">def</span> <span class="nf">fdiff</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;This function is used to get the derivative of of a callable splinefunction.</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function is used to get the derivative of of a callable splinefunction.</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -147,12 +148,96 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_flag</span> <span class="o">=</span> <span class="bp">True</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">steady</span><span class="p">):</span>
             <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;makesteady()&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">makesteady</span><span class="p">()</span>
+    
+    
+<div class="viewcode-block" id="CubicSpline.f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the spline itself.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.df"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.df">[docs]</a>    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 1st derivative.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.ddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.ddf">[docs]</a>    <span class="k">def</span> <span class="nf">ddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 2nd derivative.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CubicSpline.dddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.dddf">[docs]</a>    <span class="k">def</span> <span class="nf">dddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 3rd derivative.&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    
+    </div>
+<div class="viewcode-block" id="CubicSpline.tmp_evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_evalf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function returns a matrix and vector to evaluate the spline or a derivative at x</span>
+<span class="sd">        by multiplying the matrix with numerical values of the independent variables</span>
+<span class="sd">        and adding the vector.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        x : real</span>
+<span class="sd">            The point to evaluate the spline at</span>
+<span class="sd">        d : int</span>
+<span class="sd">            The derivation order</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">        tuple</span>
+<span class="sd">            Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c"># Get the spline part where x is in</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
+        
+        <span class="n">x</span> <span class="o">-=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span>
+        
+        <span class="c"># Calculate vector to multiply coefficient matrix with</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+        
+        <span class="n">M0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">m0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">M0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">m0</span><span class="p">)</span>
+    
+    </div>
+<div class="viewcode-block" id="CubicSpline.evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.evalf">[docs]</a>    <span class="k">def</span> <span class="nf">evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        bla bla bla</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        x : float</span>
+<span class="sd">            The point to evaluate the spline at</span>
+<span class="sd">        d : int</span>
+<span class="sd">            The derivation order</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c"># get polynomial part where x is in</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-
+        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">d</span><span class="p">)(</span><span class="n">x</span><span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+    
+    </div>
 <div class="viewcode-block" id="CubicSpline.makesteady"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.makesteady">[docs]</a>    <span class="k">def</span> <span class="nf">makesteady</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method sets up and solves equations that satisfy boundary conditions and</span>
@@ -291,50 +376,25 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">c_indep</span> <span class="o">=</span> <span class="n">a</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">=</span> <span class="bp">True</span>
-
-</div>
-<div class="viewcode-block" id="CubicSpline.tmp_evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_evalf">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        This function returns a matrix and vector to evaluate the spline or a derivative at x</span>
-<span class="sd">        by multiplying the matrix with numerical values of the independent variables</span>
-<span class="sd">        and adding the vector.</span>
+    
+    </div>
+<div class="viewcode-block" id="CubicSpline.set_coeffs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.set_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_sol</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;This function is used to set up numerical values for the spline coefficients.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        </span>
-<span class="sd">        x : real</span>
-<span class="sd">            The point to evaluate the spline at</span>
-<span class="sd">        d : int</span>
-<span class="sd">            The derivation order</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        </span>
-<span class="sd">        tuple</span>
-<span class="sd">            Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
+<span class="sd">        c_sol : dict</span>
+<span class="sd">            Dictionary with coefficient and numerical value</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
-        <span class="c"># Get the spline part where x is in</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">c_num</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c_sol</span><span class="p">)</span><span class="o">+</span><span class="n">ca</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">ca</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
         
-        <span class="c"># Calculate vector to multiply coefficient matrix with</span>
-        <span class="n">x</span> <span class="o">-=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span>
-        
-        <span class="k">if</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
-        
-        <span class="n">M0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">m0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_flag</span> <span class="o">=</span> <span class="bp">False</span>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">M0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">m0</span><span class="p">)</span>
+    
 
 </div>
 <div class="viewcode-block" id="CubicSpline.tmp_f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.tmp_f">[docs]</a>    <span class="k">def</span> <span class="nf">tmp_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
@@ -356,58 +416,13 @@
         <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`tmp_evalf` with the splines 3rd derivative.&#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="CubicSpline.set_coeffs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.set_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_sol</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This function is used to set up numerical values for the spline coefficients.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        c_sol : dict</span>
-<span class="sd">            Dictionary with coefficient and numerical value</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-            <span class="n">c_num</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c_sol</span><span class="p">)</span><span class="o">+</span><span class="n">ca</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">ca</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
 
-</div>
-<div class="viewcode-block" id="CubicSpline.evalf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.evalf">[docs]</a>    <span class="k">def</span> <span class="nf">evalf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        bla bla bla</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        x : float</span>
-<span class="sd">            The point to evaluate the spline at</span>
-<span class="sd">        d : int</span>
-<span class="sd">            The derivation order</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        
-        <span class="c"># get polynomial part where x is in</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span> <span class="n">i</span><span class="o">-=</span> <span class="mi">1</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    
 
-        <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">d</span><span class="p">)(</span><span class="n">x</span><span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="CubicSpline.f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the spline itself.&#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="CubicSpline.df"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.df">[docs]</a>    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 1st derivative.&#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="CubicSpline.ddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.ddf">[docs]</a>    <span class="k">def</span> <span class="nf">ddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 2nd derivative.&#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="CubicSpline.dddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.dddf">[docs]</a>    <span class="k">def</span> <span class="nf">dddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :func:`evalf` to evaluate the splines 3rd derivative.&#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+
+    
+
+    
 
 </div></div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
