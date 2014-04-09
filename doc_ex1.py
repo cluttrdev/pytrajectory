@@ -42,7 +42,7 @@ T = Trajectory(f, a=0.0, b=1.0, xa=xa, xb=xb)
 T.startIteration()
 
 # show results
-T.plot()
+#T.plot()
 
 
 ####################################################################################################
@@ -55,8 +55,27 @@ from pytrajectory.utilities import Animation
 
 
 def draw(xti, image):
-    x = xti[0]
-    phi = xti[2]
+    '''
+    Updates :attr:`image` of the system according to simulation data :attr:`xti`
+    
+    
+    Parameters
+    ----------
+    
+    xti : numpy.ndarray
+        Array with current time and system state
+    image : Animation.Image
+        Current image that represents system state
+    
+    
+    Returns
+    -------
+    
+    image : Animation.Image
+        Updated image that represents system state
+    '''
+    
+    x, phi = xti[0], xti[2]
     
     L = 0.5
     car_width = 0.05
@@ -88,13 +107,10 @@ def draw(xti, image):
     return image
 
 # create animation object
-
-
-A = Animation(drawfnc=draw, simdata=T.sim)
+A = Animation(drawfnc=draw, simdata=T.sim, plotsys=[[0, 'x'], [2, 'phi']], plotinputs=[[0, 'F']])
+#A = Animation(drawfnc=draw, simdata=T.sim)
 
 A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
-A.set_pos([0.01,0.01,0.98,0.98])
 
 A.animate()
-
 A.save('doc_ex1.mp4')

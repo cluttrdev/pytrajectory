@@ -9,6 +9,7 @@ from numpy import sin,cos
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from matplotlib.gridspec import GridSpec
 
 
 class IntegChain():
@@ -88,78 +89,10 @@ class Grid():
         pass
 
 
-class struct():
-    def __init__(self):
-        return
-
-
-class Modell:
-    def __init__(self):
-        self.fig=plt.figure()
-        self.ax=plt.axes()
-    
-        mng = plt.get_current_fig_manager()
-     
-        mng.window.setGeometry(0, 0, 1000, 700)
-    
-        self.ax.set_xlim(-1.2,0.3)
-        self.ax.set_ylim(-0.6,0.6)
-        self.ax.set_yticks([])
-        self.ax.set_xticks([])
-        self.ax.set_position([0.01,0.01,0.98,0.98])
-        self.ax.set_frame_on(True)
-        self.ax.set_aspect('equal')
-        self.ax.set_axis_bgcolor('w')
-    
-        self.image=0
-
-    def draw(self,x,phi,frame,image=0):
-        L=0.5
-        
-        car_width=0.05
-        car_heigth = 0.02
-        pendel_size = 0.015
-        
-        x_car=x
-        y_car=0
-        
-        x_pendel=-L*sin(phi)+x_car
-        y_pendel= L*cos(phi)
-        
-        if (image==0):
-            # init
-            image=struct()
-        else:
-            # update
-            image.sphere.remove()
-            image.stab.remove()
-            image.car.remove()
-            image.gelenk.remove()
-        
-        #Ball
-        image.sphere=mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
-        self.ax.add_patch(image.sphere)
-        
-        #Car
-        image.car=mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
-        self.ax.add_patch(image.car)
-        #IPS()
-        image.gelenk=mpl.patches.Circle((x_car,0),0.005,color='k')
-        self.ax.add_patch(image.gelenk)
-        #self.ax.annotate(frame, xy=(x_pendel, y_pendel), xytext=(x_pendel+0.02, y_pendel))
-        #Stab
-        image.stab=self.ax.add_line(mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=1,linewidth=2.0))
-        
-        #txt = plt.text(x_pendel+0.05,y_pendel,frame)
-        
-        self.image = image
-        
-        plt.draw()
-
-
 class Animation():
     '''
     Provides animation capabilities.
+    
     
     Parameters
     ----------
@@ -168,28 +101,40 @@ class Animation():
         Function that returns an image of the current system state according to :attr:`data`
     simdata : numpy.ndarray
         Array that contains simulation data (time, system states, input states)
+    plotsys : list
+        List of tuples with indices and labels of system variables that will be plotted along the picture
+    plotinputs : list
+        List of tuples with indices and labels of input variables that will be plotted along the picture
     '''
     
-    def __init__(self, drawfnc, simdata):
+    def __init__(self, drawfnc, simdata, plotsys=[], plotinputs=[]):
         self.fig = plt.figure()
-        self.ax = plt.axes()
-    
-        #mng = plt.get_current_fig_manager()
-     
-        #mng.window.setGeometry(0, 0, 1000, 700)
-    
-        self.ax.set_xticks([])
-        self.ax.set_yticks([])
-        self.ax.set_frame_on(True)
-        self.ax.set_aspect('equal')
-        self.ax.set_axis_bgcolor('w')
     
         self.image = 0
+        
+        self.t = simdata[0]
+        self.xt = simdata[1]
+        self.ut = simdata[0]
+        
+        self.plotsys = plotsys
+        self.plotinputs = plotinputs
+        
+        self.get_axes()
+        
+        #if plotcurves:
+        #    self.plot_curves = True
+        #else:
+        #    self.plot_curves = False
+        
+        self.axes['ax1'].set_xticks([])
+        self.axes['ax1'].set_yticks([])
+        self.axes['ax1'].set_frame_on(True)
+        self.axes['ax1'].set_aspect('equal')
+        self.axes['ax1'].set_axis_bgcolor('w')
         
         self.nframes = 80
         
         self.draw = drawfnc
-        self.data = simdata
     
     
     class Image():
@@ -202,27 +147,99 @@ class Animation():
             self.lines = []
     
     
-    def set_limits(self, xlim, ylim):
-        self.ax.set_xlim(*xlim)
-        self.ax.set_ylim(*ylim)
+    def get_axes(self):
+        sys = self.plotsys
+        inputs = self.plotinputs
+        
+        if not sys+inputs:
+            gs = GridSpec(1,1)
+        else:
+            #gs = GridSpec(len(sys+inputs), 2)
+            gs = GridSpec(2, len(sys+inputs))
+        
+        axes = dict()
+        syscurves = []
+        inputcurves = []
+        
+        #axes['ax1'] = self.fig.add_subplot(gs[:,0])
+        axes['ax1'] = self.fig.add_subplot(gs[0,:])
+        
+        for i in xrange(len(sys)):
+            #axes['ax%d'%(i+2)] = self.fig.add_subplot(gs[i,1])
+            axes['ax%d'%(i+2)] = self.fig.add_subplot(gs[1,i])
+            
+            curve = mpl.lines.Line2D([], [], color='black')
+            syscurves.append(curve)
+            
+            axes['ax%d'%(i+2)].add_line(curve)
+        
+        offset = len(sys)
+        for i in xrange(len(inputs)):
+            #axes['ax%d'%(i+2+offset)] = self.fig.add_subplot(gs[i,1])
+            axes['ax%d'%(i+2+offset)] = self.fig.add_subplot(gs[1,i+offset])
+            
+            curve = mpl.lines.Line2D([], [], color='black')
+            inputcurves.append(curve)
+            
+            axes['ax%d'%(i+2+offset)].add_line(curve)
+        
+        self.axes = axes
+        self.syscurves = syscurves
+        self.inputcurves = inputcurves
     
     
-    def set_pos(self, pos):
-        self.ax.set_position(pos)
+    def set_limits(self, ax='ax1', xlim=(0,1), ylim=(0,1)):
+        self.axes[ax].set_xlim(*xlim)
+        self.axes[ax].set_ylim(*ylim)
     
+    
+    def set_label(self, ax='ax1', label=''):
+        #self.axes[ax].set_xlabel(xlabel)
+        self.axes[ax].set_title(label)
+        
     
     def animate(self):
-        t = self.data[0]
-        xt = self.data[1]
+        t = self.t
+        xt = self.xt
+        ut = self.ut
         
         tt = np.linspace(0,(len(t)-1),self.nframes+1,endpoint=True)
         
         self.T = t[-1] - t[0]
         
+        # set axis limits and labels of system curves
+        xlim = (0.0, self.T)
+        for i, idxlabel in enumerate(self.plotsys):
+            idx, label = idxlabel
+            
+            try:
+                ylim = (min(xt[:,idx]), max(xt[:,idx]))
+            except:
+                ylim = (min(xt), max(xt))
+            
+            self.set_limits(ax='ax%d'%(i+2), xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax%d'%(i+2), label=label)
+            
+        # set axis limits and labels of input curves
+        offset = len(self.plotsys)
+        for i, idxlabel in enumerate(self.plotinputs):
+            idx, label = idxlabel
+            
+            try:
+                ylim = (min(ut[:,idx]), max(ut[:,idx]))
+            except:
+                ylim = (min(ut), max(ut))
+            
+            self.set_limits(ax='ax%d'%(i+2), xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax%d'%(i+2), label=label)
+        
         def _animate(frame):
             i = tt[frame]
             print frame
+            
+            # draw picture
             image = self.image
+            ax1 = self.axes['ax1']
             
             if image == 0:
                 # init
@@ -235,19 +252,37 @@ class Animation():
                     l.remove()
                 image.reset()
             
-            self.image = self.draw(xt[i,:], image=image)
+            image = self.draw(xt[i,:], image=image)
             
-            for p in self.image.patches:
-                self.ax.add_patch(p)
+            for p in image.patches:
+                ax1.add_patch(p)
             
-            for l in self.image.lines:
-                self.ax.add_line(l)
+            for l in image.lines:
+                ax1.add_line(l)
+            
+            self.image = image
+            self.axes['ax1'] = ax1
+            
+            # draw system curves
+            for k, curve in enumerate(self.syscurves):
+                try:
+                    curve.set_data(t[:i], xt[:i,self.plotsys[k][0]])
+                except:
+                    curve.set_data(t[:i], xt[:i])
+                self.axes['ax%d'%(k+2)].add_line(curve)
+            
+            # draw input curves
+            for k, curve in enumerate(self.inputcurves):
+                try:
+                    curve.set_data(t[:i], ut[:i,self.plotinputs[k][0]])
+                except:
+                    curve.set_data(t[:i], ut[:i])
+                self.axes['ax%d'%(k+2+offset)].add_line(curve)
             
             plt.draw()
-            
         
         self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes,
-                                                interval=1, blit=True)
+                                            interval=1, blit=True)
     
     
     def save(self, fname, fps=None):

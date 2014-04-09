@@ -48,7 +48,7 @@ xb = [  0.5,
         0.0,
         0.0]
 
-if(calc):
+if calc:
     a, b = (0.0, 1.0)
     sx = 4
     su = 3
@@ -67,108 +67,49 @@ if(calc):
 
 ##################################################
 # NEW EXPERIMENTAL STUFF
-# --> taken from original version
 if animate:
     import numpy as np
-    import pylab as plt
     import matplotlib as mpl
-    from matplotlib import animation
+    from pytrajectory.utilities import Animation
     
-    class struct():
-        def __init__(self):
-            return
+    def draw(xti, image):
+        x = xti[0]
+        phi = xti[2]
+        
+        L = 0.5
     
-    class Modell:
-        def __init__(self):
-            self.fig=plt.figure()
-            self.ax=plt.axes()
-        
-            mng = plt.get_current_fig_manager()
-        
-            #mng.window.wm_geometry("1000x700+50+50")  
-            mng.window.setGeometry(0, 0, 1000, 700)
-            
-            self.ax.set_xlim(-0.3,0.8);
-            self.ax.set_ylim(-0.1,0.6);
-            self.ax.set_yticks([])
-            self.ax.set_xticks([])
-            self.ax.set_position([0.01,0.01,0.98,0.98]);
-            self.ax.set_frame_on(True);
-            self.ax.set_aspect('equal')
-            self.ax.set_axis_bgcolor('w');
-        
-            self.image=0
+        car_width = 0.05
+        car_heigth = 0.02
+        pendel_size = 0.015
     
-        def draw(self,x,phi,frame,image=0):
-            L=0.5
-        
-            car_width=0.05
-            car_heigth = 0.02
-            pendel_size = 0.015
-        
-        
-            x_car=x
-            y_car=0
-        
-            x_pendel=-L*sin(phi)+x_car
-            y_pendel= L*cos(phi)
-        
-            #Init
-            if (image==0):
-              image=struct()
-        
-            #update
-            else:
-                image.sphere.remove()
-                image.stab.remove()
-                image.car.remove()
-                image.gelenk.remove()
-        
-            #Stab
-            image.stab=self.ax.add_line(mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0))
-        
-            #Ball
-            image.sphere=mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
-            self.ax.add_patch(image.sphere)
-        
-        
-            #Car
-            image.car=mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
-            self.ax.add_patch(image.car)
-            #IPS()
-            image.gelenk=mpl.patches.Circle((x_car,0),0.005,color='k')
-            self.ax.add_patch(image.gelenk)
-            #self.ax.annotate(frame, xy=(x_pendel, y_pendel), xytext=(x_pendel+0.02, y_pendel))
-        
-            #txt = plt.text(x_pendel+0.05,y_pendel,frame)
-        
-            self.image = image
-        
-        
-            plt.draw()
+        x_car = x
+        y_car = 0
     
+        x_pendel =-L*sin(phi)+x_car
+        y_pendel = L*cos(phi)
     
-    t = T.sim[0]
-    xt = T.sim[1]
+        # Stab
+        stab = mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0)
+        image.lines.append(stab)
     
-    TT = t[-1] - t[0]
+        # Ball
+        sphere = mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
+        image.patches.append(sphere)
     
-    pics = 40
+        # Car
+        car = mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,
+                                    fill=True,facecolor='0.75',linewidth=2.0)
+        image.patches.append(car)
+        
+        # Gelenk
+        gelenk = mpl.patches.Circle((x_car,0),0.005,color='k')
+        image.patches.append(gelenk)
+        
+        return image
     
-    tt = np.linspace(0,(len(t)-1),pics+1,endpoint=True)
+    A = Animation(drawfnc=draw, simdata=T.sim)
+    A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
+    A.set_pos()
     
-    M = Modell()
-    
-    
-    def animate(frame):
-        i = tt[frame]
-        print frame
-        M.draw(xt[i,0],xt[i,2],str(round(t[i],2))+'s',image=M.image)
-        #sleep(TT/float(pics))
-    
-    anim = animation.FuncAnimation(M.fig, animate, 
-                                   frames=pics, interval=1, blit=True)
-    
-    
-    anim.save('ex2.mp4', fps=20)
-    
+    A.animate()
+    A.save('ex2.mp4')
