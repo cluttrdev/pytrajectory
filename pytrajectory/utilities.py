@@ -114,7 +114,7 @@ class Animation():
         
         self.t = simdata[0]
         self.xt = simdata[1]
-        self.ut = simdata[0]
+        self.ut = simdata[2]
         
         self.plotsys = plotsys
         self.plotinputs = plotinputs
@@ -126,11 +126,11 @@ class Animation():
         #else:
         #    self.plot_curves = False
         
-        self.axes['ax1'].set_xticks([])
-        self.axes['ax1'].set_yticks([])
-        self.axes['ax1'].set_frame_on(True)
-        self.axes['ax1'].set_aspect('equal')
-        self.axes['ax1'].set_axis_bgcolor('w')
+        self.axes['ax_img'].set_xticks([])
+        self.axes['ax_img'].set_yticks([])
+        self.axes['ax_img'].set_frame_on(True)
+        self.axes['ax_img'].set_aspect('equal')
+        self.axes['ax_img'].set_axis_bgcolor('w')
         
         self.nframes = 80
         
@@ -154,47 +154,42 @@ class Animation():
         if not sys+inputs:
             gs = GridSpec(1,1)
         else:
-            #gs = GridSpec(len(sys+inputs), 2)
             gs = GridSpec(2, len(sys+inputs))
         
         axes = dict()
         syscurves = []
         inputcurves = []
         
-        #axes['ax1'] = self.fig.add_subplot(gs[:,0])
-        axes['ax1'] = self.fig.add_subplot(gs[0,:])
+        axes['ax_img'] = self.fig.add_subplot(gs[0,:])
         
         for i in xrange(len(sys)):
-            #axes['ax%d'%(i+2)] = self.fig.add_subplot(gs[i,1])
-            axes['ax%d'%(i+2)] = self.fig.add_subplot(gs[1,i])
+            axes['ax_x%d'%i] = self.fig.add_subplot(gs[1,i])
             
             curve = mpl.lines.Line2D([], [], color='black')
             syscurves.append(curve)
             
-            axes['ax%d'%(i+2)].add_line(curve)
+            axes['ax_x%d'%i].add_line(curve)
         
-        offset = len(sys)
+        lensys = len(sys)
         for i in xrange(len(inputs)):
-            #axes['ax%d'%(i+2+offset)] = self.fig.add_subplot(gs[i,1])
-            axes['ax%d'%(i+2+offset)] = self.fig.add_subplot(gs[1,i+offset])
+            axes['ax_u%d'%i] = self.fig.add_subplot(gs[1,lensys+i])
             
             curve = mpl.lines.Line2D([], [], color='black')
             inputcurves.append(curve)
             
-            axes['ax%d'%(i+2+offset)].add_line(curve)
+            axes['ax_u%d'%i].add_line(curve)
         
         self.axes = axes
         self.syscurves = syscurves
         self.inputcurves = inputcurves
     
     
-    def set_limits(self, ax='ax1', xlim=(0,1), ylim=(0,1)):
+    def set_limits(self, ax='ax_img', xlim=(0,1), ylim=(0,1)):
         self.axes[ax].set_xlim(*xlim)
         self.axes[ax].set_ylim(*ylim)
     
     
-    def set_label(self, ax='ax1', label=''):
-        #self.axes[ax].set_xlabel(xlabel)
+    def set_label(self, ax='ax_img', label=''):
         self.axes[ax].set_title(label)
         
     
@@ -217,11 +212,10 @@ class Animation():
             except:
                 ylim = (min(xt), max(xt))
             
-            self.set_limits(ax='ax%d'%(i+2), xlim=xlim, ylim=ylim)
-            self.set_label(ax='ax%d'%(i+2), label=label)
+            self.set_limits(ax='ax_x%d'%i, xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax_x%d'%i, label=label)
             
         # set axis limits and labels of input curves
-        offset = len(self.plotsys)
         for i, idxlabel in enumerate(self.plotinputs):
             idx, label = idxlabel
             
@@ -230,8 +224,8 @@ class Animation():
             except:
                 ylim = (min(ut), max(ut))
             
-            self.set_limits(ax='ax%d'%(i+2), xlim=xlim, ylim=ylim)
-            self.set_label(ax='ax%d'%(i+2), label=label)
+            self.set_limits(ax='ax_u%d'%i, xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax_u%d'%i, label=label)
         
         def _animate(frame):
             i = tt[frame]
@@ -239,7 +233,7 @@ class Animation():
             
             # draw picture
             image = self.image
-            ax1 = self.axes['ax1']
+            ax_img = self.axes['ax_img']
             
             if image == 0:
                 # init
@@ -255,13 +249,13 @@ class Animation():
             image = self.draw(xt[i,:], image=image)
             
             for p in image.patches:
-                ax1.add_patch(p)
+                ax_img.add_patch(p)
             
             for l in image.lines:
-                ax1.add_line(l)
+                ax_img.add_line(l)
             
             self.image = image
-            self.axes['ax1'] = ax1
+            self.axes['ax_img'] = ax_img
             
             # draw system curves
             for k, curve in enumerate(self.syscurves):
@@ -269,7 +263,7 @@ class Animation():
                     curve.set_data(t[:i], xt[:i,self.plotsys[k][0]])
                 except:
                     curve.set_data(t[:i], xt[:i])
-                self.axes['ax%d'%(k+2)].add_line(curve)
+                self.axes['ax_x%d'%k].add_line(curve)
             
             # draw input curves
             for k, curve in enumerate(self.inputcurves):
@@ -277,7 +271,7 @@ class Animation():
                     curve.set_data(t[:i], ut[:i,self.plotinputs[k][0]])
                 except:
                     curve.set_data(t[:i], ut[:i])
-                self.axes['ax%d'%(k+2+offset)].add_line(curve)
+                self.axes['ax_u%d'%k].add_line(curve)
             
             plt.draw()
         

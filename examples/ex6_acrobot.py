@@ -19,7 +19,7 @@ lc = l/2.0
 g = 9.81
 
 calc = True
-animate = False
+animate = True
 
 
 def f(x,u):
@@ -97,7 +97,8 @@ if animate:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim, 
+                  plotsys=[[0,'phi1'],[2,'phi2']], plotinputs=[[0, 'u1']])
     A.set_limits(xlim=(-1.1,1.1), ylim=(-1.1,1.1))
     
     A.animate()
