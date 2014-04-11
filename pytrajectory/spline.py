@@ -106,28 +106,12 @@ class CubicSpline():
                 self.makesteady()
     
     
-    def f(self, x):
-        '''This is just a wrapper for :func:`evalf` to evaluate the spline itself.'''
-        return self.evalf(x,0)
-
-    def df(self, x):
-        '''This is just a wrapper for :func:`evalf` to evaluate the splines 1st derivative.'''
-        return self.evalf(x,1)
-
-    def ddf(self, x):
-        '''This is just a wrapper for :func:`evalf` to evaluate the splines 2nd derivative.'''
-        return self.evalf(x,2)
-
-    def dddf(self, x):
-        '''This is just a wrapper for :func:`evalf` to evaluate the splines 3rd derivative.'''
-        return self.evalf(x,3)
-    
-    
     def tmp_evalf(self, x, d):
         '''
         This function returns a matrix and vector to evaluate the spline or a derivative at x
         by multiplying the matrix with numerical values of the independent variables
         and adding the vector.
+        
         
         Parameters
         ----------
@@ -151,7 +135,7 @@ class CubicSpline():
         
         x -= (i+1)*self.h
         
-        # Calculate vector to multiply coefficient matrix with
+        # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if (d == 0):
             p = np.array([x*x*x,x*x,x,1.0])
         elif (d == 1):
@@ -169,7 +153,7 @@ class CubicSpline():
     
     def evalf(self, x, d):
         '''
-        bla bla bla
+        Returns the value of the splines :attr:`d`-th derivative at :attr:`x`.
         
         
         Parameters
@@ -187,6 +171,34 @@ class CubicSpline():
         p = self.S[i]
 
         return p.deriv(d)(x-(i+1)*self.h)
+    
+    def f(self, x):
+        '''This is just a wrapper for :meth:`evalf` to evaluate the spline itself.'''
+        if self.tmp_flag:
+            return self.tmp_evalf(x,0)
+        else:
+            return self.evalf(x,0)
+
+    def df(self, x):
+        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 1st derivative.'''
+        if self.tmp_flag:
+            return self.tmp_evalf(x,1)
+        else:
+            return self.evalf(x,1)
+
+    def ddf(self, x):
+        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 2nd derivative.'''
+        if self.tmp_flag:
+            return self.tmp_evalf(x,2)
+        else:
+            return self.evalf(x,2)
+
+    def dddf(self, x):
+        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 3rd derivative.'''
+        if self.tmp_flag:
+            return self.tmp_evalf(x,3)
+        else:
+            return self.evalf(x,3)
     
     
     def makesteady(self):
@@ -330,13 +342,15 @@ class CubicSpline():
     
     
     def set_coeffs(self, c_sol):
-        '''This function is used to set up numerical values for the spline coefficients.
+        '''
+        This function is used to set up numerical values for the spline coefficients.
+        
         
         Parameters
         ----------
         
-        c_sol : dict
-            Dictionary with coefficient and numerical value
+        c_sol : numpy.ndarray
+            Array with numerical values for the free spline coefficients
         '''
         
         for i in xrange(self.n):
@@ -344,38 +358,3 @@ class CubicSpline():
             self.S[i] = np.poly1d(c_num)
         
         self.tmp_flag = False
-
-    
-
-
-    def tmp_f(self,x):
-        '''This is just a wrapper for :func:`tmp_evalf` with the spline itself.'''
-        return self.tmp_evalf(x, 0)
-
-
-    def tmp_df(self,x):
-        '''This is just a wrapper for :func:`tmp_evalf` with the splines 1st derivative.'''
-        return self.tmp_evalf(x, 1)
-
-
-    def tmp_ddf(self,x):
-        '''This is just a wrapper for :func:`tmp_evalf` with the splines 2nd derivative.'''
-        return self.tmp_evalf(x, 2)
-
-
-    def tmp_dddf(self,x):
-        '''This is just a wrapper for :func:`tmp_evalf` with the splines 3rd derivative.'''
-        return self.tmp_evalf(x, 3)
-
-
-    
-
-
-    
-
-    
-
-
-if __name__ == '__main__':
-    spline = CubicSpline(0,1,5,tag='x1',bc=[0,0],bcd=[0,0],bcdd=[0,0])
-    IPS()

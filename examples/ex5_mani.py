@@ -92,7 +92,8 @@ if animate:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                    plotsys=[[0, 'phi1'], [2, 'phi2']], plotinputs=[[0, 'M']])
     A.set_limits(xlim= (-0.1,0.6), ylim=(-0.4,0.65))
     
     A.animate()

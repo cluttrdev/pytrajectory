@@ -14,13 +14,19 @@ from matplotlib.gridspec import GridSpec
 
 class IntegChain():
     '''
-    This class provides a representation of a integrator chain consisting of sympy symbols ...
+    This class provides a representation of a integrator chain consisting of sympy symbols.
+    
+    For the elements :math:`(x_i)_{i=1,...,n}` the following relation applies:
+    
+    .. math::
+    
+       \dot{x}_i = x_{i+1} \quad i = 1,...,n-1
     
     
     Parameters
     ----------
     
-    lst : lst
+    lst : list
         Ordered list of elements for the integrator chain
     '''
     
@@ -44,7 +50,7 @@ class IntegChain():
             s += ' -> ' + elem.name
         return s[4:]
     
-    def successor(self, elem):
+    def succ(self, elem):
         '''
         This method returns the successor of the given element of the
         integrator chains, i.e. it returns :math:`\\frac{d}{dt}[elem]`
@@ -63,7 +69,7 @@ class IntegChain():
         
         return succ
     
-    def predecessor(self, elem):
+    def pred(self, elem):
         '''
         This method returns the predecessor of the given element of the
         integrator chains, i.e. it returns :math:`\\int [elem]`
@@ -98,7 +104,7 @@ class Animation():
     ----------
     
     drawfnc : callable
-        Function that returns an image of the current system state according to :attr:`data`
+        Function that returns an image of the current system state according to :attr:`simdata`
     simdata : numpy.ndarray
         Array that contains simulation data (time, system states, input states)
     plotsys : list
@@ -287,7 +293,7 @@ class Animation():
 
 def blockdiag(M, bshape=None, sparse=False):
     '''
-    Takes block of shape :attr:`bshape`  from matrix :attr:`M` and creates 
+    Takes blocks of shape :attr:`bshape`  from matrix :attr:`M` and creates 
     block diagonal matrix out of them.
     
     

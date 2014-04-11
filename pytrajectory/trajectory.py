@@ -227,6 +227,15 @@ class Trajectory():
                     m = j
                     break
                 except:
+                    #~ if j == 0:
+                        #~ try:
+                            #~ self.ff(x)
+                            #~ found_nm = True
+                            #~ n = i
+                            #~ m = j
+                            #~ break
+                        #~ except:
+                            #~ pass
                     if i>20:
                         IPS()
                     pass
@@ -248,13 +257,21 @@ class Trajectory():
         chaindict = {}
         for i in xrange(len(fi)):
             for xx in x_sym:
-                if ((fi[i].subs(1.0, 1)) == xx):
-                    # substitution because of sympy difference betw. 1.0 and 1
-                    chaindict[xx] = x_sym[i]
+                try:
+                    if ((fi[i].subs(1.0, 1)) == xx):
+                        # substitution because of sympy difference betw. 1.0 and 1
+                        chaindict[xx] = x_sym[i]
+                except:
+                    if fi[i] == xx:
+                        chaindict[xx] = x_sym[i]
             
             for uu in u_sym:
-                if ((fi[i].subs(1.0, 1)) == uu):
-                    chaindict[uu] = x_sym[i]
+                try:
+                    if ((fi[i].subs(1.0, 1)) == uu):
+                        chaindict[uu] = x_sym[i]
+                except:
+                    if fi[i] == uu:
+                        chaindict[uu] = x_sym[i]
     
         # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
         # where x_4 = d x_3 / dt and so on
@@ -374,7 +391,7 @@ class Trajectory():
                     
                     for i, p in enumerate(gpts):
                         OLD[i] = old_splines[k].f(p)
-                        NEW[i], NEW_abs[i] = new_splines[k].tmp_f(p)
+                        NEW[i], NEW_abs[i] = new_splines[k].f(p)
                     
                     OLD = np.array(OLD)
                     NEW = np.array(NEW)
@@ -423,38 +440,38 @@ class Trajectory():
             for i,elem in enumerate(ic.elements):
                 if elem in self.u_sym:
                     if (i == 0):
-                        u_fnc[elem] = splines[upper].tmp_f
+                        u_fnc[elem] = splines[upper].f
                     if (i == 1):
-                        u_fnc[elem] = splines[upper].tmp_df
+                        u_fnc[elem] = splines[upper].df
                     if (i == 2):
-                        u_fnc[elem] = splines[upper].tmp_ddf
+                        u_fnc[elem] = splines[upper].ddf
                 elif elem in self.x_sym:
                     if (i == 0):
                         splines[upper].bc = [self.xa[elem],self.xb[elem]]
                         if ((self.g != None) and (splines[upper].type == 'u')):
                             splines[upper].bcd = self.g
-                        x_fnc[elem] = splines[upper].tmp_f
+                        x_fnc[elem] = splines[upper].f
                     if (i == 1):
                         splines[upper].bcd = [self.xa[elem],self.xb[elem]]
                         if ((self.g != None) and (splines[upper].type == 'u')):
                             splines[upper].bcdd = self.g
-                        x_fnc[elem] = splines[upper].tmp_df
+                        x_fnc[elem] = splines[upper].df
                     if (i == 2):
                         splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
-                        x_fnc[elem] = splines[upper].tmp_ddf
+                        x_fnc[elem] = splines[upper].ddf
         
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:
             if (not x_fnc.has_key(xx)):
                 splines[xx] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[xx],self.xb[xx]],steady=False,tag=str(xx))
                 splines[xx].type = 'x'
-                x_fnc[xx] = splines[xx].tmp_f
+                x_fnc[xx] = splines[xx].f
 
         for uu in self.u_sym:
             if (not u_fnc.has_key(uu)):
                 splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=str(uu))
                 splines[uu].type = 'u'
-                u_fnc[uu] = splines[uu].tmp_f
+                u_fnc[uu] = splines[uu].f
 
         # solve smoothness conditions of each spline
         for ss in splines:
@@ -505,13 +522,16 @@ class Trajectory():
         elif self.colltype == 'chebychev':
             # determine rank of chebychev polynomial to calculate zero points of
             nc = int(self.sx*delta - 1)
+            
             # calculate zero points of chebychev polynomial --> in [-1,1]
             cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
             cheb_cpts.sort()
+            
             # transfer chebychev knots from [-1,1] to our interval [a,b]
             a = self.a
             b = self.b
             chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
+            
             # add left and right borders
             cpts = np.hstack((a, chpts, b))
         else:
@@ -590,8 +610,8 @@ class Trajectory():
         
         self.Df = sp.lambdify(self.x_sym+self.u_sym, Df_mat, modules='numpy')
         
-        # the following is needed in self.DG but it is possible to only create it once
-        # and not with every call to self.DG
+        # the following would be created with every call to self.DG but it is possible to 
+        # only do it once
         self.DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,self.eqind,:]
         
         ##########
@@ -639,7 +659,7 @@ class Trajectory():
 
     def G(self, c):
         '''
-        This is the callable function that represents the collocation system.
+        Returns the collocation system evaluated with numeric values for the independent parameters.
         '''
         
         ff = self.ff
@@ -669,7 +689,7 @@ class Trajectory():
 
     def DG(self, c):
         '''
-        This is the callable function that returns the jacobian matrix of the collocation system.
+        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters.
         '''
         
         Df = self.Df
@@ -722,7 +742,7 @@ class Trajectory():
             block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
             J_XU = self.J_XU2
             DF2 = block_DF.dot(J_XU)
-            #DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions
+            #DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions for sparse matrix
             DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
             DF = DF2[:,eqind,:]
         
@@ -766,53 +786,13 @@ class Trajectory():
         for cc in self.splines:
             self.splines[cc].set_coeffs(subs[cc])
 
-        # reset callable functions
-        self.x_fnc = dict()
-        self.u_fnc = dict()
-        self.dx_fnc = dict()
-        
-        splines = self.splines
-        
-        # again we handle variables that are part of an integrator chain first
-        for ic in chains:
-            upper = ic.upper
-            
-            for i,elem in enumerate(ic.elements):
-                if elem in self.u_sym:
-                    if (i == 0):
-                        self.u_fnc[elem] = splines[upper].f
-                    if (i == 1):
-                        self.u_fnc[elem] = splines[upper].df
-                    if (i == 2):
-                        self.u_fnc[elem] = splines[upper].ddf
-                elif elem in self.x_sym:
-                    if (i == 0):
-                        self.x_fnc[elem] = splines[upper].f
-                    if (i == 1):
-                        self.x_fnc[elem] = splines[upper].df
-                    if (i == 2):
-                        self.x_fnc[elem] = splines[upper].ddf
-
-        # now handle the variables which are not part of any chain
-        for xx in self.x_sym:
-            if (not self.x_fnc.has_key(xx)):
-                self.x_fnc[xx] = splines[xx].f
-
-        for uu in self.u_sym:
-            if (not self.u_fnc.has_key(uu)):
-                self.u_fnc[uu] = splines[uu].f
-
-        for xx in self.x_sym:
-            self.dx_fnc[xx] = fdiff(self.x_fnc[xx])
-
         # yet another dictionary for solution and coeffs
         coeffs_sol = dict()
 
         # used for indexing
         i = 0
         j = 0
-
-        # take solution and write back the coefficients for each spline
+        
         for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             j += len(v)
             coeffs_sol[k] = self.sol[i:j]
@@ -888,7 +868,7 @@ class Trajectory():
     
     def plot(self):
         '''
-        Just calls :func:`plot` function from :mod:`tools`
+        Just calls :func:`plot` function from :mod:`utilities`
         '''
         _plot(self.sim, self.H)
     

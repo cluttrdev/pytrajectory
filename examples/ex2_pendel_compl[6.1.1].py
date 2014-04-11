@@ -107,9 +107,9 @@ if animate:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                    plotsys=[[0, 'x'], [2, 'phi']], plotinputs=[[0, 'F']])
     A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
-    A.set_pos()
     
     A.animate()
     A.save('ex2.mp4')

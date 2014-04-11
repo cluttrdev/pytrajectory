@@ -58,7 +58,46 @@
 <h1>About PyTrajectory<a class="headerlink" href="#about-pytrajectory" title="Permalink to this headline">¶</a></h1>
 <p>PyTrajectory is a Python library for the determination of the feed forward control
 to achieve a transition between desired states of a nonlinear control system.</p>
-<p>It&#8217;s based an a study work written at the Technical University Dresden.</p>
+<div class="section" id="mathematical-background">
+<h2>Mathematical background<a class="headerlink" href="#mathematical-background" title="Permalink to this headline">¶</a></h2>
+<p>Given a system of autonomous differential equations</p>
+<div class="math">
+<p><img src="../_images/math/a128954f63c7d6a096c1d34c3fe61db1b1ce4dc1.png" alt="\dot{x}_1(t) = f_n(x_1(t),...,x_n(t))
+
+\vdots \qquad \vdots
+
+\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))"/></p>
+</div><p>with <img class="math" src="../_images/math/7ee1e80a90cec6b0dea8088399ebb8442e81fc28.png" alt="t \in [a, b]"/> and <em>Dirichlet</em> boundary conditions</p>
+<div class="math">
+<p><img src="../_images/math/928437780955f44e10e6365939c9e2a9af296e8c.png" alt="x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n"/></p>
+</div><p>the collocation method to solve the problem basically works as follows.</p>
+<p>We choose <img class="math" src="../_images/math/2ac451fabdaeca572c4e056b41f89c30e8bbd7af.png" alt="N+1"/> collocation points <img class="math" src="../_images/math/1f2cf1b18584d260b2b76756531cc89e64f92ffe.png" alt="t_i,\ i = 0,...,N"/> from the interval
+<img class="math" src="../_images/math/1d2d3c2141e9f7387a2d26b1ea40c2aabd96f3ac.png" alt="[a, b]"/> where <img class="math" src="../_images/math/5538c9ddc6519d3fb21495f20e9e2373dc168a38.png" alt="t_0 = a,\ t_{N} = b"/> and search for functions
+<img class="math" src="../_images/math/87140f45491eeddfe1833452283cd80cbe86d2e3.png" alt="P_i:[a,b] \rightarrow R"/> which satisfy the following conditions:</p>
+<div class="math">
+<p><img src="../_images/math/72cd5f2b243fc15e34297fc1b28e028b1e6e3020.png" alt="P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+
+\frac{d}{d t} P_i(t) = f_i(P_1(t),...,P_n(t)) \quad i = 1,...,n"/></p>
+</div><p>Through these demands the exact solution of the ode system will be approximated.</p>
+</div>
+<div class="section" id="candidate-functions">
+<h2>Candidate functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
+<p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
+solution. Splines are piecewise polynomials with a global differentiability.
+The connection points <img class="math" src="../_images/math/54e7b88931659de229c9cb4465c1a35cad90f605.png" alt="\tau_i"/> between the polynomial sections are equidistantly
+and are referred to as nodes.</p>
+<div class="math">
+<p><img src="../_images/math/3dd91495784fd1f618a91bcce2f115ceefa567f4.png" alt="t_0 = \tau_0 &lt; \tau_1 &lt; ... &lt; \tau_{\eta} = t_N \qquad h = \frac{t_0 - t_N}{\eta}
+
+\tau_{i+1} = \tau_i + h \quad i = 0,...,\eta-1"/></p>
+</div><p>The polynomial sections can be created as follows.</p>
+<div class="math">
+<p><img src="../_images/math/a27eb97ad608b90d6c22fd19ab580cd66e715a9e.png" alt="P_i(t) = c_{i,0}(t-i*h)^3 + c_{i,1}(t-i*h)^2 + c_{i,2}(t-i*h) + c_{i,3}
+
+c_{i,j} \in R,\qquad i = 1,...,\eta,\ j = 0,...,3"/></p>
+</div><p>In addition to the steadiness the spline functions should be twice steadily differentiable in
+the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78a148a10e8.png" alt="\tau"/>.</p>
+</div>
 </div>
 
 
@@ -67,6 +106,15 @@ to achieve a transition between desired states of a nonlinear control system.</p
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">About PyTrajectory</a><ul>
+<li><a class="reference internal" href="#mathematical-background">Mathematical background</a></li>
+<li><a class="reference internal" href="#candidate-functions">Candidate functions</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
                         title="previous chapter">PyTrajectory User&#8217;s Guide</a></p>
