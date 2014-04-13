@@ -95,7 +95,7 @@
     
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
-        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span><span class="c">#[::-1]:</span>
             <span class="n">s</span> <span class="o">+=</span> <span class="s">&#39; -&gt; &#39;</span> <span class="o">+</span> <span class="n">elem</span><span class="o">.</span><span class="n">name</span>
         <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
     
@@ -139,11 +139,6 @@
         <span class="k">return</span> <span class="n">pred</span>
 
 </div></div>
-<div class="viewcode-block" id="Grid"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Grid">[docs]</a><span class="k">class</span> <span class="nc">Grid</span><span class="p">():</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-</div>
 <div class="viewcode-block" id="Animation"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Animation">[docs]</a><span class="k">class</span> <span class="nc">Animation</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Provides animation capabilities.</span>
@@ -176,13 +171,6 @@
         
         <span class="bp">self</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()</span>
         
-        <span class="c">#if plotcurves:</span>
-        <span class="c">#    self.plot_curves = True</span>
-        <span class="c">#else:</span>
-        <span class="c">#    self.plot_curves = False</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_frame_on</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s">&#39;equal&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_axis_bgcolor</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
@@ -483,46 +471,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.png&#39;</span><span class="p">):</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="o">+</span><span class="s">&#39;.png&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-
-</div>
-<div class="viewcode-block" id="BetweenDict"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.BetweenDict">[docs]</a><span class="k">class</span> <span class="nc">BetweenDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-    <span class="c">##?? Quelle? Lizenz?</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="p">{}):</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="o">&lt;=</span><span class="mf">0.0</span><span class="p">):</span>
-            <span class="n">key</span><span class="o">=</span><span class="mf">10e-10</span> <span class="c">#sehr unschoen</span>
-
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">key</span> <span class="o">&lt;=</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="k">return</span> <span class="n">v</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s">&quot;Key &#39;</span><span class="si">%s</span><span class="s">&#39; is not between any values in the BetweenDict&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                    <span class="nb">dict</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">value</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;First element of a BetweenDict key &#39;</span>
-                                       <span class="s">&#39;must be strictly less than the &#39;</span>
-                                       <span class="s">&#39;second element&#39;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Key of a BetweenDict must be an iterable &#39;</span>
-                                 <span class="s">&#39;with length two&#39;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Key of a BetweenDict must be an iterable &#39;</span>
-                             <span class="s">&#39;with length two&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="ow">or</span> <span class="bp">True</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span></div>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

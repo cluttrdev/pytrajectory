@@ -46,7 +46,7 @@ class IntegChain():
     
     def __str__(self):
         s = ''
-        for elem in self.elements[::-1]:
+        for elem in self.elements:#[::-1]:
             s += ' -> ' + elem.name
         return s[4:]
     
@@ -90,11 +90,6 @@ class IntegChain():
         return pred
 
 
-class Grid():
-    def __init__(self):
-        pass
-
-
 class Animation():
     '''
     Provides animation capabilities.
@@ -127,13 +122,6 @@ class Animation():
         
         self.get_axes()
         
-        #if plotcurves:
-        #    self.plot_curves = True
-        #else:
-        #    self.plot_curves = False
-        
-        self.axes['ax_img'].set_xticks([])
-        self.axes['ax_img'].set_yticks([])
         self.axes['ax_img'].set_frame_on(True)
         self.axes['ax_img'].set_aspect('equal')
         self.axes['ax_img'].set_axis_bgcolor('w')
@@ -141,6 +129,9 @@ class Animation():
         self.nframes = 80
         
         self.draw = drawfnc
+        
+        # enable LaTeX text rendering --> slow
+        plt.rc('text', usetex=True)
     
     
     class Image():
@@ -263,7 +254,7 @@ class Animation():
             self.image = image
             self.axes['ax_img'] = ax_img
             
-            # draw system curves
+            # update system curves
             for k, curve in enumerate(self.syscurves):
                 try:
                     curve.set_data(t[:i], xt[:i,self.plotsys[k][0]])
@@ -271,7 +262,7 @@ class Animation():
                     curve.set_data(t[:i], xt[:i])
                 self.axes['ax_x%d'%k].add_line(curve)
             
-            # draw input curves
+            # update input curves
             for k, curve in enumerate(self.inputcurves):
                 try:
                     curve.set_data(t[:i], ut[:i,self.plotinputs[k][0]])
@@ -322,10 +313,31 @@ def blockdiag(M, bshape=None, sparse=False):
      [ 1.  1.  0.  0.]
      [ 0.  0.  1.  1.]
      [ 0.  0.  1.  1.]]
+    
+    >>> I1 = np.ones((1, 1))
+    >>> I2 = np.ones((2, 2))
+    >>> I3 = np.ones((3, 3))
+    >>> A = [I1, I2, I3]
+    >>> B = blockdiag(B)
+    >>> print B
     '''
     
     if type(M) == 'list':
-        pass
+        raise NotImplemented
+        rows = []
+        cols = []
+        for m in M:
+            rows.append(m.shape[0])
+            cols.append(m.shape[1])
+        
+        nrow = sum(rows)
+        ncol = sum(cols)
+        
+        Mb = np.zeros((nrow, ncol))
+        
+        for i in xrange(len(M)):
+            pass
+            
     else:
         nrow, ncol = bshape
         Mrow, Mcol = M.shape
@@ -435,42 +447,3 @@ def plot(sim, H, fname=None):
             plt.savefig(fname+'.png')
         else:
             plt.savefig(fname)
-
-
-class BetweenDict(dict):
-    ##?? Quelle? Lizenz?
-    def __init__(self, d = {}):
-        for k,v in d.items():
-            self[k] = v
-
-    def __getitem__(self, key):
-
-        if (key<=0.0):
-            key=10e-10 #sehr unschoen
-
-        for k, v in self.items():
-            if k[0] < key <= k[1]:
-                return v
-        raise KeyError("Key '%s' is not between any values in the BetweenDict" % key)
-
-    def __setitem__(self, key, value):
-        try:
-            if len(key) == 2:
-                if key[0] < key[1]:
-                    dict.__setitem__(self, (key[0], key[1]), value)
-                else:
-                    raise RuntimeError('First element of a BetweenDict key '
-                                       'must be strictly less than the '
-                                       'second element')
-            else:
-                raise ValueError('Key of a BetweenDict must be an iterable '
-                                 'with length two')
-        except TypeError:
-            raise TypeError('Key of a BetweenDict must be an iterable '
-                             'with length two')
-
-    def __contains__(self, key):
-        try:
-            return bool(self[key]) or True
-        except KeyError:
-            return False

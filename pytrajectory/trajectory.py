@@ -6,6 +6,8 @@ import sympy as sp
 import scipy as scp
 from scipy import sparse
 
+import pickle
+
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
@@ -14,7 +16,7 @@ from utilities import IntegChain
 #####
 #NEW
 from utilities import blockdiag as bdiag
-from utilities import plot as _plot
+from utilities import plot as plotsim
 #####
 
 import log
@@ -196,6 +198,9 @@ class Trajectory():
 
             # check if desired accuracy is reached
             self.checkAccuracy()
+        
+        # clear workspace
+        self.clear()
     
     
     def analyseSystem(self):
@@ -210,6 +215,7 @@ class Trajectory():
         ###
         # first, determine system dimensions
         ###
+        log.info("Determine system/input dimensions")
         i = -1
         found_nm = False
         
@@ -227,6 +233,7 @@ class Trajectory():
                     m = j
                     break
                 except:
+                    pass
                     #~ if j == 0:
                         #~ try:
                             #~ self.ff(x)
@@ -236,17 +243,17 @@ class Trajectory():
                             #~ break
                         #~ except:
                             #~ pass
-                    if i>20:
-                        IPS()
-                    pass
         
         self.n = n
         self.m = m
         
+        log.info("---> system: %d"%n)
+        log.info("---> input : %d"%m)
+        
         ###
         # next, we look for integrator chains
         ###
-        log.info("Looking for integrator chains")
+        log.info("Look for integrator chains")
         
         # create symbolic variables to find integrator chains
         x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,n+1)])
@@ -304,7 +311,7 @@ class Trajectory():
         for lst in tmpchains:
             ic = IntegChain(lst)
             chains.append(ic)
-            log.info("found integrator chain: " + str(ic))
+            log.info("---> found: " + str(ic))
         
         self.chains = chains
         
@@ -520,7 +527,7 @@ class Trajectory():
             # get equidistant collocation points
             cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
         elif self.colltype == 'chebychev':
-            # determine rank of chebychev polynomial to calculate zero points of
+            # determine rank of chebychev polynomial of which to calculate zero points
             nc = int(self.sx*delta - 1)
             
             # calculate zero points of chebychev polynomial --> in [-1,1]
@@ -604,7 +611,6 @@ class Trajectory():
         self.Mu_abs = np.array(Mu_abs)
 
         # for creation of the jacobian matrix
-
         f = self.ff_sym(x_sym,u_sym)
         Df_mat = sp.Matrix(f).jacobian(self.x_sym+self.u_sym)
         
@@ -717,15 +723,15 @@ class Trajectory():
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
         
-        if 1:
+        if 0:
             ###############################################
             # OLD - working
             ###############################################
             DF = []
             #for i,df in enumerate(DF_blocks):
-                # np.vstack is done in every call --> do it once in buildEQS...???
-                #J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
-                #res = np.dot(df,J_XU)
+            #    # np.vstack is done in every call --> do it once in buildEQS...???
+            #    J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
+            #    res = np.dot(df,J_XU)
             for i in xrange(len(DF_blocks)):
                 res = np.dot(DF_blocks[i], self.J_XU[i])
                 assert res.shape == (x_len,len(self.c_list))
@@ -840,8 +846,6 @@ class Trajectory():
             H[i] = error[:,i]
         
         self.H = H
-
-        log.info(40*"-")
     
     
     def checkAccuracy(self):
@@ -853,24 +857,20 @@ class Trajectory():
         xt = self.sim[1]
 
         # what is the error
-        log.info("Difference:")
+        log.info(40*"-")
+        log.info("Ending up with:\t Should Be: \t Difference:")
         
         err = np.empty(self.n)
         for i, xx in enumerate(self.x_sym):
-            err[i] = self.xb[xx] - xt[-1:][0][i]
-            log.info(str(xx)+" : %f"%err[i])
+            err[i] = abs(self.xb[xx] - xt[-1:][0][i])
+            log.info(str(xx)+" : %f \t %f \t %f"%(xt[-1][i], self.xb[xx], err[i]))
+        
+        log.info(40*"-")
         
         self.err = err
         
-        errmax = max(abs(self.err))
+        errmax = max(self.err)
         log.info("--> reached desired accuracy: "+str(errmax <= self.eps))
-    
-    
-    def plot(self):
-        '''
-        Just calls :func:`plot` function from :mod:`utilities`
-        '''
-        _plot(self.sim, self.H)
     
     
     def x(self, t):
@@ -892,8 +892,43 @@ class Trajectory():
         This function returns the left hand sites state at a given (time-) point :attr:`t`.
         '''
         return np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
-
-
+    
+    
+    def plot(self):
+        '''
+        Just calls :func:`plot` function from :mod:`utilities`
+        '''
+        plotsim(self.sim, self.H)
+    
+    
+    def save(self):
+        '''
+        Save system data, callable solution functions and simulation results.
+        '''
+        
+        save = dict()
+        
+        # system data
+        save['ff_sym'] = self.ff_sym
+        save['ff_num'] = self.ff_num
+        save['a'] = self.a
+        save['b'] = self.b
+        
+        # boundary values
+        save['xa'] = self.xa
+        save['xb'] = self.xb
+        
+        # solution functions
+        save['x'] = self.x
+        save['u'] = self.u
+        save['dx'] = self.dx
+        
+        # simulation resutls
+        save['sim'] = self.sim
+    
+    
+    def clear(self):
+        pass
 
 
 if __name__ == '__main__':
@@ -914,8 +949,8 @@ if __name__ == '__main__':
         l = 0.5
         g = 9.81
         ff = np.array([     x2,
-                             u1,
-                             x4,
+                            u1,
+                            x4,
                         (1/l)*(g*sin(x3)+u1*cos(x3))])
         return ff
 

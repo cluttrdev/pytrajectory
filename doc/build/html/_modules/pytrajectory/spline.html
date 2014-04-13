@@ -69,17 +69,9 @@
 <span class="sd">    func : callable - The spline function to derivate.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
-    <span class="c"># Return derivative of temporary function</span>
+    <span class="c"># Return derivative of callable function</span>
     <span class="c"># im_func is the function&#39;s id</span>
     <span class="c"># im_self is the object of which func is the method</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_f</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_df</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_df</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_ddf</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">tmp_ddf</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">tmp_dddf</span>
-    
-    <span class="c"># Return derivative of callable function</span>
     <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">im_self</span><span class="o">.</span><span class="n">df</span>
     <span class="k">if</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">im_func</span> <span class="o">==</span> <span class="n">CubicSpline</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">im_func</span><span class="p">):</span>
@@ -95,6 +87,7 @@
 <div class="viewcode-block" id="CubicSpline"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline">[docs]</a><span class="k">class</span> <span class="nc">CubicSpline</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class provides an object that represents a cubic spline ...</span>
+<span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

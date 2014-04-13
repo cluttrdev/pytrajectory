@@ -16,10 +16,13 @@ class Simulation:
     
     ff : callable
         Vectorfield of the control system
+    
     T : float
         Simulation time
+    
     u : callable
         Function of the input variables
+    
     dt : float
         Time step
     '''
@@ -52,12 +55,14 @@ class Simulation:
     
         
     def rhs(self,t,x):
-        if (0 <= t <= self.T):
-            u = self.u(t)
-            dx = self.ff(x,u)
-        else:
-            u = self.u(t)
-            dx = self.ff(x,u)
+        #if (0 <= t <= self.T):
+        #    u = self.u(t)
+        #    dx = self.ff(x,u)
+        #else:
+        #    u = self.u(t)
+        #    dx = self.ff(x,u)
+        u = self.u(t)
+        dx= self.ff(x, u)
         return dx
     
     
@@ -78,6 +83,6 @@ class Simulation:
         # starts simulation 
         #   return an array with all data and the time steps
         t = 0
-        while(t<self.T):
+        while(t<=self.T):
             t, y = self.calcStep()
         return [np.array(self.t),np.array(self.xt),np.array(self.ut)]

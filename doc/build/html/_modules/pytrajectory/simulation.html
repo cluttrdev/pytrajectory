@@ -65,10 +65,13 @@
 <span class="sd">    </span>
 <span class="sd">    ff : callable</span>
 <span class="sd">        Vectorfield of the control system</span>
+<span class="sd">    </span>
 <span class="sd">    T : float</span>
 <span class="sd">        Simulation time</span>
+<span class="sd">    </span>
 <span class="sd">    u : callable</span>
 <span class="sd">        Function of the input variables</span>
+<span class="sd">    </span>
 <span class="sd">    dt : float</span>
 <span class="sd">        Time step</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -101,12 +104,14 @@
     
         
 <div class="viewcode-block" id="Simulation.rhs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.simulation.Simulation.rhs">[docs]</a>    <span class="k">def</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
+        <span class="c">#if (0 &lt;= t &lt;= self.T):</span>
+        <span class="c">#    u = self.u(t)</span>
+        <span class="c">#    dx = self.ff(x,u)</span>
+        <span class="c">#else:</span>
+        <span class="c">#    u = self.u(t)</span>
+        <span class="c">#    dx = self.ff(x,u)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">dx</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dx</span>
     
     </div>
@@ -127,7 +132,7 @@
         <span class="c"># starts simulation </span>
         <span class="c">#   return an array with all data and the time steps</span>
         <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">while</span><span class="p">(</span><span class="n">t</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">t</span><span class="o">&lt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
             <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calcStep</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xt</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ut</span><span class="p">)]</span></div></div>
 </pre></div>

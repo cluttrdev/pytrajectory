@@ -29,6 +29,7 @@ class Solver:
     algo : str
         The solver to use
     '''
+    
     def __init__(self, F, DF, x0, tol=1e-2, maxx=10, algo='leven'):
         self.F = F
         self.DF = DF

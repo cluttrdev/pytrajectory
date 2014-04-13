@@ -43,7 +43,7 @@ if(calc):
     su = 10
     kx = 2
     use_chains = True
-    #g = [0.0,0.0]
+    g = [0.0,0.0]
     eps = 8e-2
     
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx, eps=eps,

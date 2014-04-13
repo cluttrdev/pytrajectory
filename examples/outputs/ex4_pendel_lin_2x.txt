@@ -1,11 +1,14 @@
 INFO:	########################################
 INFO:	####   Analysing System Strucutre   ####
 INFO:	########################################
-INFO:	Looking for integrator chains
-INFO:	found integrator chain: x6 -> x5
-INFO:	found integrator chain: x4 -> x3
-INFO:	found integrator chain: u1 -> x2 -> x1
-1.8.0
+INFO:	Determine system/input dimensions
+INFO:	---> system: 6
+INFO:	---> input : 1
+INFO:	Look for integrator chains
+INFO:	---> found: x5 -> x6
+INFO:	---> found: x3 -> x4
+INFO:	---> found: x1 -> x2 -> u1
+1.8.1
 0.7.5
 0.13.3
 INFO:	########################################
@@ -16,17 +19,17 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.002155 s]
+TIME:	---> [makesteady() elapsed 0.001512 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.001672 s]
+TIME:	---> [makesteady() elapsed 0.001660 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.001036 s]
-TIME:	---> [initSplines() elapsed 0.009432 s]
-TIME:	---> [getGuess() elapsed 0.000087 s]
+TIME:	---> [makesteady() elapsed 0.001030 s]
+TIME:	---> [initSplines() elapsed 0.009214 s]
+TIME:	---> [getGuess() elapsed 0.000092 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.026155 s]
+TIME:	---> [buildEQS() elapsed 0.024795 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -39,22 +42,23 @@ INFO:	nIt= 5    res= 4.149367
 INFO:	nIt= 6    res= 4.146772
 INFO:	nIt= 7    res= 4.146681
 INFO:	nIt= 8    res= 4.146674
-TIME:	---> [solve() elapsed 0.049361 s]
+TIME:	---> [solve() elapsed 0.053483 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.002287 s]
+TIME:	---> [setCoeff() elapsed 0.001719 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.371866 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.402941 s]
-INFO:	Difference:
-INFO:	x1 : -0.000075
-INFO:	x2 : -0.000052
-INFO:	x3 : -2.947216
-INFO:	x4 : -6.025083
-INFO:	x5 : -2.488716
-INFO:	x6 : -7.669768
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : 0.000075 	 0.000000 	 0.000075
+INFO:	x2 : 0.000052 	 0.000000 	 0.000052
+INFO:	x3 : 2.947216 	 0.000000 	 2.947216
+INFO:	x4 : 6.025083 	 0.000000 	 6.025083
+INFO:	x5 : 2.488716 	 0.000000 	 2.488716
+INFO:	x6 : 7.669768 	 0.000000 	 7.669768
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: False
 INFO:	########################################
 INFO:	       ---- Next Iteration ----
@@ -64,19 +68,19 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.001576 s]
+TIME:	---> [makesteady() elapsed 0.001341 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.005711 s]
+TIME:	---> [makesteady() elapsed 0.001253 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.001488 s]
-TIME:	---> [initSplines() elapsed 0.014704 s]
+TIME:	---> [makesteady() elapsed 0.001224 s]
+TIME:	---> [initSplines() elapsed 0.008510 s]
 INFO:	get new guess for spline x3
 INFO:	get new guess for spline x5
-TIME:	---> [getGuess() elapsed 0.002393 s]
+TIME:	---> [getGuess() elapsed 0.002205 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.040044 s]
+TIME:	---> [buildEQS() elapsed 0.027296 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -91,22 +95,23 @@ INFO:	nIt= 7    res= 5.778328
 INFO:	nIt= 8    res= 5.778181
 INFO:	nIt= 9    res= 5.778154
 INFO:	nIt= 10    res= 5.778150
-TIME:	---> [solve() elapsed 0.106841 s]
+TIME:	---> [solve() elapsed 0.082475 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.003054 s]
+TIME:	---> [setCoeff() elapsed 0.001969 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.376023 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.430767 s]
-INFO:	Difference:
-INFO:	x1 : -0.000015
-INFO:	x2 : -0.000025
-INFO:	x3 : -2.986790
-INFO:	x4 : -6.128221
-INFO:	x5 : 5.163809
-INFO:	x6 : 7.807009
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : 0.000015 	 0.000000 	 0.000015
+INFO:	x2 : 0.000025 	 0.000000 	 0.000025
+INFO:	x3 : 2.986790 	 0.000000 	 2.986790
+INFO:	x4 : 6.128221 	 0.000000 	 6.128221
+INFO:	x5 : -5.163809 	 0.000000 	 5.163809
+INFO:	x6 : -7.807009 	 0.000000 	 7.807009
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: False
 INFO:	########################################
 INFO:	       ---- Next Iteration ----
@@ -116,19 +121,19 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.002453 s]
+TIME:	---> [makesteady() elapsed 0.002025 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.001228 s]
+TIME:	---> [makesteady() elapsed 0.001310 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.002326 s]
-TIME:	---> [initSplines() elapsed 0.014381 s]
+TIME:	---> [makesteady() elapsed 0.002055 s]
+TIME:	---> [initSplines() elapsed 0.012860 s]
 INFO:	get new guess for spline x3
 INFO:	get new guess for spline x5
-TIME:	---> [getGuess() elapsed 0.004374 s]
+TIME:	---> [getGuess() elapsed 0.004496 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.043851 s]
+TIME:	---> [buildEQS() elapsed 0.043735 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -141,22 +146,23 @@ INFO:	nIt= 5    res= 5.320264
 INFO:	nIt= 6    res= 5.319909
 INFO:	nIt= 7    res= 5.319872
 INFO:	nIt= 8    res= 5.319863
-TIME:	---> [solve() elapsed 0.100058 s]
+TIME:	---> [solve() elapsed 0.108202 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.003178 s]
+TIME:	---> [setCoeff() elapsed 0.002777 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.368501 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.365679 s]
-INFO:	Difference:
-INFO:	x1 : -0.000013
-INFO:	x2 : -0.000015
-INFO:	x3 : -0.732024
-INFO:	x4 : -2.298650
-INFO:	x5 : 0.679353
-INFO:	x6 : 2.916474
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : 0.000013 	 0.000000 	 0.000013
+INFO:	x2 : 0.000015 	 0.000000 	 0.000015
+INFO:	x3 : 0.732024 	 0.000000 	 0.732024
+INFO:	x4 : 2.298650 	 0.000000 	 2.298650
+INFO:	x5 : -0.679353 	 0.000000 	 0.679353
+INFO:	x6 : -2.916474 	 0.000000 	 2.916474
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: False
 INFO:	########################################
 INFO:	       ---- Next Iteration ----
@@ -166,19 +172,19 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.004606 s]
+TIME:	---> [makesteady() elapsed 0.004356 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.001220 s]
+TIME:	---> [makesteady() elapsed 0.001254 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.004241 s]
-TIME:	---> [initSplines() elapsed 0.023249 s]
+TIME:	---> [makesteady() elapsed 0.004077 s]
+TIME:	---> [initSplines() elapsed 0.021832 s]
 INFO:	get new guess for spline x3
 INFO:	get new guess for spline x5
-TIME:	---> [getGuess() elapsed 0.009590 s]
+TIME:	---> [getGuess() elapsed 0.010515 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.083255 s]
+TIME:	---> [buildEQS() elapsed 0.087856 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -196,22 +202,23 @@ INFO:	nIt= 10    res= 3.487468
 INFO:	nIt= 11    res= 3.487421
 INFO:	nIt= 12    res= 3.487404
 INFO:	nIt= 13    res= 3.487397
-TIME:	---> [solve() elapsed 0.347092 s]
+TIME:	---> [solve() elapsed 0.372942 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.004702 s]
+TIME:	---> [setCoeff() elapsed 0.003912 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.382619 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.373213 s]
-INFO:	Difference:
-INFO:	x1 : 0.000029
-INFO:	x2 : 0.000024
-INFO:	x3 : -0.561234
-INFO:	x4 : -2.121492
-INFO:	x5 : 0.702492
-INFO:	x6 : 2.864136
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : -0.000029 	 0.000000 	 0.000029
+INFO:	x2 : -0.000024 	 0.000000 	 0.000024
+INFO:	x3 : 0.561234 	 0.000000 	 0.561234
+INFO:	x4 : 2.121492 	 0.000000 	 2.121492
+INFO:	x5 : -0.702492 	 0.000000 	 0.702492
+INFO:	x6 : -2.864136 	 0.000000 	 2.864136
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: False
 INFO:	########################################
 INFO:	       ---- Next Iteration ----
@@ -221,19 +228,19 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.014096 s]
+TIME:	---> [makesteady() elapsed 0.015196 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.001314 s]
+TIME:	---> [makesteady() elapsed 0.001416 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.014530 s]
-TIME:	---> [initSplines() elapsed 0.052065 s]
+TIME:	---> [makesteady() elapsed 0.013750 s]
+TIME:	---> [initSplines() elapsed 0.054180 s]
 INFO:	get new guess for spline x3
 INFO:	get new guess for spline x5
-TIME:	---> [getGuess() elapsed 0.022308 s]
+TIME:	---> [getGuess() elapsed 0.023874 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.200891 s]
+TIME:	---> [buildEQS() elapsed 0.226958 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -251,22 +258,23 @@ INFO:	nIt= 10    res= 2.293809
 INFO:	nIt= 11    res= 2.293783
 INFO:	nIt= 12    res= 2.293772
 INFO:	nIt= 13    res= 2.293766
-TIME:	---> [solve() elapsed 0.911671 s]
+TIME:	---> [solve() elapsed 0.955191 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.007009 s]
+TIME:	---> [setCoeff() elapsed 0.006428 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.388421 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.386365 s]
-INFO:	Difference:
-INFO:	x1 : -0.000051
-INFO:	x2 : -0.000042
-INFO:	x3 : -0.163329
-INFO:	x4 : -0.620544
-INFO:	x5 : 0.185118
-INFO:	x6 : 0.808974
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : 0.000051 	 0.000000 	 0.000051
+INFO:	x2 : 0.000042 	 0.000000 	 0.000042
+INFO:	x3 : 0.163329 	 0.000000 	 0.163329
+INFO:	x4 : 0.620544 	 0.000000 	 0.620544
+INFO:	x5 : -0.185118 	 0.000000 	 0.185118
+INFO:	x6 : -0.808974 	 0.000000 	 0.808974
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: False
 INFO:	########################################
 INFO:	       ---- Next Iteration ----
@@ -276,19 +284,19 @@ INFO:	########################################
 INFO:	#########  Initialise Splines  #########
 INFO:	########################################
 INFO:	makesteady: x3
-TIME:	---> [makesteady() elapsed 0.069484 s]
+TIME:	---> [makesteady() elapsed 0.069503 s]
 INFO:	makesteady: x1
-TIME:	---> [makesteady() elapsed 0.001435 s]
+TIME:	---> [makesteady() elapsed 0.001377 s]
 INFO:	makesteady: x5
-TIME:	---> [makesteady() elapsed 0.070218 s]
-TIME:	---> [initSplines() elapsed 0.183793 s]
+TIME:	---> [makesteady() elapsed 0.069784 s]
+TIME:	---> [initSplines() elapsed 0.182190 s]
 INFO:	get new guess for spline x3
 INFO:	get new guess for spline x5
-TIME:	---> [getGuess() elapsed 0.057808 s]
+TIME:	---> [getGuess() elapsed 0.064777 s]
 INFO:	########################################
 INFO:	####  Building the equation system  ####
 INFO:	########################################
-TIME:	---> [buildEQS() elapsed 0.662176 s]
+TIME:	---> [buildEQS() elapsed 0.697965 s]
 INFO:	########################################
 INFO:	#####  Solving the equation system  ####
 INFO:	########################################
@@ -302,102 +310,22 @@ INFO:	nIt= 6    res= 1.030944
 INFO:	nIt= 7    res= 0.913568
 INFO:	nIt= 8    res= 0.896279
 INFO:	nIt= 9    res= 0.895536
-TIME:	---> [solve() elapsed 2.246065 s]
+TIME:	---> [solve() elapsed 2.219815 s]
 INFO:	Set spline coefficients
-TIME:	---> [setCoeff() elapsed 0.012158 s]
+TIME:	---> [setCoeff() elapsed 0.011429 s]
 INFO:	########################################
 INFO:	##  Solving the initial value problem ##
 INFO:	########################################
 INFO:	start: [0.0, 0.0, 3.141592653589793, 0.0, 3.141592653589793, 0.0]
+TIME:	---> [simulate() elapsed 0.385517 s]
 INFO:	----------------------------------------
-TIME:	---> [simulate() elapsed 0.373619 s]
-INFO:	Difference:
-INFO:	x1 : 0.000028
-INFO:	x2 : 0.000022
-INFO:	x3 : -0.015748
-INFO:	x4 : -0.060611
-INFO:	x5 : -0.004505
-INFO:	x6 : -0.022724
+INFO:	Ending up with:	 Should Be: 	 Difference:
+INFO:	x1 : -0.000028 	 0.000000 	 0.000028
+INFO:	x2 : -0.000022 	 0.000000 	 0.000022
+INFO:	x3 : 0.015748 	 0.000000 	 0.015748
+INFO:	x4 : 0.060611 	 0.000000 	 0.060611
+INFO:	x5 : 0.004505 	 0.000000 	 0.004505
+INFO:	x6 : 0.022724 	 0.000000 	 0.022724
+INFO:	----------------------------------------
 INFO:	--> reached desired accuracy: True
-TIME:	---> [Iteration() elapsed 7.580187 s]
-0
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
+TIME:	---> [Iteration() elapsed 7.600188 s]

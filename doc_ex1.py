@@ -50,67 +50,68 @@ T.startIteration()
 
 # animate system
 
-import matplotlib as mpl
-from pytrajectory.utilities import Animation
-
-
-def draw(xti, image):
-    '''
-    Updates :attr:`image` of the system according to simulation data :attr:`xti`
+if 1:
+    import matplotlib as mpl
+    from pytrajectory.utilities import Animation
     
     
-    Parameters
-    ----------
+    def draw(xti, image):
+        '''
+        Updates :attr:`image` of the system according to simulation data :attr:`xti`
+        
+        
+        Parameters
+        ----------
+        
+        xti : numpy.ndarray
+            Array with current time and system state
+        image : Animation.Image
+            Current image that represents system state
+        
+        
+        Returns
+        -------
+        
+        image : Animation.Image
+            Updated image that represents system state
+        '''
+        
+        x, phi = xti[0], xti[2]
+        
+        L = 0.5
+        car_width = 0.05
+        car_heigth = 0.02
+        pendel_size = 0.015
     
-    xti : numpy.ndarray
-        Array with current time and system state
-    image : Animation.Image
-        Current image that represents system state
+        x_car = x
+        y_car = 0
     
+        x_pendel = -L*sin(phi)+x_car
+        y_pendel = L*cos(phi)
+        
+        #Stab
+        stab = mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0)
+        image.lines.append(stab)
+        
+        #Ball
+        sphere = mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
+        image.patches.append(sphere)
+        
+        #Car
+        car = mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
+        image.patches.append(car)
+        
+        #Gelenk
+        gelenk = mpl.patches.Circle((x_car,0),0.005,color='k')
+        image.patches.append(gelenk)
+        
+        return image
     
-    Returns
-    -------
+    # create animation object
+    A = Animation(drawfnc=draw, simdata=T.sim, plotsys=[[0, r'$x$'], [2, r'$\varphi$']], plotinputs=[[0, r'$F$']])
+    #A = Animation(drawfnc=draw, simdata=T.sim)
     
-    image : Animation.Image
-        Updated image that represents system state
-    '''
+    A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
     
-    x, phi = xti[0], xti[2]
-    
-    L = 0.5
-    car_width = 0.05
-    car_heigth = 0.02
-    pendel_size = 0.015
-
-    x_car = x
-    y_car = 0
-
-    x_pendel = -L*sin(phi)+x_car
-    y_pendel = L*cos(phi)
-    
-    #Stab
-    stab = mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0)
-    image.lines.append(stab)
-    
-    #Ball
-    sphere = mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
-    image.patches.append(sphere)
-    
-    #Car
-    car = mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,fill=True,facecolor='0.75',linewidth=2.0)
-    image.patches.append(car)
-    
-    #Gelenk
-    gelenk = mpl.patches.Circle((x_car,0),0.005,color='k')
-    image.patches.append(gelenk)
-    
-    return image
-
-# create animation object
-A = Animation(drawfnc=draw, simdata=T.sim, plotsys=[[0, 'x'], [2, 'phi']], plotinputs=[[0, 'F']])
-#A = Animation(drawfnc=draw, simdata=T.sim)
-
-A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
-
-A.animate()
-A.save('doc_ex1.mp4')
+    A.animate()
+    A.save('doc_ex1.mp4')

@@ -20,17 +20,9 @@ def fdiff(func):
     func : callable - The spline function to derivate.
     '''
     
-    # Return derivative of temporary function
+    # Return derivative of callable function
     # im_func is the function's id
     # im_self is the object of which func is the method
-    if(func.im_func == CubicSpline.tmp_f.im_func):
-        return func.im_self.tmp_df
-    if(func.im_func == CubicSpline.tmp_df.im_func):
-        return func.im_self.tmp_ddf
-    if(func.im_func == CubicSpline.tmp_ddf.im_func):
-        return func.im_self.tmp_dddf
-    
-    # Return derivative of callable function
     if(func.im_func == CubicSpline.f.im_func):
         return func.im_self.df
     if(func.im_func == CubicSpline.df.im_func):
@@ -46,6 +38,7 @@ def fdiff(func):
 class CubicSpline():
     '''
     This class provides an object that represents a cubic spline ...
+    
     
     Parameters
     ----------
