@@ -90,16 +90,22 @@ class CubicSpline():
         for i in xrange(self.n):
             # create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3
             self.S[i] = np.poly1d(self.coeffs[i])
-
+        
+        # steady flag is True if smoothness and boundary conditions are solved
+        # --> makesteady()
         self.steady_flag = False
-        self.tmp_flag = True
+        
+        # provisionally flag is True as long as there are no numerical values
+        # for the free parameters of the spline
+        # --> set_coeffs()
+        self.prov_flag = True
 
         if (steady):
             with log.Timer("makesteady()"):
                 self.makesteady()
     
     
-    def tmp_evalf(self, x, d):
+    def prov_evalf(self, x, d):
         '''
         This function returns a matrix and vector to evaluate the spline or a derivative at x
         by multiplying the matrix with numerical values of the independent variables
@@ -167,29 +173,29 @@ class CubicSpline():
     
     def f(self, x):
         '''This is just a wrapper for :meth:`evalf` to evaluate the spline itself.'''
-        if self.tmp_flag:
-            return self.tmp_evalf(x,0)
+        if self.prov_flag:
+            return self.prov_evalf(x,0)
         else:
             return self.evalf(x,0)
 
     def df(self, x):
         '''This is just a wrapper for :meth:`evalf` to evaluate the splines 1st derivative.'''
-        if self.tmp_flag:
-            return self.tmp_evalf(x,1)
+        if self.prov_flag:
+            return self.prov_evalf(x,1)
         else:
             return self.evalf(x,1)
 
     def ddf(self, x):
         '''This is just a wrapper for :meth:`evalf` to evaluate the splines 2nd derivative.'''
-        if self.tmp_flag:
-            return self.tmp_evalf(x,2)
+        if self.prov_flag:
+            return self.prov_evalf(x,2)
         else:
             return self.evalf(x,2)
 
     def dddf(self, x):
         '''This is just a wrapper for :meth:`evalf` to evaluate the splines 3rd derivative.'''
-        if self.tmp_flag:
-            return self.tmp_evalf(x,3)
+        if self.prov_flag:
+            return self.prov_evalf(x,3)
         else:
             return self.evalf(x,3)
     
@@ -350,4 +356,4 @@ class CubicSpline():
             c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.tmp_S[i],self.tmp_S_abs[i])]
             self.S[i] = np.poly1d(c_num)
         
-        self.tmp_flag = False
+        self.prov_flag = False

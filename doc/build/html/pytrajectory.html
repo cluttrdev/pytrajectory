@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pytrajectory 0.3.2 documentation" href="index.html" />
-    <link rel="prev" title="Translation of the inverse pendulum" href="guide/examples/inv_pendulum_trans.html" /> 
+    <link rel="prev" title="Background" href="guide/background.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,7 +37,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="guide/examples/inv_pendulum_trans.html" title="Translation of the inverse pendulum"
+          <a href="guide/background.html" title="Background"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li> 
       </ul>
@@ -112,6 +112,11 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="pytrajectory.trajectory.Trajectory.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.dx">
 <tt class="descname">dx</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function returns the left hand sites state at a given (time-) point <tt class="xref py py-attr docutils literal"><span class="pre">t</span></tt>.</p>
@@ -143,11 +148,35 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pytrajectory.trajectory.Trajectory.save">
+<tt class="descname">save</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save system data, callable solution functions and simulation results.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.setCoeff">
 <tt class="descname">setCoeff</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setCoeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setCoeff" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to create the actual splines by using the numerical
 solutions to set up the coefficients of the polynomial spline parts of
 every created spline.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.trajectory.Trajectory.setParam">
+<tt class="descname">setParam</tt><big>(</big><em>param=''</em>, <em>val=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setParam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to assign value <tt class="xref py py-attr docutils literal"><span class="pre">val`to</span> <span class="pre">method</span> <span class="pre">parameter</span> <span class="pre">:attr:`param</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>param</strong> (<em>str</em>) &#8211; Parameter of which to alter the value</li>
+<li><strong>val</strong> &#8211; New value for the passed parameter</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -257,22 +286,8 @@ ensure steadiness and smoothness conditions of the spline in every joining point
 </dd></dl>
 
 <dl class="method">
-<dt id="pytrajectory.spline.CubicSpline.set_coeffs">
-<tt class="descname">set_coeffs</tt><big>(</big><em>c_sol</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.set_coeffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.set_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function is used to set up numerical values for the spline coefficients.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>c_sol</strong> (<em>numpy.ndarray</em>) &#8211; Array with numerical values for the free spline coefficients</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.spline.CubicSpline.tmp_evalf">
-<tt class="descname">tmp_evalf</tt><big>(</big><em>x</em>, <em>d</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.tmp_evalf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.tmp_evalf" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.spline.CubicSpline.prov_evalf">
+<tt class="descname">prov_evalf</tt><big>(</big><em>x</em>, <em>d</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.prov_evalf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.prov_evalf" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function returns a matrix and vector to evaluate the spline or a derivative at x
 by multiplying the matrix with numerical values of the independent variables
 and adding the vector.</p>
@@ -291,6 +306,20 @@ and adding the vector.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytrajectory.spline.CubicSpline.set_coeffs">
+<tt class="descname">set_coeffs</tt><big>(</big><em>c_sol</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.set_coeffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.set_coeffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used to set up numerical values for the spline coefficients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>c_sol</strong> (<em>numpy.ndarray</em>) &#8211; Array with numerical values for the free spline coefficients</td>
 </tr>
 </tbody>
 </table>
@@ -536,6 +565,14 @@ block diagonal matrix out of them.</p>
 <span class="go"> [ 0.  0.  1.  1.]]</span>
 </pre></div>
 </div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">I1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">I2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">I3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="p">[</span><span class="n">I1</span><span class="p">,</span> <span class="n">I2</span><span class="p">,</span> <span class="n">I3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">blockdiag</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -603,7 +640,7 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140412-171110.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/local/bin/sphinx-build2_140415-120616.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -634,8 +671,8 @@ variable and error function and plots the solution of the simulation.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="guide/examples/inv_pendulum_trans.html"
-                        title="previous chapter">Translation of the inverse pendulum</a></p>
+  <p class="topless"><a href="guide/background.html"
+                        title="previous chapter">Background</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/pytrajectory.txt"
@@ -668,7 +705,7 @@ variable and error function and plots the solution of the simulation.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="guide/examples/inv_pendulum_trans.html" title="Translation of the inverse pendulum"
+          <a href="guide/background.html" title="Background"
              >previous</a> |</li>
         <li><a href="index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li> 
       </ul>

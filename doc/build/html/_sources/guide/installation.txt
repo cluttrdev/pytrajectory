@@ -1,0 +1,17 @@
+Installation
+============
+
+...
+
+Dependencies
+------------
+numpy
+sympy
+scipy
+
+[optional]
+matplotlib
+
+[debugging]
+ipython
+

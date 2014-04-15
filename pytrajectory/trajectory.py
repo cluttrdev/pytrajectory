@@ -33,38 +33,38 @@ class Trajectory():
     
     Parameters
     ----------
-        ff :  callable
-            Vectorfield (rhs) of the control system
-        a : float
-            Left border 
-        b : float
-            Right border
-        xa : list
-            Boundary values at the left border
-        xb : list
-            Boundary values at the right border
-        g : list
-            Boundary values of the input variables
-        sx : int
-            Initial number of spline parts for the system variables
-        su : int
-            Initial number of spline parts for the input variables
-        kx : int
-            Factor for raising the number of spline parts for the system variables
-        delta : int
-            Constant for calculation of collocation points
-        maxIt : int
-            Maximum number of iterations
-        eps : float
-            Tolerance for the solution of the initial value problem
-        tol : float
-            Tolerance for the solver of the equation system
-        algo : str
-            Solver to use
-        use_chains : bool
-            Whether or not to use integrator chains
-    '''
     
+    ff :  callable
+        Vectorfield (rhs) of the control system
+    a : float
+        Left border 
+    b : float
+        Right border
+    xa : list
+        Boundary values at the left border
+    xb : list
+        Boundary values at the right border
+    g : list
+        Boundary values of the input variables
+    sx : int
+        Initial number of spline parts for the system variables
+    su : int
+        Initial number of spline parts for the input variables
+    kx : int
+        Factor for raising the number of spline parts for the system variables
+    delta : int
+        Constant for calculation of collocation points
+    maxIt : int
+        Maximum number of iterations
+    eps : float
+        Tolerance for the solution of the initial value problem
+    tol : float
+        Tolerance for the solver of the equation system
+    algo : str
+        Solver to use
+    use_chains : bool
+        Whether or not to use integrator chains
+    '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=2,
                 delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
@@ -117,7 +117,7 @@ class Trajectory():
         self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
         
-        # transform symbolic ff to numeric ff
+        # transform symbolic ff_sym to numeric ff_num for faster evaluation
         F = sp.Matrix(ff(self.x_sym,self.u_sym))
         _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
         
@@ -130,6 +130,7 @@ class Trajectory():
         # dictionaries for boundary conditions
         self.xa = dict()
         self.xb = dict()
+        
         for i,xx in enumerate(self.x_sym):
             self.xa[xx] = xa[i]
             self.xb[xx] = xb[i]
@@ -220,6 +221,8 @@ class Trajectory():
         found_nm = False
         
         while not found_nm:
+            # iteratively increase system and input dimensions and try to call
+            # symbolic vectorfield ff_sym with i/j-dimensional vectors
             i += 1
             
             for j in xrange(i):
@@ -228,15 +231,18 @@ class Trajectory():
                 
                 try:
                     self.ff_sym(x, u)
+                    # if no ValueError is raised, i is the system dimension
+                    # and j is the dimension of the inputs
                     found_nm = True
                     n = i
                     m = j
                     break
-                except:
+                except ValueError:
+                    # unpacking error inside ff_sym
                     pass
                     #~ if j == 0:
                         #~ try:
-                            #~ self.ff(x)
+                            #~ self.ff_sym(x)
                             #~ found_nm = True
                             #~ n = i
                             #~ m = j
@@ -263,22 +269,17 @@ class Trajectory():
     
         chaindict = {}
         for i in xrange(len(fi)):
+            # substitution because of sympy difference betw. 1.0 and 1
+            if isinstance(fi[i], sp.Basic):
+                fi[i] = fi[i].subs(1.0, 1)
+            
             for xx in x_sym:
-                try:
-                    if ((fi[i].subs(1.0, 1)) == xx):
-                        # substitution because of sympy difference betw. 1.0 and 1
-                        chaindict[xx] = x_sym[i]
-                except:
-                    if fi[i] == xx:
-                        chaindict[xx] = x_sym[i]
+                if fi[i] == xx:
+                    chaindict[xx] = x_sym[i]
             
             for uu in u_sym:
-                try:
-                    if ((fi[i].subs(1.0, 1)) == uu):
-                        chaindict[uu] = x_sym[i]
-                except:
-                    if fi[i] == uu:
-                        chaindict[uu] = x_sym[i]
+                if fi[i] == uu:
+                    chaindict[uu] = x_sym[i]
     
         # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
         # where x_4 = d x_3 / dt and so on
@@ -321,6 +322,31 @@ class Trajectory():
         #nu = -1
         #...
         #self.su = self.n - 3 + 2*(nu + 1)  ?????
+    
+    
+    def setParam(self, param='', val=None):
+        '''
+        Method to assign value :attr:`val`to method parameter :attr:`param`.
+        
+        
+        Parameters
+        ----------
+        
+        param : str
+            Parameter of which to alter the value
+        
+        val : ???
+            New value for the passed parameter
+        '''
+        
+        if param and val:
+            exec('self.%s = %s'%(param, str(val)))
+        elif val and not param:
+            log.warn('No method parameter given to assign value %s to!'%str(val))
+        elif param and not val:
+            log.warn('No value passed to assign to method parameter %s!'%param)
+        else:
+            pass
     
     
     def iterate(self):
@@ -776,7 +802,6 @@ class Trajectory():
 
         sol = self.sol
         subs = dict()
-        chains = self.chains
 
         for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             i = len(v)
@@ -826,6 +851,7 @@ class Trajectory():
         
         S = Simulation(self.ff, T, start, self.u)
         
+        # start forward simulation
         self.sim = S.simulate()
 
         # calculate the error functions H_i(t)
@@ -934,10 +960,6 @@ class Trajectory():
 if __name__ == '__main__':
     from sympy import cos, sin
     from numpy import pi
-    
-    import pylab as plt
-    import matplotlib as mpl
-    from tools import Modell
     
     # partiell linearisiertes inverses Pendel [6.1.3]
 

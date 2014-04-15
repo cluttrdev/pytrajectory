@@ -178,6 +178,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span> <span class="o">=</span> <span class="mi">80</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">drawfnc</span>
+        
+        <span class="c"># enable LaTeX text rendering --&gt; slow</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     
     
 <div class="viewcode-block" id="Animation.Image"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Animation.Image">[docs]</a>    <span class="k">class</span> <span class="nc">Image</span><span class="p">():</span>
@@ -300,7 +303,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">image</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_img</span>
             
-            <span class="c"># draw system curves</span>
+            <span class="c"># update system curves</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">curve</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">syscurves</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">curve</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">t</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">xt</span><span class="p">[:</span><span class="n">i</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">plotsys</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]])</span>
@@ -308,7 +311,7 @@
                     <span class="n">curve</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">t</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">xt</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_x</span><span class="si">%d</span><span class="s">&#39;</span><span class="o">%</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">curve</span><span class="p">)</span>
             
-            <span class="c"># draw input curves</span>
+            <span class="c"># update input curves</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">curve</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputcurves</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">curve</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">t</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">ut</span><span class="p">[:</span><span class="n">i</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">plotinputs</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]])</span>
@@ -359,10 +362,31 @@
 <span class="sd">     [ 1.  1.  0.  0.]</span>
 <span class="sd">     [ 0.  0.  1.  1.]</span>
 <span class="sd">     [ 0.  0.  1.  1.]]</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; I1 = np.ones((1, 1))</span>
+<span class="sd">    &gt;&gt;&gt; I2 = np.ones((2, 2))</span>
+<span class="sd">    &gt;&gt;&gt; I3 = np.ones((3, 3))</span>
+<span class="sd">    &gt;&gt;&gt; A = [I1, I2, I3]</span>
+<span class="sd">    &gt;&gt;&gt; B = blockdiag(B)</span>
+<span class="sd">    &gt;&gt;&gt; print B</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;list&#39;</span><span class="p">:</span>
-        <span class="k">pass</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">M</span><span class="p">:</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="n">nrow</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+        <span class="n">ncol</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+        
+        <span class="n">Mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">))</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)):</span>
+            <span class="k">pass</span>
+            
     <span class="k">else</span><span class="p">:</span>
         <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="n">bshape</span>
         <span class="n">Mrow</span><span class="p">,</span> <span class="n">Mcol</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span>

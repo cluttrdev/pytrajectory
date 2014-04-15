@@ -5,6 +5,7 @@ PyTrajectory User's Guide
    :maxdepth: 2
 
    about
-   usage
+   start/index
    examples/index
+   background
 

@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Background &mdash; pytrajectory 0.3.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../index.html" />
+    <link rel="up" title="PyTrajectory User’s Guide" href="index.html" />
+    <link rel="next" title="PyTrajectory Modules Reference" href="../pytrajectory.html" />
+    <link rel="prev" title="Translation of the inverse pendulum" href="examples/inv_pendulum_trans.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pytrajectory.html" title="PyTrajectory Modules Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples/inv_pendulum_trans.html" title="Translation of the inverse pendulum"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="background">
+<h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="collocation-method">
+<h2>Collocation method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
+<p>Given a system of autonomous differential equations</p>
+<div class="math">
+<p><img src="../_images/math/a128954f63c7d6a096c1d34c3fe61db1b1ce4dc1.png" alt="\dot{x}_1(t) = f_n(x_1(t),...,x_n(t))
+
+\vdots \qquad \vdots
+
+\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))"/></p>
+</div><p>with <img class="math" src="../_images/math/7ee1e80a90cec6b0dea8088399ebb8442e81fc28.png" alt="t \in [a, b]"/> and <em>Dirichlet</em> boundary conditions</p>
+<div class="math">
+<p><img src="../_images/math/928437780955f44e10e6365939c9e2a9af296e8c.png" alt="x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n"/></p>
+</div><p>the collocation method to solve the problem basically works as follows.</p>
+<p>We choose <img class="math" src="../_images/math/2ac451fabdaeca572c4e056b41f89c30e8bbd7af.png" alt="N+1"/> collocation points <img class="math" src="../_images/math/1f2cf1b18584d260b2b76756531cc89e64f92ffe.png" alt="t_i,\ i = 0,...,N"/> from the interval
+<img class="math" src="../_images/math/1d2d3c2141e9f7387a2d26b1ea40c2aabd96f3ac.png" alt="[a, b]"/> where <img class="math" src="../_images/math/5538c9ddc6519d3fb21495f20e9e2373dc168a38.png" alt="t_0 = a,\ t_{N} = b"/> and search for functions
+<img class="math" src="../_images/math/87140f45491eeddfe1833452283cd80cbe86d2e3.png" alt="P_i:[a,b] \rightarrow R"/> which satisfy the following conditions:</p>
+<div class="math">
+<p><img src="../_images/math/72cd5f2b243fc15e34297fc1b28e028b1e6e3020.png" alt="P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+
+\frac{d}{d t} P_i(t) = f_i(P_1(t),...,P_n(t)) \quad i = 1,...,n"/></p>
+</div><p>Through these demands the exact solution of the ode system will be approximated.</p>
+</div>
+<div class="section" id="candidate-functions">
+<h2>Candidate functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
+<p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
+solution. Splines are piecewise polynomials with a global differentiability.
+The connection points <img class="math" src="../_images/math/54e7b88931659de229c9cb4465c1a35cad90f605.png" alt="\tau_i"/> between the polynomial sections are equidistantly
+and are referred to as nodes.</p>
+<div class="math">
+<p><img src="../_images/math/3dd91495784fd1f618a91bcce2f115ceefa567f4.png" alt="t_0 = \tau_0 &lt; \tau_1 &lt; ... &lt; \tau_{\eta} = t_N \qquad h = \frac{t_0 - t_N}{\eta}
+
+\tau_{i+1} = \tau_i + h \quad i = 0,...,\eta-1"/></p>
+</div><p>The polynomial sections can be created as follows.</p>
+<div class="math">
+<p><img src="../_images/math/a27eb97ad608b90d6c22fd19ab580cd66e715a9e.png" alt="P_i(t) = c_{i,0}(t-i*h)^3 + c_{i,1}(t-i*h)^2 + c_{i,2}(t-i*h) + c_{i,3}
+
+c_{i,j} \in R,\qquad i = 1,...,\eta,\ j = 0,...,3"/></p>
+</div><p>In addition to the steadiness the spline functions should be twice steadily differentiable in
+the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78a148a10e8.png" alt="\tau"/>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Background</a><ul>
+<li><a class="reference internal" href="#collocation-method">Collocation method</a></li>
+<li><a class="reference internal" href="#candidate-functions">Candidate functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="examples/inv_pendulum_trans.html"
+                        title="previous chapter">Translation of the inverse pendulum</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../pytrajectory.html"
+                        title="next chapter">PyTrajectory Modules Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/guide/background.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pytrajectory.html" title="PyTrajectory Modules Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples/inv_pendulum_trans.html" title="Translation of the inverse pendulum"
+             >previous</a> |</li>
+        <li><a href="../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
