@@ -251,6 +251,10 @@ class Animation():
             for l in image.lines:
                 ax_img.add_line(l)
             
+            # automatically set limits --> does not work as wanted
+            #ax_img.relim()
+            #ax_img.autoscale_view()
+            
             self.image = image
             self.axes['ax_img'] = ax_img
             
@@ -276,10 +280,10 @@ class Animation():
                                             interval=1, blit=True)
     
     
-    def save(self, fname, fps=None):
+    def save(self, fname, fps=None, dpi=200):
         if not fps:
             fps = self.nframes/float(self.T)
-        self.anim.save(fname, fps=fps)
+        self.anim.save(fname, fps=fps, dpi=dpi)
 
 
 def blockdiag(M, bshape=None, sparse=False):
@@ -422,14 +426,14 @@ def plot(sim, H, fname=None):
         PP+=1
         plt.plot(t,xt[:,i])
         plt.xlabel(r'$t$')
-        plt.title(r'$'+'x%d'%i+'(t)$')
+        plt.title(r'$'+'x%d'%(i+1)+'(t)$')
 
     for i in xrange(m):
         plt.subplot(int(z1),int(z2),PP)
         PP+=1
         plt.plot(t,ut[:,i])
         plt.xlabel(r'$t$')
-        plt.title(r'$'+'u%d'%i+'(t)$')
+        plt.title(r'$'+'u%d'%(i+1)+'(t)$')
 
     for hh in H:
         plt.subplot(int(z1),int(z2),PP)

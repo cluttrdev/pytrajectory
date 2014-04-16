@@ -12,3 +12,8 @@ from spline import CubicSpline
 from solver import Solver
 from simulation import Simulation
 from utilities import Animation
+
+# add cwd to PYTHONPATH
+import os
+import sys
+sys.path.append(os.path.abspath('.'))

@@ -1,3 +1,5 @@
+.. _pytrajectory:
+
 PyTrajectory Modules Reference
 ******************************
 

@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Aircraft &mdash; pytrajectory 0.3.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Background" href="../background.html" />
+    <link rel="prev" title="Oscillation of the inverse double pendulum" href="inv_double_pendulum_swing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../background.html" title="Background"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="inv_double_pendulum_swing.html" title="Oscillation of the inverse double pendulum"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="aircraft">
+<h1>Aircraft<a class="headerlink" href="#aircraft" title="Permalink to this headline">¶</a></h1>
+<p>In this section we consider the model of a unmanned vertical take-off
+Aircraft. The aircraft has two permanently mounted thrusters on the
+wings which can apply the thrust forces <img class="math" src="../../_images/math/86b53a99470bfe410dd9108afdb7a4464f2461fb.png" alt="F_1"/> and <img class="math" src="../../_images/math/9f5a7711ff9b816f6311b40717a37c66192ed149.png" alt="F_2"/>
+independently of each other. The two engines are inclined by an angle
+<img class="math" src="../../_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/> with respect to the aircraft-fixed axis <img class="math" src="../../_images/math/67809346fe881babb0d1677d31e8f8c0a6476908.png" alt="\eta_2"/>
+and engage in the points <img class="math" src="../../_images/math/6da4fbe05c119149297246d9247b039bcce6c3e6.png" alt="P_1 = (l, h)"/> and <img class="math" src="../../_images/math/bdd1fdfb7e6c3759b8bfcc782c92292f36cc96fc.png" alt="P_2 = (-l,-h)"/>.
+The coordinates of the center of mass <img class="math" src="../../_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/> of the aircraft in the
+inertial system are denoted by <img class="math" src="../../_images/math/92c25fa25f006cdfe8ef28f3d3141e558aaac740.png" alt="z_1"/> and <img class="math" src="../../_images/math/223e963ad95ab6098315774006a2d46397fb5f93.png" alt="z_2"/>. At the same
+time, the point is the origin of the plane coordinate system. The
+aircraft axes are rotated by the angle <img class="math" src="../../_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/> with respect to
+the <img class="math" src="../../_images/math/223e963ad95ab6098315774006a2d46397fb5f93.png" alt="z_2"/>-axis.</p>
+<img alt="../../_images/aircraft.png" src="../../_images/aircraft.png" />
+<p>Through the establishment of the momentum balances for the model one
+obtains the equations</p>
+<div class="math">
+<p><img src="../../_images/math/dd7c69bafbf27a3518f255af15056861b59c1222.png" alt="\begin{eqnarray*}
+   m \ddot{z}_1 &amp; = &amp; - \sin(\theta)(F_1 + F_2)\cos(\alpha) + \cos(\theta)(F_1 - F_2)\sin(\alpha) \\
+   m \ddot{z}_2 &amp; = &amp; \cos(\theta)(F_1 + F_2)\sin(\alpha) + \sin(\theta)(F_1 - F_2)\cos(\alpha) - mg \\
+   J \ddot{\theta} &amp; = &amp; (F_1 - F_2)(l \cos(\alpha) + h \sin(\alpha))
+\end{eqnarray*}"/></p>
+</div><p>With the state vector <img class="math" src="../../_images/math/2c26201d6b69fcdc502f20fe47db548527f1eb2a.png" alt="x = [z_1, \dot{z}_1, z_2, \dot{z}_2, \theta, \dot{\theta}]^T"/>
+and <img class="math" src="../../_images/math/1268f6f560e288817e5dabcd3624b47c4c9f6114.png" alt="u = [u_1, u_2]^T = [F_1, F_2]^T"/> the state space
+representation of the system is as follows.</p>
+<div class="math">
+<p><img src="../../_images/math/a2d35bd191ff2029bdbd0b8038a09e28f9eb7956.png" alt="\begin{eqnarray*}
+   \dot{x}_1 &amp; = &amp; x_2 \\
+   \dot{x}_2 &amp; = &amp; \frac{1}{m}(-\sin(x_5)(u_1 + u_2)\cos(\alpha) + \cos(x_5)(u_1 - u_2)\sin(\alpha)) \\
+   \dot{x}_3 &amp; = &amp; x_4 \\
+   \dot{x}_2 &amp; = &amp; \frac{1}{m}(\cos(x_5)(u_1 + u_2)\cos(\alpha) + \sin(x_5)(u_1 - u_2)\sin(\alpha)) - g  \\
+   \dot{x}_5 &amp; = &amp; x_6 \\
+   \dot{x}_6 &amp; = &amp; \frac{1}{J}(l \cos(\alpha) + h \sin(\alpha))
+\end{eqnarray*}"/></p>
+</div><p>For the aircraft, a trajectory should be planned that translates the
+horizontally aligned flying object from a rest position (hovering) along
+the <img class="math" src="../../_images/math/92c25fa25f006cdfe8ef28f3d3141e558aaac740.png" alt="z_1"/> and <img class="math" src="../../_images/math/223e963ad95ab6098315774006a2d46397fb5f93.png" alt="z_2"/> axis back into a hovering position.
+The hovering is to be realized on the boundary conditions of the input.
+Therefor the derivatives of the state variables should satisfy the
+following conditions.</p>
+<div class="math">
+<p><img src="../../_images/math/ee657ad0e173d97a773159e85dfd58f52e4ead4a.png" alt="$ \dot{z}_1 = \ddot{z}_1 = \dot{z}_2 = \ddot{z_2} = \dot{\theta} = \ddot{\theta} = 0 $"/></p>
+</div><p>For the horizontal position applies <img class="math" src="../../_images/math/e688906f3812f02c905dbb48da59a07c9f6bf35a.png" alt="\theta = 0"/>. These demands
+yield the boundary conditions for the inputs.</p>
+<div class="math">
+<p><img src="../../_images/math/02dfe15d7d821b96298c56f73db5075ab72ff637.png" alt="$ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $"/></p>
+</div><div class="highlight-python"><div class="highlight"><pre><span class="c"># vertical take-off aircraft</span>
+
+<span class="c"># import trajectory class and necessary dependencies</span>
+<span class="kn">from</span> <span class="nn">pytrajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+
+<span class="c"># define the function that returns the vectorfield</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span><span class="p">,</span> <span class="n">x5</span><span class="p">,</span> <span class="n">x6</span> <span class="o">=</span> <span class="n">x</span>  <span class="c"># system state variables</span>
+    <span class="n">u1</span><span class="p">,</span> <span class="n">u2</span> <span class="o">=</span> <span class="n">u</span>                  <span class="c"># input variables</span>
+    
+    <span class="c"># coordinates for the points in which the engines engage [m]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>    <span class="c"># graviational acceleration [m/s^2]</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="mf">50.0</span>    <span class="c"># mass of the aircraft [kg]</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="mf">25.0</span>    <span class="c"># moment of inertia about M [kg*m^2]</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span>    <span class="c"># deflection of the engines</span>
+
+    <span class="n">sa</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="n">ca</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x5</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">x5</span><span class="p">)</span>
+    
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>             <span class="n">x2</span><span class="p">,</span>
+                    <span class="o">-</span><span class="n">s</span><span class="o">/</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">u1</span><span class="o">+</span><span class="n">u2</span><span class="p">)</span> <span class="o">+</span> <span class="n">c</span><span class="o">/</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">u1</span><span class="o">-</span><span class="n">u2</span><span class="p">)</span><span class="o">*</span><span class="n">sa</span><span class="p">,</span>
+                                <span class="n">x4</span><span class="p">,</span>
+                    <span class="o">-</span><span class="n">g</span><span class="o">+</span><span class="n">c</span><span class="o">/</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">u1</span><span class="o">+</span><span class="n">u2</span><span class="p">)</span> <span class="o">+</span><span class="n">s</span><span class="o">/</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">u1</span><span class="o">-</span><span class="n">u2</span><span class="p">)</span><span class="o">*</span><span class="n">sa</span> <span class="p">,</span>
+                                <span class="n">x6</span><span class="p">,</span>
+                    <span class="mi">1</span><span class="o">/</span><span class="n">J</span><span class="o">*</span><span class="p">(</span><span class="n">u1</span><span class="o">-</span><span class="n">u2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="n">ca</span><span class="o">+</span><span class="n">h</span><span class="o">*</span><span class="n">sa</span><span class="p">)])</span>
+    
+    <span class="k">return</span> <span class="n">ff</span> 
+
+<span class="c"># system state boundary values for a = 0.0 [s] and b = 3.0 [s]</span>
+<span class="n">xa</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># boundary values for the inputs</span>
+<span class="n">g</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">)),</span>
+     <span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))]</span>
+
+<span class="c"># create trajectory object</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">)</span>
+
+<span class="c"># don&#39;t take advantage of the system structure (integrator chains)</span>
+<span class="c"># (this will result in a faster solution here)</span>
+<span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;use_chains&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># also alter some other method parameters to increase performance</span>
+<span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;kx&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="c"># run iteration</span>
+<span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+
+<span class="c"># show results</span>
+<span class="n">T</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inv_double_pendulum_swing.html"
+                        title="previous chapter">Oscillation of the inverse double pendulum</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../background.html"
+                        title="next chapter">Background</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/guide/examples/aircraft.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../background.html" title="Background"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="inv_double_pendulum_swing.html" title="Oscillation of the inverse double pendulum"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

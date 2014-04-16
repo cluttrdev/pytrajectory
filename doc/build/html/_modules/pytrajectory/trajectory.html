@@ -116,7 +116,7 @@
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sx</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">su</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxIt</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s">&#39;leven&#39;</span><span class="p">,</span> <span class="n">use_chains</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxIt</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s">&#39;leven&#39;</span><span class="p">,</span> <span class="n">use_chains</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         
         <span class="c"># save symbolic vectorfield</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span> <span class="o">=</span> <span class="n">ff</span>
@@ -388,14 +388,15 @@
 <span class="sd">            New value for the passed parameter</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
-        <span class="k">if</span> <span class="n">param</span> <span class="ow">and</span> <span class="n">val</span><span class="p">:</span>
-            <span class="k">exec</span><span class="p">(</span><span class="s">&#39;self.</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)))</span>
-        <span class="k">elif</span> <span class="n">val</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">param</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;No method parameter given to assign value </span><span class="si">%s</span><span class="s"> to!&#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">param</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;No value passed to assign to method parameter </span><span class="si">%s</span><span class="s">!&#39;</span><span class="o">%</span><span class="n">param</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
+        <span class="c">#if param and val:</span>
+        <span class="c">#    exec(&#39;self.%s = %s&#39;%(param, str(val)))</span>
+        <span class="c">#elif val and not param:</span>
+        <span class="c">#    log.warn(&#39;No method parameter given to assign value %s to!&#39;%str(val))</span>
+        <span class="c">#elif param and not val:</span>
+        <span class="c">#    log.warn(&#39;No value passed to assign to method parameter %s!&#39;%param)</span>
+        <span class="c">#else:</span>
+        <span class="c">#    pass</span>
+        <span class="k">exec</span><span class="p">(</span><span class="s">&#39;self.</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)))</span>
     
     </div>
 <div class="viewcode-block" id="Trajectory.iterate"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.iterate">[docs]</a>    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

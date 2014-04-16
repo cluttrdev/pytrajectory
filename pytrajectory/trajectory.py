@@ -67,7 +67,7 @@ class Trajectory():
     '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, sx=5, su=5, kx=2,
-                delta=2, maxIt=7, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
+                delta=2, maxIt=10, eps=1e-2, tol=1e-5, algo='leven', use_chains=True):
         
         # save symbolic vectorfield
         self.ff_sym = ff
@@ -339,14 +339,15 @@ class Trajectory():
             New value for the passed parameter
         '''
         
-        if param and val:
-            exec('self.%s = %s'%(param, str(val)))
-        elif val and not param:
-            log.warn('No method parameter given to assign value %s to!'%str(val))
-        elif param and not val:
-            log.warn('No value passed to assign to method parameter %s!'%param)
-        else:
-            pass
+        #if param and val:
+        #    exec('self.%s = %s'%(param, str(val)))
+        #elif val and not param:
+        #    log.warn('No method parameter given to assign value %s to!'%str(val))
+        #elif param and not val:
+        #    log.warn('No value passed to assign to method parameter %s!'%param)
+        #else:
+        #    pass
+        exec('self.%s = %s'%(param, str(val)))
     
     
     def iterate(self):
