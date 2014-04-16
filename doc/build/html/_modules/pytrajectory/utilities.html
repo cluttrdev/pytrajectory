@@ -366,14 +366,14 @@
 <span class="sd">     [ 1.  1.  0.  0.]</span>
 <span class="sd">     [ 0.  0.  1.  1.]</span>
 <span class="sd">     [ 0.  0.  1.  1.]]</span>
-<span class="sd">    </span>
-<span class="sd">    &gt;&gt;&gt; I1 = np.ones((1, 1))</span>
-<span class="sd">    &gt;&gt;&gt; I2 = np.ones((2, 2))</span>
-<span class="sd">    &gt;&gt;&gt; I3 = np.ones((3, 3))</span>
-<span class="sd">    &gt;&gt;&gt; A = [I1, I2, I3]</span>
-<span class="sd">    &gt;&gt;&gt; B = blockdiag(B)</span>
-<span class="sd">    &gt;&gt;&gt; print B</span>
 <span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c">#&gt;&gt;&gt; I1 = np.ones((1, 1))</span>
+    <span class="c">#&gt;&gt;&gt; I2 = np.ones((2, 2))</span>
+    <span class="c">#&gt;&gt;&gt; I3 = np.ones((3, 3))</span>
+    <span class="c">#&gt;&gt;&gt; A = [I1, I2, I3]</span>
+    <span class="c">#&gt;&gt;&gt; B = blockdiag(B)</span>
+    <span class="c">#&gt;&gt;&gt; print B</span>
+    <span class="c">#&#39;&#39;&#39;</span>
     
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;list&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="bp">NotImplemented</span>
@@ -390,7 +390,6 @@
         
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)):</span>
             <span class="k">pass</span>
-            
     <span class="k">else</span><span class="p">:</span>
         <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="n">bshape</span>
         <span class="n">Mrow</span><span class="p">,</span> <span class="n">Mcol</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span>

@@ -50,6 +50,11 @@
             
   <div class="section" id="module-pytrajectory">
 <span id="pytrajectory-modules-reference"></span><span id="pytrajectory"></span><h1>PyTrajectory Modules Reference<a class="headerlink" href="#module-pytrajectory" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>PyTrajectory<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>PyTrajectory is a Python library for the determination of the feed forward control
+to achieve a transition between desired states of a nonlinear control system.</p>
+</div>
 <div class="section" id="module-pytrajectory.trajectory">
 <span id="trajectory-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">trajectory</span></tt> Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -565,14 +570,6 @@ block diagonal matrix out of them.</p>
 <span class="go"> [ 0.  0.  1.  1.]]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">I1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">I2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">I3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="p">[</span><span class="n">I1</span><span class="p">,</span> <span class="n">I2</span><span class="p">,</span> <span class="n">I3</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">blockdiag</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="function">
@@ -640,7 +637,7 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140416-105758.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140416-125523.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -660,6 +657,7 @@ variable and error function and plots the solution of the simulation.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyTrajectory Modules Reference</a><ul>
+<li><a class="reference internal" href="#id1">PyTrajectory</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.trajectory"><tt class="docutils literal"><span class="pre">trajectory</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.spline"><tt class="docutils literal"><span class="pre">spline</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.solver"><tt class="docutils literal"><span class="pre">solver</span></tt> Module</a></li>

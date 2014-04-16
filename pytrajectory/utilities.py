@@ -317,14 +317,14 @@ def blockdiag(M, bshape=None, sparse=False):
      [ 1.  1.  0.  0.]
      [ 0.  0.  1.  1.]
      [ 0.  0.  1.  1.]]
-    
-    >>> I1 = np.ones((1, 1))
-    >>> I2 = np.ones((2, 2))
-    >>> I3 = np.ones((3, 3))
-    >>> A = [I1, I2, I3]
-    >>> B = blockdiag(B)
-    >>> print B
     '''
+    #>>> I1 = np.ones((1, 1))
+    #>>> I2 = np.ones((2, 2))
+    #>>> I3 = np.ones((3, 3))
+    #>>> A = [I1, I2, I3]
+    #>>> B = blockdiag(B)
+    #>>> print B
+    #'''
     
     if type(M) == 'list':
         raise NotImplemented
@@ -341,7 +341,6 @@ def blockdiag(M, bshape=None, sparse=False):
         
         for i in xrange(len(M)):
             pass
-            
     else:
         nrow, ncol = bshape
         Mrow, Mcol = M.shape

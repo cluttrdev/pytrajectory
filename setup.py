@@ -11,11 +11,5 @@ setup(name='PyTrajectory',
       description='Python library for trajectory planning.',
       author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
       author_email='Andreas.Kunze@mailbox.tu-dresden.de',
-      packages=['pytrajectory',
-                'pytrajectory.trajectory',
-                'pytrajectory.splines',
-                'pytrajectory.solver',
-                'pytrajectory.simulation',
-                'pytrajectory.utilities',
-                'pytrajectory.log'],
+      packages=['pytrajectory']
      )

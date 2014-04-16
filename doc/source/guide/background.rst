@@ -1,6 +1,9 @@
 Background
 ==========
 
+This section is intended to give some insights into the mathematical 
+background that is the basis of PyTrajectory.
+
 Collocation method
 ------------------
 
@@ -52,7 +55,7 @@ The polynomial sections can be created as follows.
 
 .. math::
 
-   P_i(t) = c_{i,0}(t-i*h)^3 + c_{i,1}(t-i*h)^2 + c_{i,2}(t-i*h) + c_{i,3} 
+   P_i(t) = c_{i,0}(t-i h)^3 + c_{i,1}(t-i h)^2 + c_{i,2}(t-i h) + c_{i,3} 
 
    c_{i,j} \in R,\qquad i = 1,...,\eta,\ j = 0,...,3
 
