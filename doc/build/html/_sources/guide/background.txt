@@ -47,7 +47,7 @@ and are referred to as nodes.
 
 .. math::
    
-   t_0 = \tau_0 < \tau_1 < ... < \tau_{\eta} = t_N \qquad h = \frac{t_0 - t_N}{\eta}
+   t_0 = \tau_0 < \tau_1 < ... < \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}
 
    \tau_{i+1} = \tau_i + h \quad i = 0,...,\eta-1
 
@@ -61,3 +61,8 @@ The polynomial sections can be created as follows.
 
 In addition to the steadiness the spline functions should be twice steadily differentiable in 
 the nodes :math:`\tau`.
+
+Equation system
+---------------
+
+... to do

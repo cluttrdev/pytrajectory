@@ -2,7 +2,7 @@ Getting Started
 ***************
 
 This section provides an overview on what PyTrajectory is and how to use it.
-For a mor detailed view please have a look at the :ref:`pytrajectory`.
+For a more detailed view please have a look at the :ref:`pytrajectory`.
 
 
 What is PyTrajectory?

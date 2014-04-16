@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Arch Linux) (format=pdflatex 2014.3.18)  7 APR 2014 20:03
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Arch Linux) (format=pdflatex 2014.3.18)  16 APR 2014 19:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -900,7 +900,7 @@ LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <17.28> not available
 ] (./pytrajectory.toc
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 2.
-LaTeX Font Info:    Try loading font information for T1+pcr on input line 8.
+LaTeX Font Info:    Try loading font information for T1+pcr on input line 24.
  (/usr/share/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 ))
@@ -922,50 +922,84 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <24.88> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 125.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <12> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 142.
-<inv_pendulum.png, id=102, 208.1376pt x 173.448pt>
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 141.
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 163.
+
+(/usr/share/texmf-dist/tex/latex/psnfss/ts1ptm.fd
+File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
+) [1
+
+
+]
+<inv_pendulum.png, id=122, 208.1376pt x 173.448pt>
 File: inv_pendulum.png Graphic file (type png)
  <use inv_pendulum.png>
-Package pdftex.def Info: inv_pendulum.png used on input line 152.
+Package pdftex.def Info: inv_pendulum.png used on input line 227.
 (pdftex.def)             Requested size: 208.13708pt x 173.44757pt.
 File: inv_pendulum.png Graphic file (type png)
 
 <use inv_pendulum.png>
-Package pdftex.def Info: inv_pendulum.png used on input line 152.
+Package pdftex.def Info: inv_pendulum.png used on input line 227.
 (pdftex.def)             Requested size: 208.13708pt x 173.44757pt.
- [1
-
-
- <./inv_pendulum.png>]
+ [2 <./inv_pendulum.png>]
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 172.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 247.
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <9> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 173.
- [2] [3] [4
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 250.
+ [3]
+<inv_double_pendulum.png, id=147, 216.81pt x 196.5744pt>
+File: inv_double_pendulum.png Graphic file (type png)
 
-]
+<use inv_double_pendulum.png>
+Package pdftex.def Info: inv_double_pendulum.png used on input line 301.
+(pdftex.def)             Requested size: 216.80946pt x 196.57391pt.
+File: inv_double_pendulum.png Graphic file (type png)
+ <use inv_double_pendulum.png>
+Package pdftex.def Info: inv_double_pendulum.png used on input line 301.
+(pdftex.def)             Requested size: 216.80946pt x 196.57391pt.
+ [4 <./inv_double_pendulum.png>] <aircraft.png, id=155, 263.0628pt x 210.3057pt
+>
+File: aircraft.png Graphic file (type png)
+
+<use aircraft.png>
+Package pdftex.def Info: aircraft.png used on input line 392.
+(pdftex.def)             Requested size: 263.06215pt x 210.30518pt.
+File: aircraft.png Graphic file (type png)
+ <use aircraft.png>
+Package pdftex.def Info: aircraft.png used on input line 392.
+(pdftex.def)             Requested size: 263.06215pt x 210.30518pt.
+ [5] [6 <./aircraft.png>]
+<uact_manipulator.png, id=166, 227.6505pt x 164.7756pt>
+File: uact_manipulator.png Graphic file (type png)
+
+<use uact_manipulator.png>
+Package pdftex.def Info: uact_manipulator.png used on input line 500.
+(pdftex.def)             Requested size: 227.64993pt x 164.77518pt.
+File: uact_manipulator.png Graphic file (type png)
+ <use uact_manipulator.png>
+Package pdftex.def Info: uact_manipulator.png used on input line 500.
+(pdftex.def)             Requested size: 227.64993pt x 164.77518pt.
+ [7] [8 <./uact_manipulator.png>] [9] [10]
 Chapter 2.
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 226.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 644.
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <10> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 230.
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 234.
-
-(/usr/share/texmf-dist/tex/latex/psnfss/ts1ptm.fd
-File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) [5] [6] [7] [8]
-LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <9> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 800.
- [9] [10]
-Chapter 3.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 648.
 [11
 
-] [12
+] [12] [13] [14] [15]
+LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <9> not available
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 1291.
+ [16] [17] [18
 
-] [13
+]
+Chapter 3.
+[19] [20
+
+] [21
 
 
-] (./pytrajectory.ind [14
+] (./pytrajectory.ind [22
 
 
 ]
@@ -974,37 +1008,38 @@ Underfull \hbox (badness 10000) in paragraph at lines 5--6
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 16--17
+Underfull \hbox (badness 10000) in paragraph at lines 18--19
 []\T1/ptm/m/n/10 checkAccuracy() (py-tra-jec-tory.trajectory.Trajectory
  []
 
+[23
 
-Underfull \hbox (badness 10000) in paragraph at lines 97--98
+]
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
 []\T1/ptm/m/n/10 startIteration() (py-tra-jec-tory.trajectory.Trajectory
  []
 
-[15
-
-] [16
+[24
 
 ])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 942.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 942.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1427.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1427.
  (./pytrajectory.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 942.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 942.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1427.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1427.
+
 Package rerunfilecheck Info: File `pytrajectory.out' has not changed.
-(rerunfilecheck)             Checksum: 6951EBC67A605A77B5C9A8AE74E46240;812.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 942.
+(rerunfilecheck)             Checksum: 000AAC15AFAB9AC4BA7BC02E05827616;938.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1427.
  ) 
 Here is how much of TeX's memory you used:
- 9283 strings out of 493308
- 129738 string characters out of 6143616
- 231334 words of memory out of 5000000
- 12381 multiletter control sequences out of 15000+600000
- 66668 words of font info for 75 fonts, out of 8000000 for 9000
+ 9356 strings out of 493308
+ 131399 string characters out of 6143616
+ 235567 words of memory out of 5000000
+ 12424 multiletter control sequences out of 15000+600000
+ 67746 words of font info for 76 fonts, out of 8000000 for 9000
  958 hyphenation exceptions out of 8191
- 36i,12n,45p,643b,565s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,15n,49p,643b,498s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-dist/fon
 ts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/publi
 c/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/
@@ -1018,10 +1053,10 @@ exmf-dist/fonts/type1/urw/courier/ucrro8a.pfb></usr/share/texmf-dist/fonts/type
 8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/t
 exmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/u
 rw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on pytrajectory.pdf (20 pages, 209989 bytes).
+Output written on pytrajectory.pdf (28 pages, 293858 bytes).
 PDF statistics:
- 408 PDF objects out of 1000 (max. 8388607)
- 359 compressed objects within 4 object streams
- 99 named destinations out of 1000 (max. 500000)
- 138 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 479 PDF objects out of 1000 (max. 8388607)
+ 415 compressed objects within 5 object streams
+ 125 named destinations out of 1000 (max. 500000)
+ 169 words of extra memory for PDF output out of 10000 (max. 10000000)
 

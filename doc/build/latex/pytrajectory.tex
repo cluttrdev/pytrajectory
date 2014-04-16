@@ -14,7 +14,7 @@
 
 
 \title{pytrajectory Documentation}
-\date{April 07, 2014}
+\date{April 16, 2014}
 \release{0.3.2}
 \author{Andreas Kunze}
 \newcommand{\sphinxlogo}{}
@@ -127,21 +127,96 @@
 
 \section{About PyTrajectory}
 \label{guide/about:about-pytrajectory}\label{guide/about::doc}
+PyTrajectory is being developed at Dresden University of Technology at the Institute for Control Theory.
+Based upon a study work of Oliver Schnabel under the supervision of Carsten Knoll in February 2013
+it has been further developed by Andreas Kunze to increase its numeric performance.
+
+
+\section{Getting Started}
+\label{guide/start:getting-started}\label{guide/start::doc}
+This section provides an overview on what PyTrajectory is and how to use it.
+For a more detailed view please have a look at the {\hyperref[pytrajectory:pytrajectory]{\emph{PyTrajectory Modules Reference}}}.
+
+
+\subsection{What is PyTrajectory?}
+\label{guide/start:what-is-pytrajectory}
 PyTrajectory is a Python library for the determination of the feed forward control
 to achieve a transition between desired states of a nonlinear control system.
 
-It's based an a study work written at the Technical University Dresden.
+Planning and designing of trajectories represents an important task in
+the control of technological processes. Here the problem is attributed
+on a multi-dimensional boundary value problem with free parameters.
+In general this problem can not be solved analytically. It is therefore
+resorted to the method of collocation in order to obtain a numerical
+approximation.
+
+PyTrajectory allows a flexible implementation of various tasks.
 
 
-\section{Usage}
-\label{guide/usage:usage}\label{guide/usage::doc}
+\subsection{Installation}
+\label{guide/start:installation}
+PyTrajectory was developed and tested on Python 2.7
+
+
+\subsubsection{Dependencies}
+\label{guide/start:dependencies}\begin{itemize}
+\item {} 
+numpy
+
+\item {} 
+sympy
+
+\item {} 
+scipy
+
+\item {} 
+optional
+\begin{itemize}
+\item {} 
+matplotlib
+
+\item {} 
+ipython {[}debugging{]}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Windows}
+\label{guide/start:windows}
+... to do
+
+
+\subsubsection{Linux}
+\label{guide/start:linux}
+... to do
+
+
+\subsubsection{Mac OS}
+\label{guide/start:mac-os}
+... to do
+
+
+\subsection{Usage}
+\label{guide/start:usage}
+... to do
+
+
+\subsection{A First Example}
+\label{guide/start:a-first-example}
+... to do
+
 
 \section{Examples}
 \label{guide/examples/index::doc}\label{guide/examples/index:examples}
+The following example systems from mechanics demonstrate the application
+of PyTrajectory. The deriving of the model equations is omittted here.
 
-\subsection{Translation of the inverse pendulum}
-\label{guide/examples/inv_pendulum_trans:translation-of-the-inverse-pendulum}\label{guide/examples/inv_pendulum_trans::doc}
-An example often used in literature is the inverse pendulum. Here a
+
+\subsection{Translation of the inverted pendulum}
+\label{guide/examples/inv_pendulum_trans::doc}\label{guide/examples/inv_pendulum_trans:translation-of-the-inverted-pendulum}
+An example often used in literature is the inverted pendulum. Here a
 force \(F\) acts on a cart with mass \(M_w\). In addition the
 cart is connected by a massless rod with a pendulum mass \(m_p\).
 The mass of the pendulum is concentrated in \(P_2\) and that of the
@@ -151,7 +226,7 @@ using the carts position \(x_w(t)\) and the pendulum deflection
 
 \includegraphics{inv_pendulum.png}
 
-With the \emph{Lagrangian Formalism} the model has the following state space
+With the \emph{Lagrangian Formalism} the model has the following state
 representation where \(u_1 = F\) and
 \(x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]\)
 \begin{eqnarray*}
@@ -164,13 +239,15 @@ A possibly wanted trajectory is the translation of the cart along the
 x-axis (i.e. by \(0.5m\)). In the beginning and end of the process
 the cart and pendulum should remain at rest and the pendulum should be
 aligned vertically upwards (\(\varphi = 0\)). As a further condition
-\(u\) should start and end steadily in the rest position
-(\(u(0) = u(T) = 0\)).
+\(u_1\) should start and end steadily in the rest position
+(\(u_1(0) = u_1(T) = 0\)).
 The operating time here is \(T = 1 [s]\).
 
 \begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} translation of the inverse pendulum}
+
 \PYG{c}{\PYGZsh{} import trajectory class and necessary dependencies}
-\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory.trajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
+\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
 \PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{sin}\PYG{p}{,} \PYG{n}{cos}
 \PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k+kn}{as} \PYG{n+nn}{np}
 
@@ -217,8 +294,349 @@ The operating time here is \(T = 1 [s]\).
 \end{Verbatim}
 
 
+\subsection{Oscillation of the inverted double pendulum}
+\label{guide/examples/inv_double_pendulum_swing::doc}\label{guide/examples/inv_double_pendulum_swing:oscillation-of-the-inverted-double-pendulum}
+In this example we add another pendulum to the cart in the system.
+
+\includegraphics{inv_double_pendulum.png}
+
+The system has the state vector \(x = [x_1, \dot{x}_1,
+\varphi_1, \dot{\varphi}_1, \varphi_2, \dot{\varphi}_2]\). A partial
+linearization with \(y = x_1\) yields the following system state
+representation where \(\tilde{u} = \ddot{y}\).
+\begin{eqnarray*}
+   \dot{x}_1 & = & x_2 \\
+   \dot{x}_2 & = & \tilde{u} \\
+   \dot{x}_3 & = & x_4 \\
+   \dot{x}_4 & = & \frac{1}{l_1}(g \sin(x_3) + \tilde{u} \cos(x_3)) \\
+   \dot{x}_5 & = & x_6 \\
+   \dot{x}_6 & = & \frac{1}{l_2}(g \sin(x_5) + \tilde{u} \cos(x_5))
+\end{eqnarray*}
+Here a trajectory should be planned that transfers the system between
+the following two positions of rest. At the beginning both pendulums
+should be directed downwards (\(\varphi_1 = \varphi_2 = \pi\)).
+After a operating time of \(T = 2 [s]\) the cart should be at the
+same position again and the pendulums should be at rest with
+\(\varphi_1 = \varphi_2 = 0\).
+\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \\ \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+\end{equation*}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} oscillation of the inverted double pendulum with partial linearization}
+
+\PYG{c}{\PYGZsh{} import trajectory class and necessary dependencies}
+\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory.trajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{cos}\PYG{p}{,} \PYG{n}{sin}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k+kn}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{numpy} \PYG{k+kn}{import} \PYG{n}{pi}
+
+\PYG{c}{\PYGZsh{} define the function that returns the vectorfield}
+\PYG{k}{def} \PYG{n+nf}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{u}\PYG{p}{)}\PYG{p}{:}
+	\PYG{n}{x1}\PYG{p}{,} \PYG{n}{x2}\PYG{p}{,} \PYG{n}{x3}\PYG{p}{,} \PYG{n}{x4}\PYG{p}{,} \PYG{n}{x5}\PYG{p}{,} \PYG{n}{x6} \PYG{o}{=} \PYG{n}{x}  \PYG{c}{\PYGZsh{} system variables}
+	\PYG{n}{u}\PYG{p}{,} \PYG{o}{=} \PYG{n}{u}                      \PYG{c}{\PYGZsh{} input variable}
+    
+    \PYG{c}{\PYGZsh{} length of the pendulums}
+	\PYG{n}{l1} \PYG{o}{=} \PYG{l+m+mf}{0.7}
+	\PYG{n}{l2} \PYG{o}{=} \PYG{l+m+mf}{0.5}
+    
+	\PYG{n}{g} \PYG{o}{=} \PYG{l+m+mf}{9.81}    \PYG{c}{\PYGZsh{} gravitational acceleration}
+    
+	\PYG{n}{ff} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}         \PYG{n}{x2}\PYG{p}{,}
+                            \PYG{n}{u}\PYG{p}{,}
+                            \PYG{n}{x4}\PYG{p}{,}
+                \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{l1}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{g}\PYG{o}{*}\PYG{n}{sin}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}\PYG{o}{+}\PYG{n}{u}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}\PYG{p}{)}\PYG{p}{,}
+                            \PYG{n}{x6}\PYG{p}{,}
+                \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{l2}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{g}\PYG{o}{*}\PYG{n}{sin}\PYG{p}{(}\PYG{n}{x5}\PYG{p}{)}\PYG{o}{+}\PYG{n}{u}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x5}\PYG{p}{)}\PYG{p}{)}
+                    \PYG{p}{]}\PYG{p}{)}
+    
+	\PYG{k}{return} \PYG{n}{ff}
+
+\PYG{c}{\PYGZsh{} system state boundary values for a = 0.0 [s] and b = 2.0 [s]}
+\PYG{n}{xa} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,}  \PYG{n}{pi}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,}  \PYG{n}{pi}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+\PYG{n}{xb} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} boundary values for the input}
+\PYG{n}{g}\PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} create trajectory object}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{g}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} alter some method parameters to increase performance}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{su}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{10}\PYG{p}{)}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{eps}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mf}{8e\PYGZhy{}2}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} run iteration}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{startIteration}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} show results}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{p}{)}
+\end{Verbatim}
+
+
+\subsection{Aircraft}
+\label{guide/examples/aircraft:aircraft}\label{guide/examples/aircraft::doc}
+In this section we consider the model of a unmanned vertical take-off
+aircraft. The aircraft has two permanently mounted thrusters on the
+wings which can apply the thrust forces \(F_1\) and \(F_2\)
+independently of each other. The two engines are inclined by an angle
+\(\alpha\) with respect to the aircraft-fixed axis \(\eta_2\)
+and engage in the points \(P_1 = (l, h)\) and \(P_2 = (-l,-h)\).
+The coordinates of the center of mass \(M\) of the aircraft in the
+inertial system are denoted by \(z_1\) and \(z_2\). At the same
+time, the point is the origin of the plane coordinate system. The
+aircraft axes are rotated by the angle \(\theta\) with respect to
+the \(z_2\)-axis.
+
+\includegraphics{aircraft.png}
+
+Through the establishment of the momentum balances for the model one
+obtains the equations
+\begin{eqnarray*}
+   m \ddot{z}_1 & = & - \sin(\theta)(F_1 + F_2)\cos(\alpha) + \cos(\theta)(F_1 - F_2)\sin(\alpha) \\
+   m \ddot{z}_2 & = & \cos(\theta)(F_1 + F_2)\sin(\alpha) + \sin(\theta)(F_1 - F_2)\cos(\alpha) - mg \\
+   J \ddot{\theta} & = & (F_1 - F_2)(l \cos(\alpha) + h \sin(\alpha))
+\end{eqnarray*}
+With the state vector \(x = [z_1, \dot{z}_1, z_2, \dot{z}_2, \theta, \dot{\theta}]^T\)
+and \(u = [u_1, u_2]^T = [F_1, F_2]^T\) the state space
+representation of the system is as follows.
+\begin{eqnarray*}
+   \dot{x}_1 & = & x_2 \\
+   \dot{x}_2 & = & \frac{1}{m}(-\sin(x_5)(u_1 + u_2)\cos(\alpha) + \cos(x_5)(u_1 - u_2)\sin(\alpha)) \\
+   \dot{x}_3 & = & x_4 \\
+   \dot{x}_2 & = & \frac{1}{m}(\cos(x_5)(u_1 + u_2)\cos(\alpha) + \sin(x_5)(u_1 - u_2)\sin(\alpha)) - g  \\
+   \dot{x}_5 & = & x_6 \\
+   \dot{x}_6 & = & \frac{1}{J}(l \cos(\alpha) + h \sin(\alpha))
+\end{eqnarray*}
+For the aircraft, a trajectory should be planned that translates the
+horizontally aligned flying object from a rest position (hovering) along
+the \(z_1\) and \(z_2\) axis back into a hovering position.
+The hovering is to be realized on the boundary conditions of the input.
+Therefor the derivatives of the state variables should satisfy the
+following conditions.
+$ \dot{z}_1 = \ddot{z}_1 = \dot{z}_2 = \ddot{z_2} = \dot{\theta} = \ddot{\theta} = 0 $
+For the horizontal position applies \(\theta = 0\). These demands
+yield the boundary conditions for the inputs.
+$ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} vertical take\PYGZhy{}off aircraft}
+
+\PYG{c}{\PYGZsh{} import trajectory class and necessary dependencies}
+\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{sin}\PYG{p}{,} \PYG{n}{cos}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k+kn}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{numpy} \PYG{k+kn}{import} \PYG{n}{pi}
+
+\PYG{c}{\PYGZsh{} define the function that returns the vectorfield}
+\PYG{k}{def} \PYG{n+nf}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{u}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{x1}\PYG{p}{,} \PYG{n}{x2}\PYG{p}{,} \PYG{n}{x3}\PYG{p}{,} \PYG{n}{x4}\PYG{p}{,} \PYG{n}{x5}\PYG{p}{,} \PYG{n}{x6} \PYG{o}{=} \PYG{n}{x}  \PYG{c}{\PYGZsh{} system state variables}
+    \PYG{n}{u1}\PYG{p}{,} \PYG{n}{u2} \PYG{o}{=} \PYG{n}{u}                  \PYG{c}{\PYGZsh{} input variables}
+    
+    \PYG{c}{\PYGZsh{} coordinates for the points in which the engines engage [m]}
+    \PYG{n}{l} \PYG{o}{=} \PYG{l+m+mf}{1.0}
+    \PYG{n}{h} \PYG{o}{=} \PYG{l+m+mf}{0.1}
+
+    \PYG{n}{g} \PYG{o}{=} \PYG{l+m+mf}{9.81}    \PYG{c}{\PYGZsh{} graviational acceleration [m/s\PYGZca{}2]}
+    \PYG{n}{M} \PYG{o}{=} \PYG{l+m+mf}{50.0}    \PYG{c}{\PYGZsh{} mass of the aircraft [kg]}
+    \PYG{n}{J} \PYG{o}{=} \PYG{l+m+mf}{25.0}    \PYG{c}{\PYGZsh{} moment of inertia about M [kg*m\PYGZca{}2]}
+
+    \PYG{n}{alpha} \PYG{o}{=} \PYG{l+m+mi}{5}\PYG{o}{/}\PYG{l+m+mf}{360.0}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{pi}    \PYG{c}{\PYGZsh{} deflection of the engines}
+
+    \PYG{n}{sa} \PYG{o}{=} \PYG{n}{sin}\PYG{p}{(}\PYG{n}{alpha}\PYG{p}{)}
+    \PYG{n}{ca} \PYG{o}{=} \PYG{n}{cos}\PYG{p}{(}\PYG{n}{alpha}\PYG{p}{)}
+
+    \PYG{n}{s} \PYG{o}{=} \PYG{n}{sin}\PYG{p}{(}\PYG{n}{x5}\PYG{p}{)}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{cos}\PYG{p}{(}\PYG{n}{x5}\PYG{p}{)}
+    
+    \PYG{n}{ff} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}             \PYG{n}{x2}\PYG{p}{,}
+                    \PYG{o}{\PYGZhy{}}\PYG{n}{s}\PYG{o}{/}\PYG{n}{M}\PYG{o}{*}\PYG{p}{(}\PYG{n}{u1}\PYG{o}{+}\PYG{n}{u2}\PYG{p}{)} \PYG{o}{+} \PYG{n}{c}\PYG{o}{/}\PYG{n}{M}\PYG{o}{*}\PYG{p}{(}\PYG{n}{u1}\PYG{o}{\PYGZhy{}}\PYG{n}{u2}\PYG{p}{)}\PYG{o}{*}\PYG{n}{sa}\PYG{p}{,}
+                                \PYG{n}{x4}\PYG{p}{,}
+                    \PYG{o}{\PYGZhy{}}\PYG{n}{g}\PYG{o}{+}\PYG{n}{c}\PYG{o}{/}\PYG{n}{M}\PYG{o}{*}\PYG{p}{(}\PYG{n}{u1}\PYG{o}{+}\PYG{n}{u2}\PYG{p}{)} \PYG{o}{+}\PYG{n}{s}\PYG{o}{/}\PYG{n}{M}\PYG{o}{*}\PYG{p}{(}\PYG{n}{u1}\PYG{o}{\PYGZhy{}}\PYG{n}{u2}\PYG{p}{)}\PYG{o}{*}\PYG{n}{sa} \PYG{p}{,}
+                                \PYG{n}{x6}\PYG{p}{,}
+                    \PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{J}\PYG{o}{*}\PYG{p}{(}\PYG{n}{u1}\PYG{o}{\PYGZhy{}}\PYG{n}{u2}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{l}\PYG{o}{*}\PYG{n}{ca}\PYG{o}{+}\PYG{n}{h}\PYG{o}{*}\PYG{n}{sa}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}
+    
+    \PYG{k}{return} \PYG{n}{ff} 
+
+\PYG{c}{\PYGZsh{} system state boundary values for a = 0.0 [s] and b = 3.0 [s]}
+\PYG{n}{xa} \PYG{o}{=} \PYG{p}{[} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+\PYG{n}{xb} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{10.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{5.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} boundary values for the inputs}
+\PYG{n}{g} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.5}\PYG{o}{*}\PYG{l+m+mf}{9.81}\PYG{o}{*}\PYG{l+m+mf}{50.0}\PYG{o}{/}\PYG{p}{(}\PYG{n}{cos}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{o}{/}\PYG{l+m+mf}{360.0}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{)}\PYG{p}{)}\PYG{p}{,}
+     \PYG{l+m+mf}{0.5}\PYG{o}{*}\PYG{l+m+mf}{9.81}\PYG{o}{*}\PYG{l+m+mf}{50.0}\PYG{o}{/}\PYG{p}{(}\PYG{n}{cos}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{o}{/}\PYG{l+m+mf}{360.0}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{)}\PYG{p}{)}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} create trajectory object}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{3.0}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{g}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} don\PYGZsq{}t take advantage of the system structure (integrator chains)}
+\PYG{c}{\PYGZsh{} (this will result in a faster solution here)}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{use\PYGZus{}chains}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{n+nb+bp}{False}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} also alter some other method parameters to increase performance}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{kx}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} run iteration}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{startIteration}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} show results}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{p}{)}
+\end{Verbatim}
+
+
+\subsection{Underactuated Manipulator}
+\label{guide/examples/uact_manipulator::doc}\label{guide/examples/uact_manipulator:underactuated-manipulator}
+In this section, the model of an underactuated manipulator is treated.
+The system consists of two bars with the mass \(M_1\) and
+\(M_2\) which are connected to each other via the joint \(G_2\).
+The angle between them is designated by \(\theta_2\). The joint
+\(G_1\) connects the first rod with the inertial system, the angle
+to the \(x\)-axis is labeled \(\theta_1\).
+In the joint \(G_1\) the actuating torque \(Q\) is applied. The
+bars have the moments of inertia \(I_1\) and \(I_2\). The
+distances between the centers of mass to the joints are \(r_1\) and
+\(r_2\).
+
+\includegraphics{uact_manipulator.png}
+
+The modeling was taken from the thesis of Carsten Knoll
+(April, 2009) where in addition the inertia parameter \(\eta\) was
+introduced.
+\begin{equation*}
+   \eta = \frac{m_2 l_1 r_2}{I_2 + m_2 r_2^2}
+\end{equation*}
+For the example shown here, strong inertia coupling was assumed with
+\(\eta = 0.9\). By partial linearization to the output \(y =
+\theta_1\) one obtains the state representation with the states
+\(x = [\theta_1, \dot{\theta}_1, \theta_2, \dot{\theta}_2]^T\) and
+the new input \(\tilde{u} = \ddot{\theta}_1\).
+\begin{eqnarray*}
+   \dot{x}_1 & = & x_2 \\
+   \dot{x}_2 & = & \tilde{u} \\
+   \dot{x}_3 & = & x_4 \\
+   \dot{x}_4 & = & -\eta x_2^2  \sin(x_3) - (1 + \eta \cos(x_3))\tilde{u}
+\end{eqnarray*}
+For the system, a trajectory is to be determined for the transfer
+between two equilibrium positions within an operating time of
+\(T = 1.8 [s]\).
+\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ 0.4 \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0.2 \pi \\ 0 \\ 0.2 \pi \\ 0 \end{bmatrix}
+\end{equation*}
+The trajectory of the inputs should be without cracks in the transition
+to the equilibrium positions (\(\tilde{u}(0) = \tilde{u}(T) = 0\)).
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} underactuated manipulator}
+
+\PYG{c}{\PYGZsh{} import trajectory class and necessary dependencies}
+\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory.trajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k+kn}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{cos}\PYG{p}{,} \PYG{n}{sin}
+\PYG{k+kn}{from} \PYG{n+nn}{numpy} \PYG{k+kn}{import} \PYG{n}{pi}
+
+\PYG{c}{\PYGZsh{} define the function that returns the vectorfield}
+\PYG{k}{def} \PYG{n+nf}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{u}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{x1}\PYG{p}{,} \PYG{n}{x2}\PYG{p}{,} \PYG{n}{x3}\PYG{p}{,} \PYG{n}{x4}  \PYG{o}{=} \PYG{n}{x}     \PYG{c}{\PYGZsh{} state variables}
+    \PYG{n}{u1}\PYG{p}{,} \PYG{o}{=} \PYG{n}{u}                 \PYG{c}{\PYGZsh{} input variable}
+    
+    \PYG{n}{e} \PYG{o}{=} \PYG{l+m+mf}{0.9}     \PYG{c}{\PYGZsh{} inertia coupling}
+    
+    \PYG{n}{s} \PYG{o}{=} \PYG{n}{sin}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}
+    \PYG{n}{c} \PYG{o}{=} \PYG{n}{cos}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}
+    
+    \PYG{n}{ff} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}         \PYG{n}{x2}\PYG{p}{,}
+                            \PYG{n}{u1}\PYG{p}{,}
+                            \PYG{n}{x4}\PYG{p}{,}
+                    \PYG{o}{\PYGZhy{}}\PYG{n}{e}\PYG{o}{*}\PYG{n}{x2}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{s}\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{+}\PYG{n}{e}\PYG{o}{*}\PYG{n}{c}\PYG{p}{)}\PYG{o}{*}\PYG{n}{u1}
+                    \PYG{p}{]}\PYG{p}{)}
+    
+    \PYG{k}{return} \PYG{n}{ff}
+
+\PYG{c}{\PYGZsh{} system state boundary values for a = 0.0 [s] and b = 1.8 [s]}
+\PYG{n}{xa} \PYG{o}{=} \PYG{p}{[}  \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mf}{0.4}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{n}{xb} \PYG{o}{=} \PYG{p}{[}  \PYG{l+m+mf}{0.2}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mf}{0.2}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} boundary values for the inputs}
+\PYG{n}{g} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+
+\PYG{c}{\PYGZsh{} create trajectory object}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{1.8}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{g}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} also alter some method parameters to increase performance}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{su}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{20}\PYG{p}{)}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{kx}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} run iteration}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{startIteration}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} show results}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{p}{)}
+\end{Verbatim}
+
+
+\section{Background}
+\label{guide/background::doc}\label{guide/background:background}
+This section is intended to give some insights into the mathematical
+background that is the basis of PyTrajectory.
+
+
+\subsection{Collocation method}
+\label{guide/background:collocation-method}
+Given a system of autonomous differential equations
+\begin{gather}
+\begin{split}\dot{x}_1(t) = f_n(x_1(t),...,x_n(t))\end{split}\notag\\\begin{split}\vdots \qquad \vdots\end{split}\notag\\\begin{split}\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))\end{split}\notag
+\end{gather}
+with \(t \in [a, b]\) and \emph{Dirichlet} boundary conditions
+\begin{gather}
+\begin{split}x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n\end{split}\notag
+\end{gather}
+the collocation method to solve the problem basically works as follows.
+
+We choose \(N+1\) collocation points \(t_i,\ i = 0,...,N\) from the interval
+\([a, b]\) where \(t_0 = a,\ t_{N} = b\) and search for functions
+\(P_i:[a,b] \rightarrow R\) which satisfy the following conditions:
+\begin{gather}
+\begin{split}P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i\end{split}\notag\\\begin{split}\frac{d}{d t} P_i(t) = f_i(P_1(t),...,P_n(t)) \quad i = 1,...,n\end{split}\notag
+\end{gather}
+Through these demands the exact solution of the ode system will be approximated.
+
+
+\subsection{Candidate functions}
+\label{guide/background:candidate-functions}
+PyTrajectory uses cubic spline functions as candidates for the approximation of the
+solution. Splines are piecewise polynomials with a global differentiability.
+The connection points \(\tau_i\) between the polynomial sections are equidistantly
+and are referred to as nodes.
+\begin{gather}
+\begin{split}t_0 = \tau_0 < \tau_1 < ... < \tau_{\eta} = t_N \qquad h = \frac{t_0 - t_N}{\eta}\end{split}\notag\\\begin{split}\tau_{i+1} = \tau_i + h \quad i = 0,...,\eta-1\end{split}\notag
+\end{gather}
+The polynomial sections can be created as follows.
+\begin{gather}
+\begin{split}P_i(t) = c_{i,0}(t-i h)^3 + c_{i,1}(t-i h)^2 + c_{i,2}(t-i h) + c_{i,3}\end{split}\notag\\\begin{split}c_{i,j} \in R,\qquad i = 1,...,\eta,\ j = 0,...,3\end{split}\notag
+\end{gather}
+In addition to the steadiness the spline functions should be twice steadily differentiable in
+the nodes \(\tau\).
+
+
+\subsection{Equation system}
+\label{guide/background:equation-system}
+... to do
+
+
 \chapter{PyTrajectory Modules Reference}
-\label{pytrajectory:pytrajectory-modules-reference}\label{pytrajectory:module-pytrajectory}\label{pytrajectory::doc}\index{pytrajectory (module)}
+\label{pytrajectory:pytrajectory-modules-reference}\label{pytrajectory:module-pytrajectory}\label{pytrajectory:pytrajectory}\label{pytrajectory::doc}\index{pytrajectory (module)}
+
+\section{PyTrajectory}
+\label{pytrajectory:id1}
 PyTrajectory is a Python library for the determination of the feed forward control
 to achieve a transition between desired states of a nonlinear control system.
 
@@ -227,7 +645,7 @@ to achieve a transition between desired states of a nonlinear control system.
 \label{pytrajectory:module-pytrajectory.trajectory}\label{pytrajectory:trajectory-module}\index{pytrajectory.trajectory (module)}\index{Trajectory (class in pytrajectory.trajectory)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory}\pysiglinewithargsret{\strong{class }\code{pytrajectory.trajectory.}\bfcode{Trajectory}}{\emph{ff}, \emph{a=0.0}, \emph{b=1.0}, \emph{xa=None}, \emph{xb=None}, \emph{g=None}, \emph{sx=5}, \emph{su=5}, \emph{kx=2}, \emph{delta=2}, \emph{maxIt=7}, \emph{eps=0.01}, \emph{tol=1e-05}, \emph{algo='leven'}, \emph{use\_chains=True}}{}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory}\pysiglinewithargsret{\strong{class }\code{pytrajectory.trajectory.}\bfcode{Trajectory}}{\emph{ff}, \emph{a=0.0}, \emph{b=1.0}, \emph{xa=None}, \emph{xb=None}, \emph{g=None}, \emph{sx=5}, \emph{su=5}, \emph{kx=2}, \emph{delta=2}, \emph{maxIt=10}, \emph{eps=0.01}, \emph{tol=1e-05}, \emph{algo='leven'}, \emph{use\_chains=True}}{}
 Base class of the PyTrajectory project.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -283,7 +701,7 @@ Base class of the PyTrajectory project.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.DG}\pysiglinewithargsret{\bfcode{DG}}{\emph{c}}{}
-This is the callable function that returns the jacobian matrix of the collocation system.
+Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters.
 
 \end{fulllineitems}
 
@@ -291,7 +709,7 @@ This is the callable function that returns the jacobian matrix of the collocatio
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.G}\pysiglinewithargsret{\bfcode{G}}{\emph{c}}{}
-This is the callable function that represents the collocation system.
+Returns the collocation system evaluated with numeric values for the independent parameters.
 
 \end{fulllineitems}
 
@@ -300,6 +718,9 @@ This is the callable function that represents the collocation system.
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.analyseSystem}\pysiglinewithargsret{\bfcode{analyseSystem}}{}{}
 Analyses the systems structure and sets values for some of the method parameters.
+
+By now, this method determines the number of state and input variables and searches for
+integrator chains.
 
 \end{fulllineitems}
 
@@ -319,6 +740,12 @@ Checks whether desired accuracy for the boundary values was reached.
 
 \end{fulllineitems}
 
+\index{clear() (pytrajectory.trajectory.Trajectory method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.clear}\pysiglinewithargsret{\bfcode{clear}}{}{}
+\end{fulllineitems}
+
 \index{dx() (pytrajectory.trajectory.Trajectory method)}
 
 \begin{fulllineitems}
@@ -332,7 +759,16 @@ This function returns the left hand sites state at a given (time-) point \code{t
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.getGuess}\pysiglinewithargsret{\bfcode{getGuess}}{}{}
 This method is used to determine a starting value (guess) for the
-solver of the collocation equation system --\textgreater{} docu p. 24
+solver of the collocation equation system.
+
+If it is the first iteration step, then a vector with the same length as the vector of
+independent parameters with arbitrarily values is returned.
+
+Else, for every variable a spline has been created for, the old spline of the iteration
+before and the new spline are evaluated at specific points and a equation system
+is solved which ensures that they are equal in these points.
+
+The solution of this equation system is the new start value for the solver.
 
 \end{fulllineitems}
 
@@ -340,7 +776,7 @@ solver of the collocation equation system --\textgreater{} docu p. 24
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.initSplines}\pysiglinewithargsret{\bfcode{initSplines}}{}{}
-This method is used to initialise the temporary splines
+This method is used to initialise the provisionally splines.
 
 \end{fulllineitems}
 
@@ -348,7 +784,11 @@ This method is used to initialise the temporary splines
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.iterate}\pysiglinewithargsret{\bfcode{iterate}}{}{}
-This method is used to run one iteration
+This method is used to run one iteration step.
+
+First, new splines are initialised for the variables that are the upper end of an
+integrator chain.
+TODO: ...
 
 \end{fulllineitems}
 
@@ -356,7 +796,17 @@ This method is used to run one iteration
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.plot}\pysiglinewithargsret{\bfcode{plot}}{}{}
-Just calls {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.plot]{\code{plot()}}} function from \code{tools}
+Plot the calculated trajectories and error functions.
+
+This method just calls {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.plot]{\code{plot()}}} function from \code{utilities}
+
+\end{fulllineitems}
+
+\index{save() (pytrajectory.trajectory.Trajectory method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.save}\pysiglinewithargsret{\bfcode{save}}{}{}
+Save system data, callable solution functions and simulation results.
 
 \end{fulllineitems}
 
@@ -364,9 +814,30 @@ Just calls {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.plot]{\cod
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.setCoeff}\pysiglinewithargsret{\bfcode{setCoeff}}{}{}
-This method is used to create the actual splines by using the numerical
+Set found numerical values for the independent parameters od each spline.
+
+This method is used to get the actual splines by using the numerical
 solutions to set up the coefficients of the polynomial spline parts of
 every created spline.
+
+\end{fulllineitems}
+
+\index{setParam() (pytrajectory.trajectory.Trajectory method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.setParam}\pysiglinewithargsret{\bfcode{setParam}}{\emph{param='`}, \emph{val=None}}{}
+Method to assign value \code{val{}`to method parameter :attr:{}`param}.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{param} (\emph{str}) -- Parameter of which to alter the value
+
+\item {} 
+\textbf{val} -- New value for the passed parameter
+
+\end{itemize}
+
+\end{description}\end{quote}
 
 \end{fulllineitems}
 
@@ -390,7 +861,14 @@ This method is used to solve the collocation equation system.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.startIteration}\pysiglinewithargsret{\bfcode{startIteration}}{}{}
-This is the main loop --\textgreater{} {[}5.1{]}
+This is the main loop.
+
+At first the equations that have to be solved by collocation will be determined, according
+to the integrator chains.
+Next, one step of the iteration is done by calling {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.iterate]{\code{iterate()}}}.
+After that the accuracy of the found solution is checked.
+If it is within the tolerance range the iteration will stop.
+Else, the number of spline parts is raised and another iteration step starts.
 
 \end{fulllineitems}
 
@@ -424,10 +902,10 @@ This class provides an object that represents a cubic spline ...
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
-\textbf{a} (\emph{float}) -- Left border of spline interval.
+\textbf{a} (\emph{float}) -- Left border of the spline interval.
 
 \item {} 
-\textbf{b} (\emph{float}) -- Right border of spline interval.
+\textbf{b} (\emph{float}) -- Right border of the spline interval.
 
 \item {} 
 \textbf{n} (\emph{int}) -- Number of polynomial parts the spline will be devided into.
@@ -478,7 +956,7 @@ This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpli
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.evalf}\pysiglinewithargsret{\bfcode{evalf}}{\emph{x}, \emph{d}}{}
-bla bla bla
+Returns the value of the splines \code{d}-th derivative at \code{x}.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -510,47 +988,10 @@ ensure steadiness and smoothness conditions of the spline in every joining point
 
 \end{fulllineitems}
 
-\index{set\_coeffs() (pytrajectory.spline.CubicSpline method)}
+\index{prov\_evalf() (pytrajectory.spline.CubicSpline method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.set_coeffs}\pysiglinewithargsret{\bfcode{set\_coeffs}}{\emph{c\_sol}}{}
-This function is used to set up numerical values for the spline coefficients.
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{c\_sol} (\emph{dict}) -- Dictionary with coefficient and numerical value
-
-\end{description}\end{quote}
-
-\end{fulllineitems}
-
-\index{tmp\_dddf() (pytrajectory.spline.CubicSpline method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.tmp_dddf}\pysiglinewithargsret{\bfcode{tmp\_dddf}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.tmp_evalf]{\code{tmp\_evalf()}}} with the splines 3rd derivative.
-
-\end{fulllineitems}
-
-\index{tmp\_ddf() (pytrajectory.spline.CubicSpline method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.tmp_ddf}\pysiglinewithargsret{\bfcode{tmp\_ddf}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.tmp_evalf]{\code{tmp\_evalf()}}} with the splines 2nd derivative.
-
-\end{fulllineitems}
-
-\index{tmp\_df() (pytrajectory.spline.CubicSpline method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.tmp_df}\pysiglinewithargsret{\bfcode{tmp\_df}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.tmp_evalf]{\code{tmp\_evalf()}}} with the splines 1st derivative.
-
-\end{fulllineitems}
-
-\index{tmp\_evalf() (pytrajectory.spline.CubicSpline method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.tmp_evalf}\pysiglinewithargsret{\bfcode{tmp\_evalf}}{\emph{x}, \emph{d}}{}
+\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.prov_evalf}\pysiglinewithargsret{\bfcode{prov\_evalf}}{\emph{x}, \emph{d}}{}
 This function returns a matrix and vector to evaluate the spline or a derivative at x
 by multiplying the matrix with numerical values of the independent variables
 and adding the vector.
@@ -574,11 +1015,16 @@ tuple
 
 \end{fulllineitems}
 
-\index{tmp\_f() (pytrajectory.spline.CubicSpline method)}
+\index{set\_coeffs() (pytrajectory.spline.CubicSpline method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.tmp_f}\pysiglinewithargsret{\bfcode{tmp\_f}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.tmp_evalf]{\code{tmp\_evalf()}}} with the spline itself.
+\phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.set_coeffs}\pysiglinewithargsret{\bfcode{set\_coeffs}}{\emph{c\_sol}}{}
+This function is used to set up numerical values for the spline coefficients.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{c\_sol} (\emph{numpy.ndarray}) -- Array with numerical values for the free spline coefficients
+
+\end{description}\end{quote}
 
 \end{fulllineitems}
 
@@ -710,34 +1156,91 @@ This class does something ...
 
 
 \section{\texttt{utilities} Module}
-\label{pytrajectory:module-pytrajectory.utilities}\label{pytrajectory:utilities-module}\index{pytrajectory.utilities (module)}\index{BetweenDict (class in pytrajectory.utilities)}
+\label{pytrajectory:module-pytrajectory.utilities}\label{pytrajectory:utilities-module}\index{pytrajectory.utilities (module)}\index{Animation (class in pytrajectory.utilities)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.BetweenDict}\pysiglinewithargsret{\strong{class }\code{pytrajectory.utilities.}\bfcode{BetweenDict}}{\emph{d=\{\}}}{}
-Bases: \code{dict}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation}\pysiglinewithargsret{\strong{class }\code{pytrajectory.utilities.}\bfcode{Animation}}{\emph{drawfnc}, \emph{simdata}, \emph{plotsys=}\optional{}, \emph{plotinputs=}\optional{}}{}
+Provides animation capabilities.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{drawfnc} (\emph{callable}) -- Function that returns an image of the current system state according to \code{simdata}
+
+\item {} 
+\textbf{simdata} (\emph{numpy.ndarray}) -- Array that contains simulation data (time, system states, input states)
+
+\item {} 
+\textbf{plotsys} (\emph{list}) -- List of tuples with indices and labels of system variables that will be plotted along the picture
+
+\item {} 
+\textbf{plotinputs} (\emph{list}) -- List of tuples with indices and labels of input variables that will be plotted along the picture
+
+\end{itemize}
+
+\end{description}\end{quote}
+\index{Animation.Image (class in pytrajectory.utilities)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.Image}\pysigline{\strong{class }\bfcode{Image}}~\index{reset() (pytrajectory.utilities.Animation.Image method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.Image.reset}\pysiglinewithargsret{\bfcode{reset}}{}{}
+\end{fulllineitems}
+
 
 \end{fulllineitems}
 
-\index{Grid (class in pytrajectory.utilities)}
+\index{animate() (pytrajectory.utilities.Animation method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.Grid}\pysigline{\strong{class }\code{pytrajectory.utilities.}\bfcode{Grid}}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.animate}\pysiglinewithargsret{\code{Animation.}\bfcode{animate}}{}{}
+\end{fulllineitems}
+
+\index{get\_axes() (pytrajectory.utilities.Animation method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.get_axes}\pysiglinewithargsret{\code{Animation.}\bfcode{get\_axes}}{}{}
+\end{fulllineitems}
+
+\index{save() (pytrajectory.utilities.Animation method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.save}\pysiglinewithargsret{\code{Animation.}\bfcode{save}}{\emph{fname}, \emph{fps=None}, \emph{dpi=200}}{}
+\end{fulllineitems}
+
+\index{set\_label() (pytrajectory.utilities.Animation method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.set_label}\pysiglinewithargsret{\code{Animation.}\bfcode{set\_label}}{\emph{ax='ax\_img'}, \emph{label='`}}{}
+\end{fulllineitems}
+
+\index{set\_limits() (pytrajectory.utilities.Animation method)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.set_limits}\pysiglinewithargsret{\code{Animation.}\bfcode{set\_limits}}{\emph{ax='ax\_img'}, \emph{xlim=(0}, \emph{1)}, \emph{ylim=(0}, \emph{1)}}{}
+\end{fulllineitems}
+
+
 \end{fulllineitems}
 
 \index{IntegChain (class in pytrajectory.utilities)}
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain}\pysiglinewithargsret{\strong{class }\code{pytrajectory.utilities.}\bfcode{IntegChain}}{\emph{lst}}{}
-This class provides a representation of a integrator chain consisting of sympy symbols ...
-\begin{quote}\begin{description}
+This class provides a representation of a integrator chain consisting of sympy symbols.
+
+For the elements \((x_i)_{i=1,...,n}\) the following relation applies:
+\begin{gather}
+\begin{split}\dot{x}_i = x_{i+1} \quad i = 1,...,n-1\end{split}\notag
+\end{gather}\begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{lst} (\emph{lst}) -- Ordered list of elements for the integrator chain
+\textbf{lst} (\emph{list}) -- Ordered list of elements for the integrator chain
 
 \end{description}\end{quote}
-\index{predecessor() (pytrajectory.utilities.IntegChain method)}
+\index{pred() (pytrajectory.utilities.IntegChain method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.predecessor}\pysiglinewithargsret{\bfcode{predecessor}}{\emph{elem}}{}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.pred}\pysiglinewithargsret{\bfcode{pred}}{\emph{elem}}{}
 This method returns the predecessor of the given element of the
 integrator chains, i.e. it returns \(\int [elem]\)
 \begin{quote}\begin{description}
@@ -748,10 +1251,10 @@ integrator chains, i.e. it returns \(\int [elem]\)
 
 \end{fulllineitems}
 
-\index{successor() (pytrajectory.utilities.IntegChain method)}
+\index{succ() (pytrajectory.utilities.IntegChain method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.successor}\pysiglinewithargsret{\bfcode{successor}}{\emph{elem}}{}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.succ}\pysiglinewithargsret{\bfcode{succ}}{\emph{elem}}{}
 This method returns the successor of the given element of the
 integrator chains, i.e. it returns \(\frac{d}{dt}[elem]\)
 \begin{quote}\begin{description}
@@ -765,23 +1268,11 @@ integrator chains, i.e. it returns \(\frac{d}{dt}[elem]\)
 
 \end{fulllineitems}
 
-\index{Modell (class in pytrajectory.utilities)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.Modell}\pysigline{\strong{class }\code{pytrajectory.utilities.}\bfcode{Modell}}~\index{draw() (pytrajectory.utilities.Modell method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.Modell.draw}\pysiglinewithargsret{\bfcode{draw}}{\emph{x}, \emph{phi}, \emph{frame}, \emph{image=0}}{}
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
 \index{blockdiag() (in module pytrajectory.utilities)}
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.blockdiag}\pysiglinewithargsret{\code{pytrajectory.utilities.}\bfcode{blockdiag}}{\emph{M}, \emph{bshape=None}, \emph{sparse=False}}{}
-Takes block of shape \code{bshape}  from matrix \code{M} and creates
+Takes blocks of shape \code{bshape}  from matrix \code{M} and creates
 block diagonal matrix out of them.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -831,18 +1322,12 @@ variable and error function and plots the solution of the simulation.
 \textbf{H} (\emph{dict}) -- Dictionary of the callable error functions
 
 \item {} 
-\textbf{fname} (\emph{str (optional)}) -- If not None, plot will be saved as \textless{}fname\textgreater{}.png
+\textbf{fname} (\emph{str}) -- If not None, plot will be saved as \textless{}fname\textgreater{}.png
 
 \end{itemize}
 
 \end{description}\end{quote}
 
-\end{fulllineitems}
-
-\index{struct (class in pytrajectory.utilities)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.struct}\pysigline{\strong{class }\code{pytrajectory.utilities.}\bfcode{struct}}
 \end{fulllineitems}
 
 
@@ -899,7 +1384,7 @@ variable and error function and plots the solution of the simulation.
 \index{set\_file() (in module pytrajectory.log)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname='/usr/bin/sphinx-build2\_140407-200320.log'}, \emph{suppress=False}}{}
+\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname='/usr/bin/sphinx-build2\_140416-194105.log'}, \emph{suppress=False}}{}
 \end{fulllineitems}
 
 \index{warn() (in module pytrajectory.log)}

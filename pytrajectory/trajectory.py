@@ -146,7 +146,14 @@ class Trajectory():
     
     def startIteration(self):
         '''
-        This is the main loop --> [5.1]
+        This is the main loop.
+        
+        At first the equations that have to be solved by collocation will be determined, according
+        to the integrator chains. 
+        Next, one step of the iteration is done by calling :meth:`iterate()`.
+        After that the accuracy of the found solution is checked.
+        If it is within the tolerance range the iteration will stop. 
+        Else, the number of spline parts is raised and another iteration step starts.
         '''
 
         log.info( 40*"#")
@@ -207,6 +214,9 @@ class Trajectory():
     def analyseSystem(self):
         '''
         Analyses the systems structure and sets values for some of the method parameters.
+        
+        By now, this method determines the number of state and input variables and searches for
+        integrator chains.
         '''
         
         log.info( 40*"#")
@@ -239,6 +249,7 @@ class Trajectory():
                     break
                 except ValueError:
                     # unpacking error inside ff_sym
+                    # (that means the dimensions don't match)
                     pass
                     #~ if j == 0:
                         #~ try:
@@ -352,7 +363,11 @@ class Trajectory():
     
     def iterate(self):
         '''
-        This method is used to run one iteration
+        This method is used to run one iteration step.
+        
+        First, new splines are initialised for the variables that are the upper end of an 
+        integrator chain.
+        TODO: ...
         '''
         self.nIt += 1
 
@@ -364,11 +379,11 @@ class Trajectory():
         with log.Timer("getGuess()"):
             self.getGuess()
 
-        # create equation system --> [3.1.1]
+        # create equation system
         with log.Timer("buildEQS()"):
             self.buildEQS()
 
-        # solve it --> [4.3]
+        # solve it
         with log.Timer("solve()"):
             self.solve()
 
@@ -384,7 +399,16 @@ class Trajectory():
     def getGuess(self):
         '''
         This method is used to determine a starting value (guess) for the
-        solver of the collocation equation system --> docu p. 24
+        solver of the collocation equation system.
+        
+        If it is the first iteration step, then a vector with the same length as the vector of 
+        independent parameters with arbitrarily values is returned.
+        
+        Else, for every variable a spline has been created for, the old spline of the iteration 
+        before and the new spline are evaluated at specific points and a equation system
+        is solved which ensures that they are equal in these points. 
+        
+        The solution of this equation system is the new start value for the solver.
         '''
 
         if (self.nIt == 1):
@@ -435,7 +459,7 @@ class Trajectory():
 
                     guess = np.hstack((guess,TT))
                 else:
-                    #if it is a manipulated variable, just take the old solution
+                    # if it is a manipulated variable, just take the old solution
                     guess = np.hstack((guess, self.coeffs_sol[k]))
 
         # the new guess
@@ -444,7 +468,7 @@ class Trajectory():
     
     def initSplines(self):
         '''
-        This method is used to initialise the temporary splines
+        This method is used to initialise the provisionally splines.
         '''
         log.info( 40*"#")
         log.info( "#########  Initialise Splines  #########")
@@ -601,7 +625,7 @@ class Trajectory():
                 if sq in ic:
                     indic[sq] = indic[ic.upper]
         
-        # total number of indep coeffs
+        # total number of independent coefficients
         c_len = len(self.c_list)
 
         eqx = 0
@@ -794,7 +818,9 @@ class Trajectory():
 
     def setCoeff(self):
         '''
-        This method is used to create the actual splines by using the numerical
+        Set found numerical values for the independent parameters od each spline.
+        
+        This method is used to get the actual splines by using the numerical
         solutions to set up the coefficients of the polynomial spline parts of
         every created spline.
         '''
@@ -846,6 +872,7 @@ class Trajectory():
         start = []
         for xx in self.x_sym:
             start.append(self.xa[xx])
+        
         log.info("start: %s"%str(start))
         
         T = self.b - self.a
@@ -923,7 +950,9 @@ class Trajectory():
     
     def plot(self):
         '''
-        Just calls :func:`plot` function from :mod:`utilities`
+        Plot the calculated trajectories and error functions.
+        
+        This method just calls :func:`plot` function from :mod:`utilities`
         '''
         plotsim(self.sim, self.H)
     

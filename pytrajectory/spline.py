@@ -44,9 +44,9 @@ class CubicSpline():
     ----------
     
     a : float
-        Left border of spline interval.
+        Left border of the spline interval.
     b : float
-        Right border of spline interval.
+        Right border of the spline interval.
     n : int
         Number of polynomial parts the spline will be devided into.
     tag : str
@@ -58,15 +58,11 @@ class CubicSpline():
     bcdd : tuple
         Boundary values for the splines 2nd derivative
     steady : bool
-        Whether or not to call :func:`makesteady()` when instanciated.
+        Whether or not to call :meth:`makesteady()` when instanciated.
     
     '''
     
     def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
-        # [a,b] ... interval
-        # n     ... number of spline parts
-        # tag   ... string with name of the spline object
-
         self.a = a
         self.b = b
         self.n = int(n)

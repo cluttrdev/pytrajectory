@@ -1,7 +1,7 @@
 Translation of the inverted pendulum
 ------------------------------------
 
-An example often used in literature is the inverse pendulum. Here a 
+An example often used in literature is the inverted pendulum. Here a 
 force :math:`F` acts on a cart with mass :math:`M_w`. In addition the 
 cart is connected by a massless rod with a pendulum mass :math:`m_p`.
 The mass of the pendulum is concentrated in :math:`P_2` and that of the 
@@ -11,7 +11,7 @@ using the carts position :math:`x_w(t)` and the pendulum deflection
 
 .. image:: /../pic/inv_pendulum.png
 
-With the *Lagrangian Formalism* the model has the following state space 
+With the *Lagrangian Formalism* the model has the following state 
 representation where :math:`u_1 = F` and 
 :math:`x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]`
 

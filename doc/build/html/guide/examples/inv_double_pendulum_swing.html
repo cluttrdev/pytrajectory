@@ -62,7 +62,7 @@
 <p>The system has the state vector <img class="math" src="../../_images/math/c3523c6297f81560dfe6b7a6d779273f1d9074dd.png" alt="x = [x_1, \dot{x}_1,
 \varphi_1, \dot{\varphi}_1, \varphi_2, \dot{\varphi}_2]"/>. A partial
 linearization with <img class="math" src="../../_images/math/34e59587f28e2b42357bcea86d354b4d18563f03.png" alt="y = x_1"/> yields the following system state
-space representation where <img class="math" src="../../_images/math/02a27ee7cec01fd10252a819f90d7ead7294d002.png" alt="\tilde{u} = \ddot{y}"/>.</p>
+representation where <img class="math" src="../../_images/math/02a27ee7cec01fd10252a819f90d7ead7294d002.png" alt="\tilde{u} = \ddot{y}"/>.</p>
 <div class="math">
 <p><img src="../../_images/math/2abbf39455efaea1f113512236ba7f29018d9b70.png" alt="\begin{eqnarray*}
    \dot{x}_1 &amp; = &amp; x_2 \\
@@ -79,9 +79,11 @@ After a operating time of <img class="math" src="../../_images/math/48ac522661f2
 same position again and the pendulums should be at rest with
 <img class="math" src="../../_images/math/1f814637292da4b90f8cb2fa3e575dea47a393c6.png" alt="\varphi_1 = \varphi_2 = 0"/>.</p>
 <div class="math">
-<p><img src="../../_images/math/d7472e79fdf4993a41e588b0182cfacaf58f2f2c.png" alt="$ x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \\ \pi \\ 0 \end{bmatrix}
-\rightarrow
-x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix} $"/></p>
+<p><img src="../../_images/math/6942073eb2f8ca2b452f9c480b565d544d6f45c8.png" alt="\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \\ \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+\end{equation*}"/></p>
 </div><div class="highlight-python"><div class="highlight"><pre><span class="c"># oscillation of the inverted double pendulum with partial linearization</span>
 
 <span class="c"># import trajectory class and necessary dependencies</span>

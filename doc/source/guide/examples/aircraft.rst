@@ -2,7 +2,7 @@ Aircraft
 --------
 
 In this section we consider the model of a unmanned vertical take-off 
-Aircraft. The aircraft has two permanently mounted thrusters on the 
+aircraft. The aircraft has two permanently mounted thrusters on the 
 wings which can apply the thrust forces :math:`F_1` and :math:`F_2` 
 independently of each other. The two engines are inclined by an angle 
 :math:`\alpha` with respect to the aircraft-fixed axis :math:`\eta_2` 

@@ -8,7 +8,7 @@ In this example we add another pendulum to the cart in the system.
 The system has the state vector :math:`x = [x_1, \dot{x}_1, 
 \varphi_1, \dot{\varphi}_1, \varphi_2, \dot{\varphi}_2]`. A partial 
 linearization with :math:`y = x_1` yields the following system state 
-space representation where :math:`\tilde{u} = \ddot{y}`. 
+representation where :math:`\tilde{u} = \ddot{y}`. 
 
 .. math::
    :nowrap:
@@ -32,8 +32,10 @@ same position again and the pendulums should be at rest with
 .. math::
    :nowrap:
 
-   $ x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \\ \pi \\ 0 \end{bmatrix} 
-   \rightarrow
-   x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix} $
+   \begin{equation*}
+      x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \\ \pi \\ 0 \end{bmatrix} 
+      \rightarrow
+      x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+   \end{equation*}
 
 .. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py
