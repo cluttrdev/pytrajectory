@@ -29,12 +29,14 @@ PyTrajectory was developed and tested on Python 2.7
 Dependencies
 ------------
 
+Before you install PyTrajectory make sure you have the following 
+dependencies installed on your system
+
 * numpy
 * sympy
 * scipy
 * optional
-
-   * matplotlib
+   * matplotlib [visualisation]
    * ipython [debugging]
 
 Windows

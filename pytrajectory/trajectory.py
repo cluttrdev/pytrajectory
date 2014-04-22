@@ -92,9 +92,12 @@ class Trajectory():
         if not (len(xa) == len(xb) == self.n):
             raise ValueError, 'Dimension mismatch xa,xb'
         
-        # type of collocation points to use
-        self.colltype = 'equidistant'
-        #self.colltype = 'chebychev'
+        #: colltype defines the type of collocation points
+        #: that are used to build the equation system
+        #: 
+        #: You can either use equidistant collocation points (`colltype = 'equidistant'`)
+        #: or the socalled Chebychev nodes (`colltype = 'chebychev'`)
+        self.colltype = 'equidistant' # or 'chebychev'
         
         # whether or not to use sparse matrices
         self.use_sparse = True

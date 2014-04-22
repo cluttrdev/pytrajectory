@@ -48,14 +48,13 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-pytrajectory">
-<span id="pytrajectory-modules-reference"></span><span id="pytrajectory"></span><h1>PyTrajectory Modules Reference<a class="headerlink" href="#module-pytrajectory" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id1">
-<h2>PyTrajectory<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>PyTrajectory is a Python library for the determination of the feed forward control
-to achieve a transition between desired states of a nonlinear control system.</p>
-</div>
-<div class="section" id="module-pytrajectory.trajectory">
+  <div class="section" id="pytrajectory-modules-reference">
+<span id="pytrajectory"></span><h1>PyTrajectory Modules Reference<a class="headerlink" href="#pytrajectory-modules-reference" title="Permalink to this headline">¶</a></h1>
+<p>PyTrajectory is a Python library for the determination of the feed
+forward control
+to achieve a transition between desired states of a nonlinear control
+system.</p>
+<span class="target" id="module-pytrajectory"></span><div class="section" id="module-pytrajectory.trajectory">
 <span id="trajectory-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">trajectory</span></tt> Module<a class="headerlink" href="#module-pytrajectory.trajectory" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.trajectory.Trajectory">
@@ -102,6 +101,8 @@ to achieve a transition between desired states of a nonlinear control system.</p
 <dt id="pytrajectory.trajectory.Trajectory.analyseSystem">
 <tt class="descname">analyseSystem</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.analyseSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.analyseSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Analyses the systems structure and sets values for some of the method parameters.</p>
+<p>By now, this method determines the number of state and input variables and searches for
+integrator chains.</p>
 </dd></dl>
 
 <dl class="method">
@@ -121,6 +122,15 @@ to achieve a transition between desired states of a nonlinear control system.</p
 <tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.clear" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="pytrajectory.trajectory.Trajectory.colltype">
+<tt class="descname">colltype</tt><em class="property"> = None</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.colltype" title="Permalink to this definition">¶</a></dt>
+<dd><p>colltype defines the type of collocation points
+that are used to build the equation system</p>
+<p>You can either use equidistant collocation points (<cite>colltype = &#8216;equidistant&#8217;</cite>)
+or the socalled Chebychev nodes (<cite>colltype = &#8216;chebychev&#8217;</cite>)</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.dx">
 <tt class="descname">dx</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.dx" title="Permalink to this definition">¶</a></dt>
@@ -131,25 +141,35 @@ to achieve a transition between desired states of a nonlinear control system.</p
 <dt id="pytrajectory.trajectory.Trajectory.getGuess">
 <tt class="descname">getGuess</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.getGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.getGuess" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to determine a starting value (guess) for the
-solver of the collocation equation system &#8211;&gt; docu p. 24</p>
+solver of the collocation equation system.</p>
+<p>If it is the first iteration step, then a vector with the same length as the vector of
+independent parameters with arbitrarily values is returned.</p>
+<p>Else, for every variable a spline has been created for, the old spline of the iteration
+before and the new spline are evaluated at specific points and a equation system
+is solved which ensures that they are equal in these points.</p>
+<p>The solution of this equation system is the new start value for the solver.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.initSplines">
 <tt class="descname">initSplines</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.initSplines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.initSplines" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to initialise the temporary splines</p>
+<dd><p>This method is used to initialise the provisionally splines.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.iterate">
 <tt class="descname">iterate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.iterate" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to run one iteration</p>
+<dd><p>This method is used to run one iteration step.</p>
+<p>First, new splines are initialised for the variables that are the upper end of an
+integrator chain.
+TODO: ...</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.plot">
 <tt class="descname">plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Just calls <a class="reference internal" href="#pytrajectory.trajectory.Trajectory.plot" title="pytrajectory.trajectory.Trajectory.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function from <tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt></p>
+<dd><p>Plot the calculated trajectories and error functions.</p>
+<p>This method just calls <a class="reference internal" href="#pytrajectory.trajectory.Trajectory.plot" title="pytrajectory.trajectory.Trajectory.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function from <tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt></p>
 </dd></dl>
 
 <dl class="method">
@@ -161,7 +181,8 @@ solver of the collocation equation system &#8211;&gt; docu p. 24</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.setCoeff">
 <tt class="descname">setCoeff</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setCoeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setCoeff" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is used to create the actual splines by using the numerical
+<dd><p>Set found numerical values for the independent parameters od each spline.</p>
+<p>This method is used to get the actual splines by using the numerical
 solutions to set up the coefficients of the polynomial spline parts of
 every created spline.</p>
 </dd></dl>
@@ -199,7 +220,13 @@ every created spline.</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.startIteration">
 <tt class="descname">startIteration</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.startIteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.startIteration" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the main loop &#8211;&gt; [5.1]</p>
+<dd><p>This is the main loop.</p>
+<p>At first the equations that have to be solved by collocation will be determined, according
+to the integrator chains.
+Next, one step of the iteration is done by calling <a class="reference internal" href="#pytrajectory.trajectory.Trajectory.iterate" title="pytrajectory.trajectory.Trajectory.iterate"><tt class="xref py py-meth docutils literal"><span class="pre">iterate()</span></tt></a>.
+After that the accuracy of the found solution is checked.
+If it is within the tolerance range the iteration will stop.
+Else, the number of spline parts is raised and another iteration step starts.</p>
 </dd></dl>
 
 <dl class="method">
@@ -228,14 +255,14 @@ every created spline.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>a</strong> (<em>float</em>) &#8211; Left border of spline interval.</li>
-<li><strong>b</strong> (<em>float</em>) &#8211; Right border of spline interval.</li>
+<li><strong>a</strong> (<em>float</em>) &#8211; Left border of the spline interval.</li>
+<li><strong>b</strong> (<em>float</em>) &#8211; Right border of the spline interval.</li>
 <li><strong>n</strong> (<em>int</em>) &#8211; Number of polynomial parts the spline will be devided into.</li>
 <li><strong>tag</strong> (<em>str</em>) &#8211; The &#8216;name&#8217; of the spline object.</li>
 <li><strong>bc</strong> (<em>tuple</em>) &#8211; Boundary values for the spline function itself.</li>
 <li><strong>bcd</strong> (<em>tuple</em>) &#8211; Boundary values for the splines 1st derivative</li>
 <li><strong>bcdd</strong> (<em>tuple</em>) &#8211; Boundary values for the splines 2nd derivative</li>
-<li><strong>steady</strong> (<em>bool</em>) &#8211; Whether or not to call <a class="reference internal" href="#pytrajectory.spline.CubicSpline.makesteady" title="pytrajectory.spline.CubicSpline.makesteady"><tt class="xref py py-func docutils literal"><span class="pre">makesteady()</span></tt></a> when instanciated.</li>
+<li><strong>steady</strong> (<em>bool</em>) &#8211; Whether or not to call <a class="reference internal" href="#pytrajectory.spline.CubicSpline.makesteady" title="pytrajectory.spline.CubicSpline.makesteady"><tt class="xref py py-meth docutils literal"><span class="pre">makesteady()</span></tt></a> when instanciated.</li>
 </ul>
 </td>
 </tr>
@@ -637,7 +664,7 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140416-125523.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140418-115741.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -657,7 +684,6 @@ variable and error function and plots the solution of the simulation.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyTrajectory Modules Reference</a><ul>
-<li><a class="reference internal" href="#id1">PyTrajectory</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.trajectory"><tt class="docutils literal"><span class="pre">trajectory</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.spline"><tt class="docutils literal"><span class="pre">spline</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pytrajectory.solver"><tt class="docutils literal"><span class="pre">solver</span></tt> Module</a></li>

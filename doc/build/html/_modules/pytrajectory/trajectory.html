@@ -141,9 +141,12 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xa</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">xb</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&#39;Dimension mismatch xa,xb&#39;</span>
         
-        <span class="c"># type of collocation points to use</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">=</span> <span class="s">&#39;equidistant&#39;</span>
-        <span class="c">#self.colltype = &#39;chebychev&#39;</span>
+        <span class="c">#: colltype defines the type of collocation points</span>
+        <span class="c">#: that are used to build the equation system</span>
+        <span class="c">#: </span>
+        <span class="c">#: You can either use equidistant collocation points (`colltype = &#39;equidistant&#39;`)</span>
+        <span class="c">#: or the socalled Chebychev nodes (`colltype = &#39;chebychev&#39;`)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">=</span> <span class="s">&#39;equidistant&#39;</span> <span class="c"># or &#39;chebychev&#39;</span>
         
         <span class="c"># whether or not to use sparse matrices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_sparse</span> <span class="o">=</span> <span class="bp">True</span>

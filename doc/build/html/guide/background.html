@@ -62,7 +62,7 @@ background that is the basis of PyTrajectory.</p>
 <h2>Collocation method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
 <p>Given a system of autonomous differential equations</p>
 <div class="math">
-<p><img src="../_images/math/a128954f63c7d6a096c1d34c3fe61db1b1ce4dc1.png" alt="\dot{x}_1(t) = f_n(x_1(t),...,x_n(t))
+<p><img src="../_images/math/1c28844e7ae844232419c9962aeaf65f44ca2733.png" alt="\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))
 
 \vdots \qquad \vdots
 
@@ -71,36 +71,83 @@ background that is the basis of PyTrajectory.</p>
 <div class="math">
 <p><img src="../_images/math/928437780955f44e10e6365939c9e2a9af296e8c.png" alt="x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n"/></p>
 </div><p>the collocation method to solve the problem basically works as follows.</p>
-<p>We choose <img class="math" src="../_images/math/2ac451fabdaeca572c4e056b41f89c30e8bbd7af.png" alt="N+1"/> collocation points <img class="math" src="../_images/math/1f2cf1b18584d260b2b76756531cc89e64f92ffe.png" alt="t_i,\ i = 0,...,N"/> from the interval
+<p>We choose <img class="math" src="../_images/math/2ac451fabdaeca572c4e056b41f89c30e8bbd7af.png" alt="N+1"/> collocation points <img class="math" src="../_images/math/4ed66e91e2a0b2341e3ce8e3068446c175228012.png" alt="t_j,\ j = 0,...,N"/> from the interval
 <img class="math" src="../_images/math/1d2d3c2141e9f7387a2d26b1ea40c2aabd96f3ac.png" alt="[a, b]"/> where <img class="math" src="../_images/math/5538c9ddc6519d3fb21495f20e9e2373dc168a38.png" alt="t_0 = a,\ t_{N} = b"/> and search for functions
-<img class="math" src="../_images/math/87140f45491eeddfe1833452283cd80cbe86d2e3.png" alt="P_i:[a,b] \rightarrow R"/> which satisfy the following conditions:</p>
+<img class="math" src="../_images/math/758d0c3de81b64cbbcd0634b67eb7d64c834efd2.png" alt="P_i:[a,b] \rightarrow \mathbb{R}"/> which for all <img class="math" src="../_images/math/b8e821d162d919ef1b05f3b21982613145674c9e.png" alt="j = 0,..,N"/> satisfy the
+following conditions:</p>
 <div class="math">
-<p><img src="../_images/math/72cd5f2b243fc15e34297fc1b28e028b1e6e3020.png" alt="P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+<p><img src="../_images/math/aa09a4d9b98bfade0ea7eb878578678115e83bbf.png" alt="\begin{equation}
+   P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+\end{equation}
 
-\frac{d}{d t} P_i(t) = f_i(P_1(t),...,P_n(t)) \quad i = 1,...,n"/></p>
-</div><p>Through these demands the exact solution of the ode system will be approximated.</p>
+\begin{equation}
+   \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
+\end{equation}"/></p>
+</div><p>Through these demands the exact solution of the ode system will be approximated.
+The demands on the boundary values <img class="math" src="../_images/math/c499758f3261214459d92fd4f444117a603af2cc.png" alt="(1)"/> ​​can be sure already by suitable
+construction of the shape functions. This results in the following system of equations.</p>
+<div class="math">
+<p><img src="../_images/math/07b5f277ee75bf9ecf1993de1704a4e01729f5fa.png" alt="\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0"/></p>
+</div><p>Solving the boundary value problem is thus reduced to the finding of a zero point
+of <img class="math" src="../_images/math/ea0446ff6185bc88bddd71f99ec82764e0b4e290.png" alt="G = (G_1^0 ,..., G_n^N)^T"/>, where <img class="math" src="../_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> is the vector of all independent
+parameters that result from the candidate functions.</p>
 </div>
 <div class="section" id="candidate-functions">
 <h2>Candidate functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
 <p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
 solution. Splines are piecewise polynomials with a global differentiability.
-The connection points <img class="math" src="../_images/math/54e7b88931659de229c9cb4465c1a35cad90f605.png" alt="\tau_i"/> between the polynomial sections are equidistantly
+The connection points <img class="math" src="../_images/math/1b7033268c91a0319bea4e1af255a3843a6df667.png" alt="\tau_k"/> between the polynomial sections are equidistantly
 and are referred to as nodes.</p>
 <div class="math">
-<p><img src="../_images/math/bbe5285d167c2e7560225ba1ea1518ec979edbfe.png" alt="t_0 = \tau_0 &lt; \tau_1 &lt; ... &lt; \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}
+<p><img src="../_images/math/20f32169a60c3385183552cb435546c04ccb1681.png" alt="t_0 = \tau_0 &lt; \tau_1 &lt; ... &lt; \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}
 
-\tau_{i+1} = \tau_i + h \quad i = 0,...,\eta-1"/></p>
-</div><p>The polynomial sections can be created as follows.</p>
+\tau_{k+1} = \tau_k + h \quad k = 0,...,\eta-1"/></p>
+</div><p>The <img class="math" src="../_images/math/9172efc523d7488d4c3ed299d0be813de01503b8.png" alt="\eta"/> polynomial sections can be created as follows.</p>
 <div class="math">
-<p><img src="../_images/math/4c69190a957fa0d15b2d61423011ecf5cc54b0a7.png" alt="P_i(t) = c_{i,0}(t-i h)^3 + c_{i,1}(t-i h)^2 + c_{i,2}(t-i h) + c_{i,3}
+<p><img src="../_images/math/87d68668af84c3e86768bd65648af20f90038782.png" alt="S_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3}
 
-c_{i,j} \in R,\qquad i = 1,...,\eta,\ j = 0,...,3"/></p>
+c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3"/></p>
+</div><p>Then, each spline function is defined by</p>
+<div class="math">
+<p><img src="../_images/math/80fd41d1961907bceb4235715abcd2eb0d0f0a40.png" alt="\begin{equation*}
+   P_i(t) =
+   \begin{cases}
+      S_1(t) &amp; t_0 \leq t &lt; h \\
+      \vdots &amp; \vdots \\
+      S_k(t) &amp; (k-1)h \leq t &lt; k h \\
+      \vdots &amp; \vdots \\
+      S_\eta(t) &amp; (\eta-1)h \leq t \leq \eta h
+   \end{cases}
+\end{equation*}"/></p>
 </div><p>In addition to the steadiness the spline functions should be twice steadily differentiable in
-the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78a148a10e8.png" alt="\tau"/>.</p>
-</div>
-<div class="section" id="equation-system">
-<h2>Equation system<a class="headerlink" href="#equation-system" title="Permalink to this headline">¶</a></h2>
-<p>... to do</p>
+the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78a148a10e8.png" alt="\tau"/>. Therefor, three smoothness conditions can be set up in all
+<img class="math" src="../_images/math/f12a012d10fbd3fff2a239a4eb3134b2454dd7d5.png" alt="\tau_k, k = 1,...,\eta-1"/>.</p>
+<div class="math">
+<p><img src="../_images/math/eceab117fa8868016a9bbb1aa4fbfdbb96b1c2ad.png" alt="\begin{eqnarray*}
+   S_k(k h) &amp; = &amp; S_{k+1}(k h) \\
+   \frac{d}{d t} S_k(k h) &amp; = &amp; \frac{d}{d t} S_{k+1}(k h) \\
+   \frac{d^2}{d t^2} S_k(k h) &amp; = &amp; \frac{d^2}{d t^2} S_{k+1}(k h)
+\end{eqnarray*}"/></p>
+</div><p>Furthermore, conditions can be set up at the edges arising from the boundary conditions of
+the differential equation system.</p>
+<div class="math">
+<p><img src="../_images/math/2eaf0ecf5cca26598a155681ad29c15b47299692.png" alt="\begin{equation*}
+   \frac{d^j}{d t^j} S_1(\tau_0) = \alpha_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \beta_j \qquad j = 0,...,\nu
+\end{equation*}"/></p>
+</div><p>The degree <img class="math" src="../_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> of the boundary conditions depends on the structure of the differential
+equation system.</p>
 </div>
 </div>
 
@@ -115,7 +162,6 @@ the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78
 <li><a class="reference internal" href="#">Background</a><ul>
 <li><a class="reference internal" href="#collocation-method">Collocation method</a></li>
 <li><a class="reference internal" href="#candidate-functions">Candidate functions</a></li>
-<li><a class="reference internal" href="#equation-system">Equation system</a></li>
 </ul>
 </li>
 </ul>
