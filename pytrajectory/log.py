@@ -8,17 +8,19 @@ from IPython import embed
 
 
 class Logger():
-    def __init__(self, fname, mode, suppress):
+    def __init__(self, fname, mode, suppress, verbosity=0):
         self.logfile = open(fname, mode)
         self.stdout = sys.stdout
         self.suppressed = suppress
+        self.verbosity = verbosity
         sys.stdout = self
 
 
-    def write(self, text):
-        self.logfile.write(text)
-        if not self.suppressed:
-            self.stdout.write(text)
+    def write(self, text, vblvl=0):
+        if vblvl <= self.verbosity:
+            self.logfile.write(text)
+            if not self.suppressed:
+                self.stdout.write(text)
 
     def __del__(self):
         sys.stdout = self.stdout
@@ -59,9 +61,8 @@ def IPS(loc=None):
 
 
 def msg(label, text, lvl=0):
-    if lvl >= 0:
-        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
-        sys.stdout.write(label+"\t"+text+"\n")
+    #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
+    sys.stdout.write(label+"\t"+text+"\n")
 
 def info(text, lvl=0):
     msg("INFO:", text, lvl)

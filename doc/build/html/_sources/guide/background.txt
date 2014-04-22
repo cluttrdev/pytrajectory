@@ -116,7 +116,6 @@ the nodes :math:`\tau`. Therefor, three smoothness conditions can be set up in a
       \frac{d^2}{d t^2} S_k(k h) & = & \frac{d^2}{d t^2} S_{k+1}(k h)
    \end{eqnarray*}
 
-
 Furthermore, conditions can be set up at the edges arising from the boundary conditions of 
 the differential equation system.
 
@@ -128,4 +127,19 @@ the differential equation system.
    \end{equation*}
 
 The degree :math:`\nu` of the boundary conditions depends on the structure of the differential
-equation system.
+equation system. These conditions result in the following euation system.
+
+.. math::
+   :nowrap:
+
+   $
+   \begin{bmatrix}
+      0 & 0 & 0 & 1 &  h^3  & -h^2 &  h & -1 & 0 & \vdots & 0 \\
+      0 & 0 & 1 & 0 & -3h^2 &  2h  & -1 &  0 & 0 & \vdots & 0 \\
+      0 & 2 & 0 & 0 &   6h  &  -2  &  0 &  0 & 0 & \vdots & 0 \\
+      0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 &  h^3  & -h^2 &  h & -1 & 0 & \vdots & 0 \\
+      0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & -3h^2 &  2h  & -1 &  0 & 0 & \vdots & 0 \\
+      0 & 0 & 0 & 0 & 0 & 2 & 0 & 0 &   6h  &  -2  &  0 &  0 & 0 & \vdots & 0
+   \end{bmatrix}
+   $
+

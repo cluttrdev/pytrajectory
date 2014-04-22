@@ -147,7 +147,82 @@ the differential equation system.</p>
    \frac{d^j}{d t^j} S_1(\tau_0) = \alpha_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \beta_j \qquad j = 0,...,\nu
 \end{equation*}"/></p>
 </div><p>The degree <img class="math" src="../_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> of the boundary conditions depends on the structure of the differential
-equation system.</p>
+equation system. These conditions result in the following euation system.</p>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">$
+\begin{bmatrix}
+   0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
+   0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
+   0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
+   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
+   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
+   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0
+\end{bmatrix}
+$</tt>)</p>
+latex exited with error
+[stdout]
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013)
+ restricted \write18 enabled.
+entering extended mode
+(./math.tex
+LaTeX2e &lt;2011/06/27&gt;
+Babel &lt;3.9f&gt; and hyphenation patterns for 78 languages loaded.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/size12.clo))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/inputenc.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/utf8x.def))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucs.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/data/uni-global.def))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?&#8217; option.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amscls/amsthm.sty)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amssymb.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/bm.sty)
+No file math.aux.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucsencs.def)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsa.fd)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsb.fd)
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.14 ... 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp;
+                                                   0 \\
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.15 ... 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp;
+                                                   0 \\
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.16 ... 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp;
+                                                   0 \\
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.17 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;
+                                                    h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.18 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp;
+                                                   -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
+! Extra alignment tab has been changed to \cr.
+&lt;recently read&gt; \endtemplate 
+                             
+l.19 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;
+                                                    0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0
+[1] (./math.aux) )
+(see the transcript file for additional information)
+Output written on math.dvi (1 page, 1720 bytes).
+Transcript written on math.log.
+</div>
 </div>
 </div>
 

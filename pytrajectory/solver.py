@@ -59,7 +59,7 @@ class Solver:
             self.leven()
         
         if (self.sol == None):
-            log.warn("Wrong solver")
+            log.warn("Wrong solver, returning initial value.")
             return self.x0
         else:
             return self.sol
@@ -68,9 +68,17 @@ class Solver:
     def leven(self):
         '''
         This method is an implementation of the Levenberg-Marquardt-Method
-        to approximatively solve a system of non-linear equations by minimizing
+        to solve nonlinear least squares problems.
         
-        :math:`\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \\mu^2 \|x_{k+1} - x_k \|`
+        It is an extension of the Gauss-Newton-Method. Here the following 
+        minimization problem is solved:
+        
+        .. math::
+           :nowrap:
+           
+           | F'(x_k)(x_{k+1} - x_k) + F(x_k) |_2^2 + \mu^2 |x_{k+1} - x_k |`
+        
+        TODO: ref zu docu
         '''
         i = 0
         x = self.x0
@@ -87,7 +95,6 @@ class Solver:
 
         roh = 0.0
 
-        ##?? warum Bed. 1 und 3? (--> retol und abstol)
         reltol = self.reltol
         while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > reltol)):
             i += 1
@@ -98,10 +105,7 @@ class Solver:
             # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
             
-            while (roh < b0):
-                ##?? warum J.T*F? (Gleichung (4.18) sagt: J*F)
-                ## -> .T gehoert eigentlich oben hin
-                
+            while (roh < b0):                
                 A = DFx.T.dot(DFx) + mu**2*eye
                 b = DFx.T.dot(Fx)
                 
@@ -127,8 +131,8 @@ class Solver:
             log.info("nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            if res<1.0:
-                reltol = 1e-2
+            #if res<1.0:
+            #    reltol = 1e-2
 
         self.sol = x
     

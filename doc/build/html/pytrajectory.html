@@ -403,8 +403,55 @@ and adding the vector.</p>
 <dt id="pytrajectory.solver.Solver.leven">
 <tt class="descname">leven</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/solver.html#Solver.leven"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.solver.Solver.leven" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is an implementation of the Levenberg-Marquardt-Method
-to approximatively solve a system of non-linear equations by minimizing</p>
-<p><img class="math" src="_images/math/dcc9b6f163af72cdf15f0d77bef3baec8fbb82ef.png" alt="\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|"/></p>
+to solve nonlinear least squares problems.</p>
+<p>It is an extension of the Gauss-Newton-Method. Here the following
+minimization problem is solved:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">| F'(x_k)(x_{k+1} - x_k) + F(x_k) |_2^2 + \mu^2 |x_{k+1} - x_k |`</tt>)</p>
+latex exited with error
+[stdout]
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013)
+ restricted \write18 enabled.
+entering extended mode
+(./math.tex
+LaTeX2e &lt;2011/06/27&gt;
+Babel &lt;3.9f&gt; and hyphenation patterns for 78 languages loaded.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/size12.clo))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/inputenc.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/utf8x.def))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucs.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/data/uni-global.def))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?&#8217; option.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amscls/amsthm.sty)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amssymb.sty
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/bm.sty) (./math.aux)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucsencs.def)
+! Missing $ inserted.
+&lt;inserted text&gt; 
+                $
+l.12 | F&#8217;(x_
+            k)(x_{k+1} - x_k) + F(x_k) |_2^2 + \mu^2 |x_{k+1} - x_k |`
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsa.fd)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsb.fd)
+! Missing $ inserted.
+&lt;inserted text&gt; 
+                $
+l.13 \end{document}
+                   
+[1] (./math.aux) )
+(see the transcript file for additional information)
+Output written on math.dvi (1 page, 540 bytes).
+Transcript written on math.log.
+</div>
+<p>TODO: ref zu docu</p>
 </dd></dl>
 
 <dl class="method">
@@ -629,10 +676,10 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="class">
 <dt id="pytrajectory.log.Logger">
-<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Logger</tt><big>(</big><em>fname</em>, <em>mode</em>, <em>suppress</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Logger</tt><big>(</big><em>fname</em>, <em>mode</em>, <em>suppress</em>, <em>verbosity=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pytrajectory.log.Logger.write">
-<tt class="descname">write</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger.write" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">write</tt><big>(</big><em>text</em>, <em>vblvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger.write" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -664,7 +711,7 @@ variable and error function and plots the solution of the simulation.</p>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/bin/sphinx-build2_140418-115741.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname='/usr/local/bin/sphinx-build2_140422-123431.log'</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

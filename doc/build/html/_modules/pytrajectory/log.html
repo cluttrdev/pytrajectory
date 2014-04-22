@@ -57,17 +57,19 @@
 
 
 <div class="viewcode-block" id="Logger"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Logger">[docs]</a><span class="k">class</span> <span class="nc">Logger</span><span class="p">():</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">suppress</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">suppress</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span> <span class="o">=</span> <span class="n">suppress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span>
 
 
-<div class="viewcode-block" id="Logger.write"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Logger.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<div class="viewcode-block" id="Logger.write"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Logger.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">vblvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">vblvl</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 </div>
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span>
@@ -108,9 +110,8 @@
 
 </div>
 <div class="viewcode-block" id="msg"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.msg">[docs]</a><span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">lvl</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="info"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="n">msg</span><span class="p">(</span><span class="s">&quot;INFO:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
