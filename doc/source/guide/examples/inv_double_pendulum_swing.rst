@@ -1,3 +1,5 @@
+.. _ex_inv_dbl_pend:
+
 Oscillation of the inverted double pendulum
 -------------------------------------------
 
@@ -37,5 +39,8 @@ same position again and the pendulums should be at rest with
       \rightarrow
       x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
    \end{equation*}
+
+Source Code
++++++++++++
 
 .. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py

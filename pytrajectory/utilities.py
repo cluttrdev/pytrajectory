@@ -283,7 +283,11 @@ class Animation():
     def save(self, fname, fps=None, dpi=200):
         if not fps:
             fps = self.nframes/float(self.T)
-        self.anim.save(fname, fps=fps, dpi=dpi)
+        
+        if fname.endswith('gif'):
+            self.anim.save(fname, writer='imagemagick', fps=fps)
+        else:
+            self.anim.save(fname, fps=fps, dpi=dpi)
 
 
 def blockdiag(M, bshape=None, sparse=False):

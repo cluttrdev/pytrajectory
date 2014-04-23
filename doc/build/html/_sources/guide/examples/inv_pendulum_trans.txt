@@ -1,3 +1,5 @@
+.. _ex_inv_pend:
+
 Translation of the inverted pendulum
 ------------------------------------
 
@@ -32,5 +34,8 @@ aligned vertically upwards (:math:`\varphi = 0`). As a further condition
 :math:`u_1` should start and end steadily in the rest position 
 (:math:`u_1(0) = u_1(T) = 0`).
 The operating time here is :math:`T = 1 [s]`.
+
+Source Code
++++++++++++
 
 .. literalinclude:: /../../examples/ex1_InversePendulumTranslation.py

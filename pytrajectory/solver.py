@@ -48,6 +48,7 @@ class Solver:
         This is just a wrapper to call the chosen algorithm for solving the
         collocation equation system
         '''
+        
         if (self.algo == 'newton'):
             log.info( "Run Newton solver")
             self.newton()

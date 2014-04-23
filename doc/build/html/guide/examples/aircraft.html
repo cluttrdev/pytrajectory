@@ -56,7 +56,7 @@
           <div class="body">
             
   <div class="section" id="aircraft">
-<h1>Aircraft<a class="headerlink" href="#aircraft" title="Permalink to this headline">¶</a></h1>
+<span id="ex-aircraft"></span><h1>Aircraft<a class="headerlink" href="#aircraft" title="Permalink to this headline">¶</a></h1>
 <p>In this section we consider the model of a unmanned vertical take-off
 aircraft. The aircraft has two permanently mounted thrusters on the
 wings which can apply the thrust forces <img class="math" src="../../_images/math/86b53a99470bfe410dd9108afdb7a4464f2461fb.png" alt="F_1"/> and <img class="math" src="../../_images/math/9f5a7711ff9b816f6311b40717a37c66192ed149.png" alt="F_2"/>
@@ -101,7 +101,9 @@ following conditions.</p>
 yield the boundary conditions for the inputs.</p>
 <div class="math">
 <p><img src="../../_images/math/02dfe15d7d821b96298c56f73db5075ab72ff637.png" alt="$ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $"/></p>
-</div><div class="highlight-python"><div class="highlight"><pre><span class="c"># vertical take-off aircraft</span>
+</div><div class="section" id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># vertical take-off aircraft</span>
 
 <span class="c"># import trajectory class and necessary dependencies</span>
 <span class="kn">from</span> <span class="nn">pytrajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
@@ -165,6 +167,7 @@ yield the boundary conditions for the inputs.</p>
 </pre></div>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -172,6 +175,14 @@ yield the boundary conditions for the inputs.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Aircraft</a><ul>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="inv_double_pendulum_swing.html"
                         title="previous chapter">Oscillation of the inverted double pendulum</a></p>

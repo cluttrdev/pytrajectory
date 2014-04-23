@@ -16,7 +16,7 @@ os.environ['SYMPY_USE_CACHE']='no'
 #Inverses Pendel ohne partielle Linearisierung [6.1.1]
 
 calc = True
-animate = False
+animate = True
 
 def f(x,u):
     x1, x2, x3, x4 = x
@@ -112,4 +112,4 @@ if animate:
     A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
     
     A.animate()
-    A.save('ex2.mp4')
+    A.save('ex2.gif')

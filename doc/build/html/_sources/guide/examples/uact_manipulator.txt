@@ -1,3 +1,5 @@
+.. _ex_unact_mani:
+
 Underactuated Manipulator
 -------------------------
 
@@ -56,5 +58,8 @@ between two equilibrium positions within an operating time of
 
 The trajectory of the inputs should be without cracks in the transition 
 to the equilibrium positions (:math:`\tilde{u}(0) = \tilde{u}(T) = 0`).
+
+Source Code
++++++++++++
 
 .. literalinclude:: /../../examples/ex4_UnderactuatedManipulator.py

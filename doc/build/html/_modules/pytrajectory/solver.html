@@ -95,7 +95,7 @@
 <div class="viewcode-block" id="Solver.solve"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.solver.Solver.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This is just a wrapper to call the chosen algorithm for solving the</span>
-<span class="sd">        equation system</span>
+<span class="sd">        collocation equation system</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;newton&#39;</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Newton solver&quot;</span><span class="p">)</span>
@@ -118,6 +118,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is an implementation of the Levenberg-Marquardt-Method</span>
 <span class="sd">        to solve nonlinear least squares problems.</span>
+<span class="sd">        </span>
 <span class="sd">        see: :ref:`levenberg_marquardt`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
