@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Collocation method &mdash; pytrajectory 0.3.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../../index.html" />
+    <link rel="up" title="Background" href="index.html" />
+    <link rel="next" title="Candidate functions" href="candidate_functions.html" />
+    <link rel="prev" title="Background" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="candidate_functions.html" title="Candidate functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Background"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Background</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="collocation-method">
+<span id="id1"></span><h1>Collocation method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h1>
+<p>Given a system of autonomous differential equations</p>
+<div class="math">
+<p><img src="../../_images/math/1c28844e7ae844232419c9962aeaf65f44ca2733.png" alt="\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))
+
+\vdots \qquad \vdots
+
+\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))"/></p>
+</div><p>with <img class="math" src="../../_images/math/7ee1e80a90cec6b0dea8088399ebb8442e81fc28.png" alt="t \in [a, b]"/> and <em>Dirichlet</em> boundary conditions</p>
+<div class="math">
+<p><img src="../../_images/math/928437780955f44e10e6365939c9e2a9af296e8c.png" alt="x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n"/></p>
+</div><p>the collocation method to solve the problem basically works as follows.</p>
+<p>We choose <img class="math" src="../../_images/math/2ac451fabdaeca572c4e056b41f89c30e8bbd7af.png" alt="N+1"/> collocation points <img class="math" src="../../_images/math/4ed66e91e2a0b2341e3ce8e3068446c175228012.png" alt="t_j,\ j = 0,...,N"/> from the interval
+<img class="math" src="../../_images/math/1d2d3c2141e9f7387a2d26b1ea40c2aabd96f3ac.png" alt="[a, b]"/> where <img class="math" src="../../_images/math/5538c9ddc6519d3fb21495f20e9e2373dc168a38.png" alt="t_0 = a,\ t_{N} = b"/> and search for functions
+<img class="math" src="../../_images/math/758d0c3de81b64cbbcd0634b67eb7d64c834efd2.png" alt="P_i:[a,b] \rightarrow \mathbb{R}"/> which for all <img class="math" src="../../_images/math/b8e821d162d919ef1b05f3b21982613145674c9e.png" alt="j = 0,..,N"/> satisfy the
+following conditions:</p>
+<div class="math">
+<p><img src="../../_images/math/aa09a4d9b98bfade0ea7eb878578678115e83bbf.png" alt="\begin{equation}
+   P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+\end{equation}
+
+\begin{equation}
+   \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
+\end{equation}"/></p>
+</div><p>Through these demands the exact solution of the ode system will be approximated.
+The demands on the boundary values <img class="math" src="../../_images/math/c499758f3261214459d92fd4f444117a603af2cc.png" alt="(1)"/> ​​can be sure already by suitable
+construction of the shape functions. This results in the following system of equations.</p>
+<div class="math">
+<p><img src="../../_images/math/07b5f277ee75bf9ecf1993de1704a4e01729f5fa.png" alt="\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0
+
+\qquad \vdots
+
+\frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0"/></p>
+</div><p>Solving the boundary value problem is thus reduced to the finding of a zero point
+of <img class="math" src="../../_images/math/ea0446ff6185bc88bddd71f99ec82764e0b4e290.png" alt="G = (G_1^0 ,..., G_n^N)^T"/>, where <img class="math" src="../../_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> is the vector of all independent
+parameters that result from the <a class="reference internal" href="candidate_functions.html#candidate-functions"><em>Candidate functions</em></a>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Background</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="candidate_functions.html"
+                        title="next chapter">Candidate functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/guide/background/collocation_method.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="candidate_functions.html" title="Candidate functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Background"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >Background</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Candidate functions &mdash; pytrajectory 0.3.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../../index.html" />
+    <link rel="up" title="Background" href="index.html" />
+    <link rel="next" title="Use of the system structure" href="system_structure.html" />
+    <link rel="prev" title="Collocation method" href="collocation_method.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_structure.html" title="Use of the system structure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="collocation_method.html" title="Collocation method"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Background</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="candidate-functions">
+<span id="id1"></span><h1>Candidate functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h1>
+<p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
+solution. Splines are piecewise polynomials with a global differentiability.
+The connection points <img class="math" src="../../_images/math/1b7033268c91a0319bea4e1af255a3843a6df667.png" alt="\tau_k"/> between the polynomial sections are equidistantly
+and are referred to as nodes.</p>
+<div class="math">
+<p><img src="../../_images/math/20f32169a60c3385183552cb435546c04ccb1681.png" alt="t_0 = \tau_0 &lt; \tau_1 &lt; ... &lt; \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}
+
+\tau_{k+1} = \tau_k + h \quad k = 0,...,\eta-1"/></p>
+</div><p>The <img class="math" src="../../_images/math/9172efc523d7488d4c3ed299d0be813de01503b8.png" alt="\eta"/> polynomial sections can be created as follows.</p>
+<div class="math">
+<p><img src="../../_images/math/87d68668af84c3e86768bd65648af20f90038782.png" alt="S_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3}
+
+c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3"/></p>
+</div><p>Then, each spline function is defined by</p>
+<div class="math">
+<p><img src="../../_images/math/80fd41d1961907bceb4235715abcd2eb0d0f0a40.png" alt="\begin{equation*}
+   P_i(t) =
+   \begin{cases}
+      S_1(t) &amp; t_0 \leq t &lt; h \\
+      \vdots &amp; \vdots \\
+      S_k(t) &amp; (k-1)h \leq t &lt; k h \\
+      \vdots &amp; \vdots \\
+      S_\eta(t) &amp; (\eta-1)h \leq t \leq \eta h
+   \end{cases}
+\end{equation*}"/></p>
+</div><p>In addition to the steadiness the spline functions should be twice steadily differentiable in
+the nodes <img class="math" src="../../_images/math/d9e99c35d3632bb156b7aca0e93cd78a148a10e8.png" alt="\tau"/>. Therefor, three smoothness conditions can be set up in all
+<img class="math" src="../../_images/math/f12a012d10fbd3fff2a239a4eb3134b2454dd7d5.png" alt="\tau_k, k = 1,...,\eta-1"/>.</p>
+<div class="math">
+<p><img src="../../_images/math/eceab117fa8868016a9bbb1aa4fbfdbb96b1c2ad.png" alt="\begin{eqnarray*}
+   S_k(k h) &amp; = &amp; S_{k+1}(k h) \\
+   \frac{d}{d t} S_k(k h) &amp; = &amp; \frac{d}{d t} S_{k+1}(k h) \\
+   \frac{d^2}{d t^2} S_k(k h) &amp; = &amp; \frac{d^2}{d t^2} S_{k+1}(k h)
+\end{eqnarray*}"/></p>
+</div><p>In the later equation system these demands result in the block diagonal part of the matrix.
+Furthermore, conditions can be set up at the edges arising from the boundary conditions of
+the differential equation system.</p>
+<div class="math">
+<p><img src="../../_images/math/3608a531ba27a599fcf97c5e5d378a9a3b3cd695.png" alt="\begin{equation*}
+   \frac{d^j}{d t^j} S_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
+\end{equation*}"/></p>
+</div><p>The degree <img class="math" src="../../_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> of the boundary conditions depends on the structure of the differential
+equation system. With these conditions and those above one obtains the following equation system
+(<img class="math" src="../../_images/math/7c720ab76a0a457fa572b3640728970adf26bd2c.png" alt="\nu = 2"/>).</p>
+<div class="math">
+<p><img src="../../_images/math/0a190d398d744fd1f757574f1e95a450b14a28d6.png" alt="\setcounter{MaxMatrixCols}{20}
+\newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
+\begin{equation*}
+\underbrace{\begin{bmatrix}
+      0 &amp; 0   &amp; 0  &amp; 1 &amp;  h^3  &amp; -h^2   &amp;  h &amp; -1 \\
+      0 &amp; 0   &amp; 1  &amp; 0 &amp; -3h^2 &amp;  2h    &amp; -1 &amp;  0  &amp;&amp;&amp;&amp; \bigzero \\
+      0 &amp; 2   &amp; 0  &amp; 0 &amp;   6h  &amp;  -2    &amp;  0 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;   0   &amp;   0    &amp;  0 &amp;  1  &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 \\
+        &amp;  \bigzero   &amp;    &amp;   &amp;   0   &amp;   0    &amp;  1 &amp;  0  &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp;&amp;&amp;&amp;&amp;&amp; \bigzero \\
+        &amp;     &amp;    &amp;   &amp;   0   &amp;   2    &amp;  0 &amp;  0  &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 \\
+        &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; \ddots \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;  \bigzero  &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp; \\
+   -h^3 &amp; h^2 &amp; -h &amp; 1 \\
+   3h^2 &amp; -2h &amp;  1 &amp; 0 &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; \bigzero \\
+   -6h  &amp;  2  &amp;  0 &amp; 0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    0 &amp;  0 &amp;  1 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;  \bigzero  &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    0 &amp;  1 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    2 &amp;  0 &amp;  0 \\
+\end{bmatrix}}_{=: \boldsymbol{M}}
+\cdot
+\underbrace{\begin{bmatrix}
+   c_{1,0} \\ c_{1,1} \\ c_{1,2} \\ c_{1,3} \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ c_{\eta,0} \\ c_{\eta,1} \\ c_{\eta,2} \\ c_{\eta,3}
+\end{bmatrix}}_{=: \boldsymbol{c}}
+ =
+\underbrace{\begin{bmatrix}
+   0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ \vdots  \\ 0 \\ 0 \\ 0 \\ \\ \tilde{\alpha}_0 \\ \tilde{\alpha}_1 \\ \tilde{\alpha}_2 \\ \tilde{\beta}_0 \\ \tilde{\beta}_1 \\ \tilde{\beta}_2
+\end{bmatrix}}_{=: \boldsymbol{r}}
+\end{equation*}"/></p>
+</div><p>The matrix <img class="math" src="../../_images/math/12c5dd56417928ab25db67a424258931cefdefe9.png" alt="\boldsymbol{M}"/> of dimension <img class="math" src="../../_images/math/52ed6c90e781c8b609004ea5144a49ef06fd484b.png" alt="N_1 \times N_2,\ N_1 &lt; N_2"/>, where <img class="math" src="../../_images/math/d372fe6ce419dbbf610b209950846e7011ca0ca7.png" alt="N_2 = 4 \eta"/> and <img class="math" src="../../_images/math/c0e0d4e749102b9ae234395b776513b87c753742.png" alt="N_1 = 3(\eta - 1) + 2(\nu + 1)"/>, can be decomposed
+into two subsystems <img class="math" src="../../_images/math/0e87ee866cb7b5b8384c2e93919c3ccdb19da6fb.png" alt="\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}"/> and <img class="math" src="../../_images/math/38320a4fe65125a5921a23efb9b76a4c73435a37.png" alt="\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}"/>.
+The two dies are the vectors <img class="math" src="../../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/> and <img class="math" src="../../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> with the respective coefficients of <img class="math" src="../../_images/math/cceff292975e2aa217b3de4e89562e2cae81eac6.png" alt="\boldsymbol{c}"/>.</p>
+<div class="math">
+<p><img src="../../_images/math/7e50327f743c2b93fb07611e84455dd533035ecd.png" alt="\begin{eqnarray*}
+   \boldsymbol{M} \boldsymbol{c} &amp; = &amp; \boldsymbol{r} \\
+   \boldsymbol{A} \boldsymbol{a} + \boldsymbol{B} \boldsymbol{b} &amp; = &amp; \boldsymbol{r} \\
+   \boldsymbol{b} &amp; = &amp; \boldsymbol{B}^{-1} (\boldsymbol{r} - \boldsymbol{A} \boldsymbol{a})
+\end{eqnarray*}"/></p>
+</div><p>With this allocation, the system of equations can be solved for <img class="math" src="../../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> and the parameters in <img class="math" src="../../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/>
+remain as the free parameters of the spline function.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="collocation_method.html"
+                        title="previous chapter">Collocation method</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="system_structure.html"
+                        title="next chapter">Use of the system structure</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/guide/background/candidate_functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="system_structure.html" title="Use of the system structure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="collocation_method.html" title="Collocation method"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >Background</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

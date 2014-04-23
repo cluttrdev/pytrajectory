@@ -4,7 +4,7 @@
 \contentsline {section}{\numberline {1.2}Getting Started}{1}{section.1.2}
 \contentsline {subsection}{\numberline {1.2.1}What is PyTrajectory?}{1}{subsection.1.2.1}
 \contentsline {subsection}{\numberline {1.2.2}Installation}{1}{subsection.1.2.2}
-\contentsline {subsubsection}{Dependencies}{1}{subsubsection*.3}
+\contentsline {subsubsection}{Dependencies}{2}{subsubsection*.3}
 \contentsline {subsubsection}{Windows}{2}{subsubsection*.4}
 \contentsline {subsubsection}{Linux}{2}{subsubsection*.5}
 \contentsline {subsubsection}{Mac OS}{2}{subsubsection*.6}
@@ -13,21 +13,22 @@
 \contentsline {section}{\numberline {1.3}Examples}{2}{section.1.3}
 \contentsline {subsection}{\numberline {1.3.1}Translation of the inverted pendulum}{2}{subsection.1.3.1}
 \contentsline {subsection}{\numberline {1.3.2}Oscillation of the inverted double pendulum}{4}{subsection.1.3.2}
-\contentsline {subsection}{\numberline {1.3.3}Aircraft}{5}{subsection.1.3.3}
-\contentsline {subsection}{\numberline {1.3.4}Underactuated Manipulator}{7}{subsection.1.3.4}
+\contentsline {subsection}{\numberline {1.3.3}Aircraft}{6}{subsection.1.3.3}
+\contentsline {subsection}{\numberline {1.3.4}Underactuated Manipulator}{8}{subsection.1.3.4}
 \contentsline {section}{\numberline {1.4}Background}{9}{section.1.4}
-\contentsline {subsection}{\numberline {1.4.1}Collocation method}{9}{subsection.1.4.1}
-\contentsline {subsection}{\numberline {1.4.2}Candidate functions}{10}{subsection.1.4.2}
-\contentsline {subsection}{\numberline {1.4.3}Equation system}{10}{subsection.1.4.3}
-\contentsline {chapter}{\numberline {2}PyTrajectory Modules Reference}{11}{chapter.2}
-\contentsline {section}{\numberline {2.1}PyTrajectory}{11}{section.2.1}
-\contentsline {section}{\numberline {2.2}\texttt {trajectory} Module}{11}{section.2.2}
-\contentsline {section}{\numberline {2.3}\texttt {spline} Module}{13}{section.2.3}
-\contentsline {section}{\numberline {2.4}\texttt {solver} Module}{14}{section.2.4}
-\contentsline {section}{\numberline {2.5}\texttt {simulation} Module}{15}{section.2.5}
-\contentsline {section}{\numberline {2.6}\texttt {utilities} Module}{15}{section.2.6}
-\contentsline {paragraph}{Examples}{16}{paragraph*.58}
-\contentsline {section}{\numberline {2.7}\texttt {log} Module}{16}{section.2.7}
-\contentsline {chapter}{\numberline {3}Indices and tables}{19}{chapter.3}
-\contentsline {chapter}{Python Module Index}{21}{section*.70}
-\contentsline {chapter}{Index}{23}{section*.71}
+\contentsline {subsection}{\numberline {1.4.1}Collocation Method}{10}{subsection.1.4.1}
+\contentsline {subsection}{\numberline {1.4.2}Candidate Functions}{11}{subsection.1.4.2}
+\contentsline {subsubsection}{Use of the system structure}{12}{subsubsection*.7}
+\contentsline {subsection}{\numberline {1.4.3}Levenberg-Marquardt Method}{12}{subsection.1.4.3}
+\contentsline {subsubsection}{Control of the parameter \relax $\mu \relax \GenericError { }{LaTeX Error: Bad math environment delimiter}{See the LaTeX manual or LaTeX Companion for explanation.}{Your command was ignored.\MessageBreak Type I <command> <return> to replace it with another command,\MessageBreak or <return> to continue without it.}}{13}{subsubsection*.8}
+\contentsline {chapter}{\numberline {2}PyTrajectory Modules Reference}{15}{chapter.2}
+\contentsline {section}{\numberline {2.1}\texttt {trajectory} Module}{15}{section.2.1}
+\contentsline {section}{\numberline {2.2}\texttt {spline} Module}{17}{section.2.2}
+\contentsline {section}{\numberline {2.3}\texttt {solver} Module}{18}{section.2.3}
+\contentsline {section}{\numberline {2.4}\texttt {simulation} Module}{19}{section.2.4}
+\contentsline {section}{\numberline {2.5}\texttt {utilities} Module}{19}{section.2.5}
+\contentsline {paragraph}{Examples}{20}{paragraph*.62}
+\contentsline {section}{\numberline {2.6}\texttt {log} Module}{21}{section.2.6}
+\contentsline {chapter}{\numberline {3}Indices and tables}{23}{chapter.3}
+\contentsline {chapter}{Python Module Index}{25}{section*.74}
+\contentsline {chapter}{Index}{27}{section*.75}

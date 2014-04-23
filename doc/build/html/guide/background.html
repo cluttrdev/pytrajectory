@@ -58,8 +58,22 @@
 <h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
 <p>This section is intended to give some insights into the mathematical
 background that is the basis of PyTrajectory.</p>
+<div class="contents local topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#collocation-method" id="id3">Collocation Method</a></li>
+<li><a class="reference internal" href="#candidate-functions" id="id4">Candidate Functions</a><ul>
+<li><a class="reference internal" href="#use-of-the-system-structure" id="id5">Use of the system structure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#levenberg-marquardt-method" id="id6">Levenberg-Marquardt Method</a><ul>
+<li><a class="reference internal" href="#control-of-the-parameter" id="id7">Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="section" id="collocation-method">
-<h2>Collocation method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Collocation Method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
 <p>Given a system of autonomous differential equations</p>
 <div class="math">
 <p><img src="../_images/math/1c28844e7ae844232419c9962aeaf65f44ca2733.png" alt="\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))
@@ -83,9 +97,9 @@ following conditions:</p>
 \begin{equation}
    \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
 \end{equation}"/></p>
-</div><p>Through these demands the exact solution of the ode system will be approximated.
-The demands on the boundary values <img class="math" src="../_images/math/c499758f3261214459d92fd4f444117a603af2cc.png" alt="(1)"/> ​​can be sure already by suitable
-construction of the shape functions. This results in the following system of equations.</p>
+</div><p>Through these demands the exact solution of the differential equation system will be approximated.
+The demands on the boundary values <img class="math" src="../_images/math/c499758f3261214459d92fd4f444117a603af2cc.png" alt="(1)"/> can be sure already by suitable
+construction of the candidate functions. This results in the following system of equations.</p>
 <div class="math">
 <p><img src="../_images/math/07b5f277ee75bf9ecf1993de1704a4e01729f5fa.png" alt="\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0
 
@@ -105,7 +119,7 @@ of <img class="math" src="../_images/math/ea0446ff6185bc88bddd71f99ec82764e0b4e2
 parameters that result from the candidate functions.</p>
 </div>
 <div class="section" id="candidate-functions">
-<h2>Candidate functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2>Candidate Functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
 <p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
 solution. Splines are piecewise polynomials with a global differentiability.
 The connection points <img class="math" src="../_images/math/1b7033268c91a0319bea4e1af255a3843a6df667.png" alt="\tau_k"/> between the polynomial sections are equidistantly
@@ -140,88 +154,110 @@ the nodes <img class="math" src="../_images/math/d9e99c35d3632bb156b7aca0e93cd78
    \frac{d}{d t} S_k(k h) &amp; = &amp; \frac{d}{d t} S_{k+1}(k h) \\
    \frac{d^2}{d t^2} S_k(k h) &amp; = &amp; \frac{d^2}{d t^2} S_{k+1}(k h)
 \end{eqnarray*}"/></p>
-</div><p>Furthermore, conditions can be set up at the edges arising from the boundary conditions of
+</div><p>In the later equation system these demands result in the block diagonal part of the matrix.
+Furthermore, conditions can be set up at the edges arising from the boundary conditions of
 the differential equation system.</p>
 <div class="math">
-<p><img src="../_images/math/2eaf0ecf5cca26598a155681ad29c15b47299692.png" alt="\begin{equation*}
-   \frac{d^j}{d t^j} S_1(\tau_0) = \alpha_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \beta_j \qquad j = 0,...,\nu
+<p><img src="../_images/math/3608a531ba27a599fcf97c5e5d378a9a3b3cd695.png" alt="\begin{equation*}
+   \frac{d^j}{d t^j} S_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
 \end{equation*}"/></p>
 </div><p>The degree <img class="math" src="../_images/math/d67fb61cfffca2cc069e083d76cb6220b4ca14c8.png" alt="\nu"/> of the boundary conditions depends on the structure of the differential
-equation system. These conditions result in the following euation system.</p>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">$
-\begin{bmatrix}
-   0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
-   0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
-   0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
-   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
-   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
-   0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0
-\end{bmatrix}
-$</tt>)</p>
-latex exited with error
-[stdout]
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2011/06/27&gt;
-Babel &lt;3.9f&gt; and hyphenation patterns for 78 languages loaded.
-(/usr/local/texlive/2013/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2013/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/base/inputenc.sty
-(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/utf8x.def))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucs.sty
-(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/data/uni-global.def))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?&#8217; option.
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/bm.sty)
-No file math.aux.
-(/usr/local/texlive/2013/texmf-dist/tex/latex/ucs/ucsencs.def)
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsa.fd)
-(/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsb.fd)
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.14 ... 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 &amp; 0 &amp; \vdots &amp;
-                                                   0 \\
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.15 ... 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp; 0 &amp; \vdots &amp;
-                                                   0 \\
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.16 ... 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 &amp; 0 &amp; \vdots &amp;
-                                                   0 \\
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.17 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;
-                                                    h &amp; -1 &amp; 0 &amp; \vdots &amp; 0 \\
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.18 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp;
-                                                   -1 &amp;  0 &amp; 0 &amp; \vdots &amp; 0 \\
-! Extra alignment tab has been changed to \cr.
-&lt;recently read&gt; \endtemplate 
-                             
-l.19 ...0 &amp; 0 &amp; 0 &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;
-                                                    0 &amp;  0 &amp; 0 &amp; \vdots &amp; 0
-[1] (./math.aux) )
-(see the transcript file for additional information)
-Output written on math.dvi (1 page, 1720 bytes).
-Transcript written on math.log.
+equation system. With these conditions and those above one obtains the following equation system
+(<img class="math" src="../_images/math/7c720ab76a0a457fa572b3640728970adf26bd2c.png" alt="\nu = 2"/>).</p>
+<div class="math">
+<p><img src="../_images/math/367247c12dc88c25972d675e2b7ec09210aa2f96.png" alt="\setcounter{MaxMatrixCols}{20}
+\newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
+\begin{equation*}
+\underbrace{\begin{bmatrix}
+      0 &amp; 0   &amp; 0  &amp; 1 &amp;  h^3  &amp; -h^2   &amp;  h &amp; -1 \\
+      0 &amp; 0   &amp; 1  &amp; 0 &amp; -3h^2 &amp;  2h    &amp; -1 &amp;  0  &amp;&amp;&amp;&amp; \bigzero \\
+      0 &amp; 2   &amp; 0  &amp; 0 &amp;   6h  &amp;  -2    &amp;  0 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;   0   &amp;   0    &amp;  0 &amp;  1  &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 \\
+        &amp;  \bigzero   &amp;    &amp;   &amp;   0   &amp;   0    &amp;  1 &amp;  0  &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 &amp;&amp;&amp;&amp;&amp;&amp; \bigzero \\
+        &amp;     &amp;    &amp;   &amp;   0   &amp;   2    &amp;  0 &amp;  0  &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 \\
+        &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; \ddots \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp;  h^3  &amp; -h^2 &amp;  h &amp; -1 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;  \bigzero  &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; -3h^2 &amp;  2h  &amp; -1 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp; 0 &amp; 2 &amp; 0 &amp; 0 &amp;   6h  &amp;  -2  &amp;  0 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp; \\
+   -h^3 &amp; h^2 &amp; -h &amp; 1 \\
+   3h^2 &amp; -2h &amp;  1 &amp; 0 &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; \bigzero \\
+   -6h  &amp;  2  &amp;  0 &amp; 0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    0 &amp;  0 &amp;  1 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;  \bigzero  &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    0 &amp;  1 &amp;  0 \\
+        &amp;     &amp;    &amp;   &amp;       &amp;        &amp;    &amp;     &amp;       &amp;      &amp;    &amp;    &amp;   &amp;   &amp;   &amp;   &amp;   0   &amp;    2 &amp;  0 &amp;  0 \\
+\end{bmatrix}}_{=: \boldsymbol{M}}
+\cdot
+\underbrace{\begin{bmatrix}
+   c_{1,0} \\ c_{1,1} \\ c_{1,2} \\ c_{1,3} \\ c_{2,0} \\ c_{2,1} \\ c_{2,2} \\ c_{2,3} \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ c_{\eta,0} \\ c_{\eta,1} \\ c_{\eta,2} \\ c_{\eta,3}
+\end{bmatrix}}_{=: \boldsymbol{c}}
+ =
+\underbrace{\begin{bmatrix}
+   0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ \vdots  \\ 0 \\ 0 \\ 0 \\ \\ \tilde{\alpha}_0 \\ \tilde{\alpha}_1 \\ \tilde{\alpha}_2 \\ \tilde{\beta}_0 \\ \tilde{\beta}_1 \\ \tilde{\beta}_2
+\end{bmatrix}}_{=: \boldsymbol{r}}
+\end{equation*}"/></p>
+</div><p>The matrix <img class="math" src="../_images/math/12c5dd56417928ab25db67a424258931cefdefe9.png" alt="\boldsymbol{M}"/> of dimension <img class="math" src="../_images/math/52ed6c90e781c8b609004ea5144a49ef06fd484b.png" alt="N_1 \times N_2,\ N_1 &lt; N_2"/>, where <img class="math" src="../_images/math/d372fe6ce419dbbf610b209950846e7011ca0ca7.png" alt="N_2 = 4 \eta"/> and <img class="math" src="../_images/math/c0e0d4e749102b9ae234395b776513b87c753742.png" alt="N_1 = 3(\eta - 1) + 2(\nu + 1)"/>, can be decomposed
+into two subsystems <img class="math" src="../_images/math/0e87ee866cb7b5b8384c2e93919c3ccdb19da6fb.png" alt="\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}"/> and <img class="math" src="../_images/math/38320a4fe65125a5921a23efb9b76a4c73435a37.png" alt="\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}"/>.
+The two dies are the vectors <img class="math" src="../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/> and <img class="math" src="../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> with the respective coefficients of <img class="math" src="../_images/math/cceff292975e2aa217b3de4e89562e2cae81eac6.png" alt="\boldsymbol{c}"/>.</p>
+<div class="math">
+<p><img src="../_images/math/7e50327f743c2b93fb07611e84455dd533035ecd.png" alt="\begin{eqnarray*}
+   \boldsymbol{M} \boldsymbol{c} &amp; = &amp; \boldsymbol{r} \\
+   \boldsymbol{A} \boldsymbol{a} + \boldsymbol{B} \boldsymbol{b} &amp; = &amp; \boldsymbol{r} \\
+   \boldsymbol{b} &amp; = &amp; \boldsymbol{B}^{-1} (\boldsymbol{r} - \boldsymbol{A} \boldsymbol{a})
+\end{eqnarray*}"/></p>
+</div><p>With this allocation, the system of equations can be solved for <img class="math" src="../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> and the parameters in <img class="math" src="../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/>
+remain as the free parameters of the spline function.</p>
+<div class="section" id="use-of-the-system-structure">
+<span id="system-structure"></span><h3>Use of the system structure<a class="headerlink" href="#use-of-the-system-structure" title="Permalink to this headline">¶</a></h3>
+<p>...</p>
+</div>
+</div>
+<div class="section" id="levenberg-marquardt-method">
+<span id="levenberg-marquardt"></span><h2>Levenberg-Marquardt Method<a class="headerlink" href="#levenberg-marquardt-method" title="Permalink to this headline">¶</a></h2>
+<p>The Levenberg-Marquardt method can be used to solve nonlinear least squares problems. It is an extension of the Gauss-Newton method and
+solves the following minimization problem.</p>
+<div class="math">
+<p><img src="../_images/math/ecf503e5307b6fb89479a316d2b038c202584234.png" alt="\begin{equation*}
+   \| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|_2^2 \rightarrow \text{min!}
+\end{equation*}"/></p>
+</div><p>The real number <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> is a parameter that is used for the attenuation of the step size <img class="math" src="../_images/math/0f5ce1b5504b92c5ea869be880a4c9ebca54643f.png" alt="(x_{k+1} - x_k)"/> and is free to choose.
+Thus, the generation of excessive correction is prevented, as is often the case with the Gauss-Newton method and leads to a possible
+non-achievement of the local minimum. With a vanishing attenuation, <img class="math" src="../_images/math/1e28b94cf4ee1a6b7c714274077a584aaa3fc953.png" alt="\mu = 0"/> the Gauss-Newton method represents a special case
+of the Levenberg-Marquardt method. The iteration can be specified in the following form.</p>
+<div class="math">
+<p><img src="../_images/math/809500e6353d71d3b6ade45d13c39c962de1621a.png" alt="\begin{equation*}
+   x_{k+1} = x_k - (F'(x_k)^T F'(x_k) + \mu^2 I)^{-1} F'(x_k) F(x_k)
+\end{equation*}"/></p>
+</div><p>The convergence can now be influenced by means of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>. Disadvantage is that in order to ensure the convergence,
+<img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> must be chosen large enough, at the same time, this also leads however to a very small correction. Thus, the Levenberg-Marquardt
+method has a lower order of convergence than the Gauss-Newton method but approaches the desired solution at each step.</p>
+<div class="section" id="control-of-the-parameter">
+<h3>Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/><a class="headerlink" href="#control-of-the-parameter" title="Permalink to this headline">¶</a></h3>
+<p>The feature after which the parameter is chosen, is the change of the actual residual</p>
+<div class="math">
+<p><img src="../_images/math/673ecb434630ba0f48c9d727f99ddb49e00e0c44.png" alt="\begin{eqnarray*}
+   R(x_k, s_k) &amp; := &amp; \| F(x_k) \|_2^2 - \| F(x_k + s_k) \|_2^2 \\
+   s_k         &amp; := &amp; x_{k+1} - x_k
+\end{eqnarray*}"/></p>
+</div><p>and the change of the residual of the linearized approximation.</p>
+<div class="math">
+<p><img src="../_images/math/aa768bda1aff15988437248a7d5a4a4cbd26c944.png" alt="\begin{equation*}
+   \tilde{R}(x_k, s_k) := \| F(x_k) \|_2^2 - \| F(x_k) + F'(x_k)x_k \|_2^2
+\end{equation*}"/></p>
+</div><p>As a control criterion, the following quotient is introduced.</p>
+<div class="math">
+<p><img src="../_images/math/53ce26bc73b06f77352cfc953353f6bc0c839a28.png" alt="\begin{equation*}
+   \rho = \frac{R(x_k, s_k)}{\tilde{R}(x_k, s_k)}
+\end{equation*}"/></p>
+</div><p>It follows that <img class="math" src="../_images/math/23e128fc69f19298f151f818343feff5c19a22de.png" alt="R(x_k,s_k) \geq 0"/> and for a meaningful correction <img class="math" src="../_images/math/014a82a4d430bb5972e0779c8bb45e6af1110126.png" alt="\tilde{R}(x_k, s_k) \geq 0"/> must also hold.
+Thus, <img class="math" src="../_images/math/f574498915fa9e02eeb5141c24835d077eba3e75.png" alt="\rho"/> is also positive and <img class="math" src="../_images/math/4ba36d87e78f62017b6fe35747a0b68b1aefd384.png" alt="\rho \rightarrow 1"/> for <img class="math" src="../_images/math/b2cf2b94b70fe6ea001b08aed1973c3134e3b675.png" alt="\mu \rightarrow \infty"/>.
+Therefor <img class="math" src="../_images/math/f574498915fa9e02eeb5141c24835d077eba3e75.png" alt="\rho"/> should lie between 0 and 1. To control <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> two new limits <img class="math" src="../_images/math/7941b619fd3246c1e7c3956d0ae9e9613ecc1786.png" alt="b_0"/> and <img class="math" src="../_images/math/7af63837f8ec9d603259d1845f924e7102241c8c.png" alt="b_1"/> are introduced
+with <img class="math" src="../_images/math/876d050d4e6da94fd52edf3d2960ce403af06d4c.png" alt="0 &lt; b_0 &lt; b_1 &lt; 1"/> and for <img class="math" src="../_images/math/c5c7adaf69bace7aa48f91b096d61ef6d7dde9ea.png" alt="b_0 = 0.2, b_1 = 0.8"/> we use the following criteria.</p>
+<ul class="simple">
+<li><img class="math" src="../_images/math/53da53f1180414929372bbf0ed991312065fe6ea.png" alt="\rho \leq b_0 \qquad\quad :"/> <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> is doubled and <img class="math" src="../_images/math/ff0df46b2f9c9e9b3d087f433a8070a24a486d56.png" alt="s_k"/> is recalculated</li>
+<li><img class="math" src="../_images/math/fb412d9b831050a2a2511e5180ae00b3508a052b.png" alt="b_0 &lt; \rho &lt; b_1 \quad :"/> in the next step <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> is maintained and <img class="math" src="../_images/math/ff0df46b2f9c9e9b3d087f433a8070a24a486d56.png" alt="s_k"/> is used</li>
+<li><img class="math" src="../_images/math/b08ec42e15d9904e22321dc3d179e818bd0493e7.png" alt="\rho \geq b_1 \qquad\quad :"/> <img class="math" src="../_images/math/ff0df46b2f9c9e9b3d087f433a8070a24a486d56.png" alt="s_k"/> is accepted and <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> is halved during the next iteration</li>
+</ul>
 </div>
 </div>
 </div>
@@ -235,8 +271,15 @@ Transcript written on math.log.
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Background</a><ul>
-<li><a class="reference internal" href="#collocation-method">Collocation method</a></li>
-<li><a class="reference internal" href="#candidate-functions">Candidate functions</a></li>
+<li><a class="reference internal" href="#collocation-method">Collocation Method</a></li>
+<li><a class="reference internal" href="#candidate-functions">Candidate Functions</a><ul>
+<li><a class="reference internal" href="#use-of-the-system-structure">Use of the system structure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#levenberg-marquardt-method">Levenberg-Marquardt Method</a><ul>
+<li><a class="reference internal" href="#control-of-the-parameter">Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -1,69 +1,70 @@
-\indexentry{pytrajectory (module)|hyperpage}{11}
-\indexentry{pytrajectory.trajectory (module)|hyperpage}{11}
-\indexentry{Trajectory (class in pytrajectory.trajectory)|hyperpage}{11}
-\indexentry{DG() (pytrajectory.trajectory.Trajectory method)|hyperpage}{11}
-\indexentry{G() (pytrajectory.trajectory.Trajectory method)|hyperpage}{11}
-\indexentry{analyseSystem() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{buildEQS() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{checkAccuracy() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{clear() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{dx() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{getGuess() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{initSplines() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{iterate() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{plot() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{save() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{setCoeff() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{setParam() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{simulate() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{solve() (pytrajectory.trajectory.Trajectory method)|hyperpage}{12}
-\indexentry{startIteration() (pytrajectory.trajectory.Trajectory method)|hyperpage}{13}
-\indexentry{u() (pytrajectory.trajectory.Trajectory method)|hyperpage}{13}
-\indexentry{x() (pytrajectory.trajectory.Trajectory method)|hyperpage}{13}
-\indexentry{pytrajectory.spline (module)|hyperpage}{13}
-\indexentry{CubicSpline (class in pytrajectory.spline)|hyperpage}{13}
-\indexentry{dddf() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{ddf() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{df() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{evalf() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{f() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{makesteady() (pytrajectory.spline.CubicSpline method)|hyperpage}{13}
-\indexentry{prov\_evalf() (pytrajectory.spline.CubicSpline method)|hyperpage}{14}
-\indexentry{set\_coeffs() (pytrajectory.spline.CubicSpline method)|hyperpage}{14}
-\indexentry{fdiff() (in module pytrajectory.spline)|hyperpage}{14}
-\indexentry{pytrajectory.solver (module)|hyperpage}{14}
-\indexentry{Solver (class in pytrajectory.solver)|hyperpage}{14}
-\indexentry{gauss() (pytrajectory.solver.Solver method)|hyperpage}{14}
-\indexentry{leven() (pytrajectory.solver.Solver method)|hyperpage}{14}
-\indexentry{newton() (pytrajectory.solver.Solver method)|hyperpage}{14}
-\indexentry{solve() (pytrajectory.solver.Solver method)|hyperpage}{14}
-\indexentry{pytrajectory.simulation (module)|hyperpage}{15}
-\indexentry{Simulation (class in pytrajectory.simulation)|hyperpage}{15}
-\indexentry{calcStep() (pytrajectory.simulation.Simulation method)|hyperpage}{15}
-\indexentry{rhs() (pytrajectory.simulation.Simulation method)|hyperpage}{15}
-\indexentry{simulate() (pytrajectory.simulation.Simulation method)|hyperpage}{15}
-\indexentry{pytrajectory.utilities (module)|hyperpage}{15}
-\indexentry{Animation (class in pytrajectory.utilities)|hyperpage}{15}
-\indexentry{Animation.Image (class in pytrajectory.utilities)|hyperpage}{15}
-\indexentry{reset() (pytrajectory.utilities.Animation.Image method)|hyperpage}{15}
-\indexentry{animate() (pytrajectory.utilities.Animation method)|hyperpage}{15}
-\indexentry{get\_axes() (pytrajectory.utilities.Animation method)|hyperpage}{15}
-\indexentry{save() (pytrajectory.utilities.Animation method)|hyperpage}{15}
-\indexentry{set\_label() (pytrajectory.utilities.Animation method)|hyperpage}{15}
-\indexentry{set\_limits() (pytrajectory.utilities.Animation method)|hyperpage}{15}
-\indexentry{IntegChain (class in pytrajectory.utilities)|hyperpage}{15}
-\indexentry{pred() (pytrajectory.utilities.IntegChain method)|hyperpage}{15}
-\indexentry{succ() (pytrajectory.utilities.IntegChain method)|hyperpage}{16}
-\indexentry{blockdiag() (in module pytrajectory.utilities)|hyperpage}{16}
-\indexentry{plot() (in module pytrajectory.utilities)|hyperpage}{16}
-\indexentry{pytrajectory.log (module)|hyperpage}{16}
-\indexentry{IPS() (in module pytrajectory.log)|hyperpage}{16}
-\indexentry{Logger (class in pytrajectory.log)|hyperpage}{16}
-\indexentry{write() (pytrajectory.log.Logger method)|hyperpage}{16}
-\indexentry{Timer (class in pytrajectory.log)|hyperpage}{16}
-\indexentry{err() (in module pytrajectory.log)|hyperpage}{16}
-\indexentry{info() (in module pytrajectory.log)|hyperpage}{17}
-\indexentry{logtime() (in module pytrajectory.log)|hyperpage}{17}
-\indexentry{msg() (in module pytrajectory.log)|hyperpage}{17}
-\indexentry{set\_file() (in module pytrajectory.log)|hyperpage}{17}
-\indexentry{warn() (in module pytrajectory.log)|hyperpage}{17}
+\indexentry{pytrajectory (module)|hyperpage}{15}
+\indexentry{pytrajectory.trajectory (module)|hyperpage}{15}
+\indexentry{Trajectory (class in pytrajectory.trajectory)|hyperpage}{15}
+\indexentry{DG() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{G() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{analyseSystem() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{buildEQS() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{checkAccuracy() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{clear() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{colltype (pytrajectory.trajectory.Trajectory attribute)|hyperpage}{16}
+\indexentry{dx() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{getGuess() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{initSplines() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{iterate() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{plot() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{save() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{setCoeff() (pytrajectory.trajectory.Trajectory method)|hyperpage}{16}
+\indexentry{setParam() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{simulate() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{solve() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{startIteration() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{u() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{x() (pytrajectory.trajectory.Trajectory method)|hyperpage}{17}
+\indexentry{pytrajectory.spline (module)|hyperpage}{17}
+\indexentry{CubicSpline (class in pytrajectory.spline)|hyperpage}{17}
+\indexentry{dddf() (pytrajectory.spline.CubicSpline method)|hyperpage}{17}
+\indexentry{ddf() (pytrajectory.spline.CubicSpline method)|hyperpage}{17}
+\indexentry{df() (pytrajectory.spline.CubicSpline method)|hyperpage}{17}
+\indexentry{evalf() (pytrajectory.spline.CubicSpline method)|hyperpage}{18}
+\indexentry{f() (pytrajectory.spline.CubicSpline method)|hyperpage}{18}
+\indexentry{makesteady() (pytrajectory.spline.CubicSpline method)|hyperpage}{18}
+\indexentry{prov\_evalf() (pytrajectory.spline.CubicSpline method)|hyperpage}{18}
+\indexentry{set\_coeffs() (pytrajectory.spline.CubicSpline method)|hyperpage}{18}
+\indexentry{fdiff() (in module pytrajectory.spline)|hyperpage}{18}
+\indexentry{pytrajectory.solver (module)|hyperpage}{18}
+\indexentry{Solver (class in pytrajectory.solver)|hyperpage}{18}
+\indexentry{gauss() (pytrajectory.solver.Solver method)|hyperpage}{18}
+\indexentry{leven() (pytrajectory.solver.Solver method)|hyperpage}{18}
+\indexentry{newton() (pytrajectory.solver.Solver method)|hyperpage}{19}
+\indexentry{solve() (pytrajectory.solver.Solver method)|hyperpage}{19}
+\indexentry{pytrajectory.simulation (module)|hyperpage}{19}
+\indexentry{Simulation (class in pytrajectory.simulation)|hyperpage}{19}
+\indexentry{calcStep() (pytrajectory.simulation.Simulation method)|hyperpage}{19}
+\indexentry{rhs() (pytrajectory.simulation.Simulation method)|hyperpage}{19}
+\indexentry{simulate() (pytrajectory.simulation.Simulation method)|hyperpage}{19}
+\indexentry{pytrajectory.utilities (module)|hyperpage}{19}
+\indexentry{Animation (class in pytrajectory.utilities)|hyperpage}{19}
+\indexentry{Animation.Image (class in pytrajectory.utilities)|hyperpage}{19}
+\indexentry{reset() (pytrajectory.utilities.Animation.Image method)|hyperpage}{19}
+\indexentry{animate() (pytrajectory.utilities.Animation method)|hyperpage}{19}
+\indexentry{get\_axes() (pytrajectory.utilities.Animation method)|hyperpage}{19}
+\indexentry{save() (pytrajectory.utilities.Animation method)|hyperpage}{19}
+\indexentry{set\_label() (pytrajectory.utilities.Animation method)|hyperpage}{19}
+\indexentry{set\_limits() (pytrajectory.utilities.Animation method)|hyperpage}{20}
+\indexentry{IntegChain (class in pytrajectory.utilities)|hyperpage}{20}
+\indexentry{pred() (pytrajectory.utilities.IntegChain method)|hyperpage}{20}
+\indexentry{succ() (pytrajectory.utilities.IntegChain method)|hyperpage}{20}
+\indexentry{blockdiag() (in module pytrajectory.utilities)|hyperpage}{20}
+\indexentry{plot() (in module pytrajectory.utilities)|hyperpage}{20}
+\indexentry{pytrajectory.log (module)|hyperpage}{21}
+\indexentry{IPS() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{Logger (class in pytrajectory.log)|hyperpage}{21}
+\indexentry{write() (pytrajectory.log.Logger method)|hyperpage}{21}
+\indexentry{Timer (class in pytrajectory.log)|hyperpage}{21}
+\indexentry{err() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{info() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{logtime() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{msg() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{set\_file() (in module pytrajectory.log)|hyperpage}{21}
+\indexentry{warn() (in module pytrajectory.log)|hyperpage}{21}

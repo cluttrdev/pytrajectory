@@ -1,0 +1,14 @@
+.. _background:
+
+Background
+==========
+
+This section is intended to give some insights into the mathematical 
+background that is the basis of PyTrajectory.
+
+.. toctree::
+
+   collocation_method
+   candidate_functions
+   system_structure
+   levenberg_marquardt

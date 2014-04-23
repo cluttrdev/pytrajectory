@@ -8,6 +8,9 @@ forward control
 to achieve a transition between desired states of a nonlinear control 
 system.
 
+.. contents:: Contents
+   :local:
+
 .. automodule:: pytrajectory
 
 :mod:`trajectory` Module

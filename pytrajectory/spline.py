@@ -168,28 +168,28 @@ class CubicSpline():
         return p.deriv(d)(x-(i+1)*self.h)
     
     def f(self, x):
-        '''This is just a wrapper for :meth:`evalf` to evaluate the spline itself.'''
+        '''This is just a wrapper to evaluate the spline itself.'''
         if self.prov_flag:
             return self.prov_evalf(x,0)
         else:
             return self.evalf(x,0)
 
     def df(self, x):
-        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 1st derivative.'''
+        '''This is just a wrapper to evaluate the splines 1st derivative.'''
         if self.prov_flag:
             return self.prov_evalf(x,1)
         else:
             return self.evalf(x,1)
 
     def ddf(self, x):
-        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 2nd derivative.'''
+        '''This is just a wrapper to evaluate the splines 2nd derivative.'''
         if self.prov_flag:
             return self.prov_evalf(x,2)
         else:
             return self.evalf(x,2)
 
     def dddf(self, x):
-        '''This is just a wrapper for :meth:`evalf` to evaluate the splines 3rd derivative.'''
+        '''This is just a wrapper to evaluate the splines 3rd derivative.'''
         if self.prov_flag:
             return self.prov_evalf(x,3)
         else:

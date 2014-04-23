@@ -821,7 +821,7 @@ class Trajectory():
 
     def setCoeff(self):
         '''
-        Set found numerical values for the independent parameters od each spline.
+        Set found numerical values for the independent parameters of each spline.
         
         This method is used to get the actual splines by using the numerical
         solutions to set up the coefficients of the polynomial spline parts of

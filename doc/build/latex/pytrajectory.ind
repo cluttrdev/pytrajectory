@@ -2,125 +2,126 @@
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
   \bigletter A
-  \item analyseSystem() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item animate() (pytrajectory.utilities.Animation method), \hyperpage{15}
-  \item Animation (class in pytrajectory.utilities), \hyperpage{15}
-  \item Animation.Image (class in pytrajectory.utilities), \hyperpage{15}
+  \item analyseSystem() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item animate() (pytrajectory.utilities.Animation method), \hyperpage{19}
+  \item Animation (class in pytrajectory.utilities), \hyperpage{19}
+  \item Animation.Image (class in pytrajectory.utilities), \hyperpage{19}
 
   \indexspace
   \bigletter B
-  \item blockdiag() (in module pytrajectory.utilities), \hyperpage{16}
-  \item buildEQS() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
+  \item blockdiag() (in module pytrajectory.utilities), \hyperpage{20}
+  \item buildEQS() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
 
   \indexspace
   \bigletter C
-  \item calcStep() (pytrajectory.simulation.Simulation method), \hyperpage{15}
-  \item checkAccuracy() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item clear() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item CubicSpline (class in pytrajectory.spline), \hyperpage{13}
+  \item calcStep() (pytrajectory.simulation.Simulation method), \hyperpage{19}
+  \item checkAccuracy() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item clear() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item colltype (pytrajectory.trajectory.Trajectory attribute), \hyperpage{16}
+  \item CubicSpline (class in pytrajectory.spline), \hyperpage{17}
 
   \indexspace
   \bigletter D
-  \item dddf() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
-  \item ddf() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
-  \item df() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
-  \item DG() (pytrajectory.trajectory.Trajectory method), \hyperpage{11}
-  \item dx() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
+  \item dddf() (pytrajectory.spline.CubicSpline method), \hyperpage{17}
+  \item ddf() (pytrajectory.spline.CubicSpline method), \hyperpage{17}
+  \item df() (pytrajectory.spline.CubicSpline method), \hyperpage{17}
+  \item DG() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item dx() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
 
   \indexspace
   \bigletter E
-  \item err() (in module pytrajectory.log), \hyperpage{16}
-  \item evalf() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
+  \item err() (in module pytrajectory.log), \hyperpage{21}
+  \item evalf() (pytrajectory.spline.CubicSpline method), \hyperpage{18}
 
   \indexspace
   \bigletter F
-  \item f() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
-  \item fdiff() (in module pytrajectory.spline), \hyperpage{14}
+  \item f() (pytrajectory.spline.CubicSpline method), \hyperpage{18}
+  \item fdiff() (in module pytrajectory.spline), \hyperpage{18}
 
   \indexspace
   \bigletter G
-  \item G() (pytrajectory.trajectory.Trajectory method), \hyperpage{11}
-  \item gauss() (pytrajectory.solver.Solver method), \hyperpage{14}
-  \item get\_axes() (pytrajectory.utilities.Animation method), \hyperpage{15}
-  \item getGuess() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
+  \item G() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item gauss() (pytrajectory.solver.Solver method), \hyperpage{18}
+  \item get\_axes() (pytrajectory.utilities.Animation method), \hyperpage{19}
+  \item getGuess() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
 
   \indexspace
   \bigletter I
-  \item info() (in module pytrajectory.log), \hyperpage{17}
-  \item initSplines() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item IntegChain (class in pytrajectory.utilities), \hyperpage{15}
-  \item IPS() (in module pytrajectory.log), \hyperpage{16}
-  \item iterate() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
+  \item info() (in module pytrajectory.log), \hyperpage{21}
+  \item initSplines() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item IntegChain (class in pytrajectory.utilities), \hyperpage{20}
+  \item IPS() (in module pytrajectory.log), \hyperpage{21}
+  \item iterate() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
 
   \indexspace
   \bigletter L
-  \item leven() (pytrajectory.solver.Solver method), \hyperpage{14}
-  \item Logger (class in pytrajectory.log), \hyperpage{16}
-  \item logtime() (in module pytrajectory.log), \hyperpage{17}
+  \item leven() (pytrajectory.solver.Solver method), \hyperpage{18}
+  \item Logger (class in pytrajectory.log), \hyperpage{21}
+  \item logtime() (in module pytrajectory.log), \hyperpage{21}
 
   \indexspace
   \bigletter M
-  \item makesteady() (pytrajectory.spline.CubicSpline method), \hyperpage{13}
-  \item msg() (in module pytrajectory.log), \hyperpage{17}
+  \item makesteady() (pytrajectory.spline.CubicSpline method), \hyperpage{18}
+  \item msg() (in module pytrajectory.log), \hyperpage{21}
 
   \indexspace
   \bigletter N
-  \item newton() (pytrajectory.solver.Solver method), \hyperpage{14}
+  \item newton() (pytrajectory.solver.Solver method), \hyperpage{19}
 
   \indexspace
   \bigletter P
-  \item plot() (in module pytrajectory.utilities), \hyperpage{16}
-  \item plot() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item pred() (pytrajectory.utilities.IntegChain method), \hyperpage{15}
-  \item prov\_evalf() (pytrajectory.spline.CubicSpline method), \hyperpage{14}
-  \item pytrajectory (module), \hyperpage{11}
-  \item pytrajectory.log (module), \hyperpage{16}
-  \item pytrajectory.simulation (module), \hyperpage{15}
-  \item pytrajectory.solver (module), \hyperpage{14}
-  \item pytrajectory.spline (module), \hyperpage{13}
-  \item pytrajectory.trajectory (module), \hyperpage{11}
-  \item pytrajectory.utilities (module), \hyperpage{15}
+  \item plot() (in module pytrajectory.utilities), \hyperpage{20}
+  \item plot() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item pred() (pytrajectory.utilities.IntegChain method), \hyperpage{20}
+  \item prov\_evalf() (pytrajectory.spline.CubicSpline method), \hyperpage{18}
+  \item pytrajectory (module), \hyperpage{15}
+  \item pytrajectory.log (module), \hyperpage{21}
+  \item pytrajectory.simulation (module), \hyperpage{19}
+  \item pytrajectory.solver (module), \hyperpage{18}
+  \item pytrajectory.spline (module), \hyperpage{17}
+  \item pytrajectory.trajectory (module), \hyperpage{15}
+  \item pytrajectory.utilities (module), \hyperpage{19}
 
   \indexspace
   \bigletter R
-  \item reset() (pytrajectory.utilities.Animation.Image method), \hyperpage{15}
-  \item rhs() (pytrajectory.simulation.Simulation method), \hyperpage{15}
+  \item reset() (pytrajectory.utilities.Animation.Image method), \hyperpage{19}
+  \item rhs() (pytrajectory.simulation.Simulation method), \hyperpage{19}
 
   \indexspace
   \bigletter S
-  \item save() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item save() (pytrajectory.utilities.Animation method), \hyperpage{15}
-  \item set\_coeffs() (pytrajectory.spline.CubicSpline method), \hyperpage{14}
-  \item set\_file() (in module pytrajectory.log), \hyperpage{17}
-  \item set\_label() (pytrajectory.utilities.Animation method), \hyperpage{15}
-  \item set\_limits() (pytrajectory.utilities.Animation method), \hyperpage{15}
-  \item setCoeff() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item setParam() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item simulate() (pytrajectory.simulation.Simulation method), \hyperpage{15}
-  \item simulate() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item Simulation (class in pytrajectory.simulation), \hyperpage{15}
-  \item solve() (pytrajectory.solver.Solver method), \hyperpage{14}
-  \item solve() (pytrajectory.trajectory.Trajectory method), \hyperpage{12}
-  \item Solver (class in pytrajectory.solver), \hyperpage{14}
-  \item startIteration() (pytrajectory.trajectory.Trajectory method), \hyperpage{13}
-  \item succ() (pytrajectory.utilities.IntegChain method), \hyperpage{16}
+  \item save() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item save() (pytrajectory.utilities.Animation method), \hyperpage{19}
+  \item set\_coeffs() (pytrajectory.spline.CubicSpline method), \hyperpage{18}
+  \item set\_file() (in module pytrajectory.log), \hyperpage{21}
+  \item set\_label() (pytrajectory.utilities.Animation method), \hyperpage{19}
+  \item set\_limits() (pytrajectory.utilities.Animation method), \hyperpage{20}
+  \item setCoeff() (pytrajectory.trajectory.Trajectory method), \hyperpage{16}
+  \item setParam() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
+  \item simulate() (pytrajectory.simulation.Simulation method), \hyperpage{19}
+  \item simulate() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
+  \item Simulation (class in pytrajectory.simulation), \hyperpage{19}
+  \item solve() (pytrajectory.solver.Solver method), \hyperpage{19}
+  \item solve() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
+  \item Solver (class in pytrajectory.solver), \hyperpage{18}
+  \item startIteration() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
+  \item succ() (pytrajectory.utilities.IntegChain method), \hyperpage{20}
 
   \indexspace
   \bigletter T
-  \item Timer (class in pytrajectory.log), \hyperpage{16}
-  \item Trajectory (class in pytrajectory.trajectory), \hyperpage{11}
+  \item Timer (class in pytrajectory.log), \hyperpage{21}
+  \item Trajectory (class in pytrajectory.trajectory), \hyperpage{15}
 
   \indexspace
   \bigletter U
-  \item u() (pytrajectory.trajectory.Trajectory method), \hyperpage{13}
+  \item u() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
 
   \indexspace
   \bigletter W
-  \item warn() (in module pytrajectory.log), \hyperpage{17}
-  \item write() (pytrajectory.log.Logger method), \hyperpage{16}
+  \item warn() (in module pytrajectory.log), \hyperpage{21}
+  \item write() (pytrajectory.log.Logger method), \hyperpage{21}
 
   \indexspace
   \bigletter X
-  \item x() (pytrajectory.trajectory.Trajectory method), \hyperpage{13}
+  \item x() (pytrajectory.trajectory.Trajectory method), \hyperpage{17}
 
 \end{theindex}

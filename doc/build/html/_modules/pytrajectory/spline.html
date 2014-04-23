@@ -217,28 +217,28 @@
         <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">d</span><span class="p">)(</span><span class="n">x</span><span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="CubicSpline.f"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :meth:`evalf` to evaluate the spline itself.&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper to evaluate the spline itself.&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="CubicSpline.df"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.df">[docs]</a>    <span class="k">def</span> <span class="nf">df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :meth:`evalf` to evaluate the splines 1st derivative.&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper to evaluate the splines 1st derivative.&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="CubicSpline.ddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.ddf">[docs]</a>    <span class="k">def</span> <span class="nf">ddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :meth:`evalf` to evaluate the splines 2nd derivative.&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper to evaluate the splines 2nd derivative.&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="CubicSpline.dddf"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.dddf">[docs]</a>    <span class="k">def</span> <span class="nf">dddf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;This is just a wrapper for :meth:`evalf` to evaluate the splines 3rd derivative.&#39;&#39;&#39;</span>
+        <span class="sd">&#39;&#39;&#39;This is just a wrapper to evaluate the splines 3rd derivative.&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prov_evalf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>

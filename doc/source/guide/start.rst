@@ -4,6 +4,9 @@ Getting Started
 This section provides an overview on what PyTrajectory is and how to use it.
 For a more detailed view please have a look at the :ref:`pytrajectory`.
 
+.. contents:: Contents
+   :local:
+
 
 What is PyTrajectory?
 =====================
@@ -30,7 +33,7 @@ Dependencies
 ------------
 
 Before you install PyTrajectory make sure you have the following 
-dependencies installed on your system
+dependencies installed on your system.
 
 * numpy
 * sympy

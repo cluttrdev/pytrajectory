@@ -46,7 +46,7 @@ class Solver:
     def solve(self):
         '''
         This is just a wrapper to call the chosen algorithm for solving the
-        equation system
+        collocation equation system
         '''
         if (self.algo == 'newton'):
             log.info( "Run Newton solver")
@@ -70,15 +70,7 @@ class Solver:
         This method is an implementation of the Levenberg-Marquardt-Method
         to solve nonlinear least squares problems.
         
-        It is an extension of the Gauss-Newton-Method. Here the following 
-        minimization problem is solved:
-        
-        .. math::
-           :nowrap:
-           
-           | F'(x_k)(x_{k+1} - x_k) + F(x_k) |_2^2 + \mu^2 |x_{k+1} - x_k |`
-        
-        TODO: ref zu docu
+        see: :ref:`levenberg_marquardt`
         '''
         i = 0
         x = self.x0
