@@ -65,11 +65,8 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class provides a representation of a integrator chain consisting of sympy symbols.</span>
 <span class="sd">    </span>
-<span class="sd">    For the elements :math:`(x_i)_{i=1,...,n}` the following relation applies:</span>
-<span class="sd">    </span>
-<span class="sd">    .. math::</span>
-<span class="sd">    </span>
-<span class="sd">       \dot{x}_i = x_{i+1} \quad i = 1,...,n-1</span>
+<span class="sd">    For the elements :math:`(x_i)_{i=1,...,n}` the relation</span>
+<span class="sd">    :math:`\dot{x}_i = x_{i+1}` applies:</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -332,7 +329,11 @@
 <div class="viewcode-block" id="Animation.save"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Animation.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fps</span><span class="p">:</span>
             <span class="n">fps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;gif&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="s">&#39;imagemagick&#39;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
 
 </div></div>
 <div class="viewcode-block" id="blockdiag"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.blockdiag">[docs]</a><span class="k">def</span> <span class="nf">blockdiag</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">bshape</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>

@@ -162,7 +162,9 @@ class Trajectory():
         This is the main loop.
         
         At first the equations that have to be solved by collocation will be determined according to
-        the integrator chains. Next, one step of the iteration is done by calling :meth:`iterate()`.
+        the integrator chains. 
+        
+        Next, one step of the iteration is done by calling :meth:`iterate()`.
         
         After that, the accuracy of the found solution is checked. If it is within the tolerance 
         range the iteration will stop. Else, the number of spline parts is raised and another 
@@ -355,7 +357,7 @@ class Trajectory():
     
     def setParam(self, param='', val=None):
         '''
-        Method to assign value :attr:`val`to method parameter :attr:`param`.
+        Method to assign value :attr:`val` to method parameter :attr:`param`.
         
         
         Parameters
@@ -376,7 +378,10 @@ class Trajectory():
         #    log.warn('No value passed to assign to method parameter %s!'%param)
         #else:
         #    pass
-        exec('self.%s = %s'%(param, str(val)))
+        if isinstance(val, str):
+            exec('self.%s = "%s"'%(param, val))
+        else:
+            exec('self.%s = %s'%(param, str(val)))
     
     
     def iterate(self):
@@ -385,7 +390,13 @@ class Trajectory():
         
         First, new splines are initialised for the variables that are the upper end of an 
         integrator chain.
-        TODO: ...
+        
+        Then, a start value for the solver is determined and the equation system is build.
+        
+        Next, the equation system is solved and the resulting numerical values for the free
+        parameters are written back.
+        
+        As a last, the initial value problem is simulated.
         '''
         self.nIt += 1
 

@@ -46,7 +46,7 @@ class Solver:
     def solve(self):
         '''
         This is just a wrapper to call the chosen algorithm for solving the
-        collocation equation system
+        collocation equation system.
         '''
         
         if (self.algo == 'newton'):
@@ -71,7 +71,7 @@ class Solver:
         This method is an implementation of the Levenberg-Marquardt-Method
         to solve nonlinear least squares problems.
         
-        see: :ref:`levenberg_marquardt`
+        For more information see: :ref:`levenberg_marquardt`
         '''
         i = 0
         x = self.x0

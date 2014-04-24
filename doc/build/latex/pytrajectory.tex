@@ -14,7 +14,7 @@
 
 
 \title{pytrajectory Documentation}
-\date{April 23, 2014}
+\date{April 24, 2014}
 \release{0.3.2}
 \author{Andreas Kunze}
 \newcommand{\sphinxlogo}{}
@@ -249,13 +249,13 @@ ipython {[}debugging{]}
 
 
 \section{Examples}
-\label{guide/examples/index::doc}\label{guide/examples/index:examples}
+\label{guide/examples/index::doc}\label{guide/examples/index:examples}\label{guide/examples/index:id1}
 The following example systems from mechanics demonstrate the application
 of PyTrajectory. The deriving of the model equations is omittted here.
 
 
 \subsection{Translation of the inverted pendulum}
-\label{guide/examples/inv_pendulum_trans::doc}\label{guide/examples/inv_pendulum_trans:translation-of-the-inverted-pendulum}
+\label{guide/examples/inv_pendulum_trans:ex-inv-pend}\label{guide/examples/inv_pendulum_trans::doc}\label{guide/examples/inv_pendulum_trans:translation-of-the-inverted-pendulum}
 An example often used in literature is the inverted pendulum. Here a
 force \(F\) acts on a cart with mass \(M_w\). In addition the
 cart is connected by a massless rod with a pendulum mass \(m_p\).
@@ -283,6 +283,9 @@ aligned vertically upwards (\(\varphi = 0\)). As a further condition
 (\(u_1(0) = u_1(T) = 0\)).
 The operating time here is \(T = 1 [s]\).
 
+
+\subsubsection{Source Code}
+\label{guide/examples/inv_pendulum_trans:source-code}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{c}{\PYGZsh{} translation of the inverse pendulum}
 
@@ -335,7 +338,7 @@ The operating time here is \(T = 1 [s]\).
 
 
 \subsection{Oscillation of the inverted double pendulum}
-\label{guide/examples/inv_double_pendulum_swing::doc}\label{guide/examples/inv_double_pendulum_swing:oscillation-of-the-inverted-double-pendulum}
+\label{guide/examples/inv_double_pendulum_swing::doc}\label{guide/examples/inv_double_pendulum_swing:ex-inv-dbl-pend}\label{guide/examples/inv_double_pendulum_swing:oscillation-of-the-inverted-double-pendulum}
 In this example we add another pendulum to the cart in the system.
 
 \includegraphics{inv_double_pendulum.png}
@@ -363,6 +366,9 @@ same position again and the pendulums should be at rest with
    \rightarrow
    x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
 \end{equation*}
+
+\subsubsection{Source Code}
+\label{guide/examples/inv_double_pendulum_swing:source-code}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{c}{\PYGZsh{} oscillation of the inverted double pendulum with partial linearization}
 
@@ -416,7 +422,7 @@ same position again and the pendulums should be at rest with
 
 
 \subsection{Aircraft}
-\label{guide/examples/aircraft:aircraft}\label{guide/examples/aircraft::doc}
+\label{guide/examples/aircraft:ex-aircraft}\label{guide/examples/aircraft:aircraft}\label{guide/examples/aircraft::doc}
 In this section we consider the model of a unmanned vertical take-off
 aircraft. The aircraft has two permanently mounted thrusters on the
 wings which can apply the thrust forces \(F_1\) and \(F_2\)
@@ -459,6 +465,9 @@ $ \dot{z}_1 = \ddot{z}_1 = \dot{z}_2 = \ddot{z_2} = \dot{\theta} = \ddot{\theta}
 For the horizontal position applies \(\theta = 0\). These demands
 yield the boundary conditions for the inputs.
 $ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $
+
+\subsubsection{Source Code}
+\label{guide/examples/aircraft:source-code}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{c}{\PYGZsh{} vertical take\PYGZhy{}off aircraft}
 
@@ -525,7 +534,7 @@ $ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $
 
 
 \subsection{Underactuated Manipulator}
-\label{guide/examples/uact_manipulator::doc}\label{guide/examples/uact_manipulator:underactuated-manipulator}
+\label{guide/examples/uact_manipulator:ex-unact-mani}\label{guide/examples/uact_manipulator::doc}\label{guide/examples/uact_manipulator:underactuated-manipulator}
 In this section, the model of an underactuated manipulator is treated.
 The system consists of two bars with the mass \(M_1\) and
 \(M_2\) which are connected to each other via the joint \(G_2\).
@@ -567,6 +576,9 @@ between two equilibrium positions within an operating time of
 The trajectory of the inputs should be without cracks in the transition
 to the equilibrium positions (\(\tilde{u}(0) = \tilde{u}(T) = 0\)).
 
+
+\subsubsection{Source Code}
+\label{guide/examples/uact_manipulator:source-code}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{c}{\PYGZsh{} underactuated manipulator}
 
@@ -734,8 +746,10 @@ The degree \(\nu\) of the boundary conditions depends on the structure of the di
 equation system. With these conditions and those above one obtains the following equation system
 (\(\nu = 2\)).
 \setcounter{MaxMatrixCols}{20}
+\setlength{\arraycolsep}{3pt}
 \newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
 \begin{equation*}
+\textstyle
 \underbrace{\begin{bmatrix}
       0 & 0   & 0  & 1 &  h^3  & -h^2   &  h & -1 \\
       0 & 0   & 1  & 0 & -3h^2 &  2h    & -1 &  0  &&&& \bigzero \\
@@ -778,19 +792,36 @@ remain as the free parameters of the spline function.
 
 \subsubsection{Use of the system structure}
 \label{guide/background:system-structure}\label{guide/background:use-of-the-system-structure}
-...
+In physical models often occur differential equations of the form
+\begin{equation*}
+    \dot{x}_i = x_{i+1}
+\end{equation*}
+For these equations, it is not necessary to determine a solution through collocation. Without severe impairment of the solution method,
+it is sufficient to define a candidate function for \(x_i\) and to win that of \(x_{i+1}\) by differentiation.
+\begin{equation*}
+   P_{i+1}(t) = \frac{d}{d t}P_i(t)
+\end{equation*}
+Then in addition to the boundary conditions of \(P_i(t)\) applies
+\begin{equation*}
+   \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
+\end{equation*}
+Similar simplifications can be made if relations of the form \(\dot{x}_i = u_j\) arise.
 
 
 \subsection{Levenberg-Marquardt Method}
 \label{guide/background:levenberg-marquardt}\label{guide/background:levenberg-marquardt-method}
 The Levenberg-Marquardt method can be used to solve nonlinear least squares problems. It is an extension of the Gauss-Newton method and
 solves the following minimization problem.
-$\| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|_2^2 \rightarrow \text{min!}$
+\begin{equation*}
+   \| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|_2^2 \rightarrow \text{min!}
+\end{equation*}
 The real number \(\mu\) is a parameter that is used for the attenuation of the step size \((x_{k+1} - x_k)\) and is free to choose.
 Thus, the generation of excessive correction is prevented, as is often the case with the Gauss-Newton method and leads to a possible
 non-achievement of the local minimum. With a vanishing attenuation, \(\mu = 0\) the Gauss-Newton method represents a special case
 of the Levenberg-Marquardt method. The iteration can be specified in the following form.
-$ x_{k+1} = x_k - (F'(x_k)^T F'(x_k) + \mu^2 I)^{-1} F'(x_k) F(x_k) $
+\begin{equation*}
+   x_{k+1} = x_k - (F'(x_k)^T F'(x_k) + \mu^2 I)^{-1} F'(x_k) F(x_k)
+\end{equation*}
 The convergence can now be influenced by means of the parameter \(\mu\). Disadvantage is that in order to ensure the convergence,
 \(\mu\) must be chosen large enough, at the same time, this also leads however to a very small correction. Thus, the Levenberg-Marquardt
 method has a lower order of convergence than the Gauss-Newton method but approaches the desired solution at each step.
@@ -870,6 +901,13 @@ system.
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory}\pysiglinewithargsret{\strong{class }\code{pytrajectory.trajectory.}\bfcode{Trajectory}}{\emph{ff}, \emph{a=0.0}, \emph{b=1.0}, \emph{xa=None}, \emph{xb=None}, \emph{g=None}, \emph{sx=5}, \emph{su=5}, \emph{kx=2}, \emph{delta=2}, \emph{maxIt=10}, \emph{eps=0.01}, \emph{tol=1e-05}, \emph{algo='leven'}, \emph{use\_chains=True}}{}
 Base class of the PyTrajectory project.
+
+Trajectory manages everything from analysing the given system over initialising the spline
+functions, setting up and solving the collocation equation system up to the simulation of the
+resulting initial value problem.
+
+After the iteration has finished, it provides access to callable functions for the system and
+input variables as well as some capabilities for visualising the systems dynamic.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -959,7 +997,11 @@ Builds the collocation equation system.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.checkAccuracy}\pysiglinewithargsret{\bfcode{checkAccuracy}}{}{}
-Checks whether desired accuracy for the boundary values was reached.
+Checks whether the desired accuracy for the boundary values was reached.
+
+It calculates the difference between the solution of the simulation
+and the given boundary values at the right border and compares its maximum against the
+tolerance set by self.eps
 
 \end{fulllineitems}
 
@@ -967,6 +1009,11 @@ Checks whether desired accuracy for the boundary values was reached.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.clear}\pysiglinewithargsret{\bfcode{clear}}{}{}
+This method is intended to delete some attributes of the object that are no longer
+neccessary after the iteration has finished.
+
+TODO: implement this ;-P
+
 \end{fulllineitems}
 
 \index{colltype (pytrajectory.trajectory.Trajectory attribute)}
@@ -985,7 +1032,7 @@ or the socalled Chebychev nodes (\emph{colltype = `chebychev'})
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.dx}\pysiglinewithargsret{\bfcode{dx}}{\emph{t}}{}
-This function returns the left hand sites state at a given (time-) point \code{t}.
+Returns the state of the 1st derivatives of the system variables at a \code{t}.
 
 \end{fulllineitems}
 
@@ -1023,7 +1070,13 @@ This method is used to run one iteration step.
 
 First, new splines are initialised for the variables that are the upper end of an
 integrator chain.
-TODO: ...
+
+Then, a start value for the solver is determined and the equation system is build.
+
+Next, the equation system is solved and the resulting numerical values for the free
+parameters are written back.
+
+As a last, the initial value problem is simulated.
 
 \end{fulllineitems}
 
@@ -1033,7 +1086,8 @@ TODO: ...
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.plot}\pysiglinewithargsret{\bfcode{plot}}{}{}
 Plot the calculated trajectories and error functions.
 
-This method just calls {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.plot]{\code{plot()}}} function from \code{utilities}
+This method calculates the error functions and then calls
+the \code{utilities.plot()} function.
 
 \end{fulllineitems}
 
@@ -1049,7 +1103,7 @@ Save system data, callable solution functions and simulation results.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.setCoeff}\pysiglinewithargsret{\bfcode{setCoeff}}{}{}
-Set found numerical values for the independent parameters od each spline.
+Set found numerical values for the independent parameters of each spline.
 
 This method is used to get the actual splines by using the numerical
 solutions to set up the coefficients of the polynomial spline parts of
@@ -1061,7 +1115,7 @@ every created spline.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.setParam}\pysiglinewithargsret{\bfcode{setParam}}{\emph{param='`}, \emph{val=None}}{}
-Method to assign value \code{val{}`to method parameter :attr:{}`param}.
+Method to assign value \code{val} to method parameter \code{param}.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -1076,18 +1130,18 @@ Method to assign value \code{val{}`to method parameter :attr:{}`param}.
 
 \end{fulllineitems}
 
-\index{simulate() (pytrajectory.trajectory.Trajectory method)}
+\index{simulateIVP() (pytrajectory.trajectory.Trajectory method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.simulate}\pysiglinewithargsret{\bfcode{simulate}}{}{}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.simulateIVP}\pysiglinewithargsret{\bfcode{simulateIVP}}{}{}
 This method is used to solve the initial value problem.
 
 \end{fulllineitems}
 
-\index{solve() (pytrajectory.trajectory.Trajectory method)}
+\index{solveEQS() (pytrajectory.trajectory.Trajectory method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.solve}\pysiglinewithargsret{\bfcode{solve}}{}{}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.solveEQS}\pysiglinewithargsret{\bfcode{solveEQS}}{}{}
 This method is used to solve the collocation equation system.
 
 \end{fulllineitems}
@@ -1098,12 +1152,14 @@ This method is used to solve the collocation equation system.
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.startIteration}\pysiglinewithargsret{\bfcode{startIteration}}{}{}
 This is the main loop.
 
-At first the equations that have to be solved by collocation will be determined, according
-to the integrator chains.
+At first the equations that have to be solved by collocation will be determined according to
+the integrator chains.
+
 Next, one step of the iteration is done by calling {\hyperref[pytrajectory:pytrajectory.trajectory.Trajectory.iterate]{\code{iterate()}}}.
-After that the accuracy of the found solution is checked.
-If it is within the tolerance range the iteration will stop.
-Else, the number of spline parts is raised and another iteration step starts.
+
+After that, the accuracy of the found solution is checked. If it is within the tolerance
+range the iteration will stop. Else, the number of spline parts is raised and another
+iteration step starts.
 
 \end{fulllineitems}
 
@@ -1111,7 +1167,7 @@ Else, the number of spline parts is raised and another iteration step starts.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.u}\pysiglinewithargsret{\bfcode{u}}{\emph{t}}{}
-This function returns the inputs state at a given (time-) point \code{t}.
+Returns the state of the inputs at a given (time-) point \code{t}.
 
 \end{fulllineitems}
 
@@ -1119,7 +1175,7 @@ This function returns the inputs state at a given (time-) point \code{t}.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.x}\pysiglinewithargsret{\bfcode{x}}{\emph{t}}{}
-This function returns the system state at a given (time-) point \code{t}.
+Returns the system state at a given (time-) point \code{t}.
 
 \end{fulllineitems}
 
@@ -1133,7 +1189,13 @@ This function returns the system state at a given (time-) point \code{t}.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline}\pysiglinewithargsret{\strong{class }\code{pytrajectory.spline.}\bfcode{CubicSpline}}{\emph{a=0.0}, \emph{b=1.0}, \emph{n=10}, \emph{tag='`}, \emph{bc=None}, \emph{bcd=None}, \emph{bcdd=None}, \emph{steady=True}}{}
-This class provides an object that represents a cubic spline ...
+This class represents a cubic spline.
+
+It simultaneously provides access to the spline function itself as well as to its derivatives
+up to the 3rd order. Furthermore it has its own method to ensure the steadiness and smoothness
+conditions of its polynomial parts in the joining points.
+
+For more information see: {\hyperref[guide/background:candidate-functions]{\emph{Candidate Functions}}}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -1167,7 +1229,7 @@ This class provides an object that represents a cubic spline ...
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.dddf}\pysiglinewithargsret{\bfcode{dddf}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.evalf]{\code{evalf()}}} to evaluate the splines 3rd derivative.
+This is just a wrapper to evaluate the splines 3rd derivative.
 
 \end{fulllineitems}
 
@@ -1175,7 +1237,7 @@ This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpli
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.ddf}\pysiglinewithargsret{\bfcode{ddf}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.evalf]{\code{evalf()}}} to evaluate the splines 2nd derivative.
+This is just a wrapper to evaluate the splines 2nd derivative.
 
 \end{fulllineitems}
 
@@ -1183,7 +1245,7 @@ This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpli
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.df}\pysiglinewithargsret{\bfcode{df}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.evalf]{\code{evalf()}}} to evaluate the splines 1st derivative.
+This is just a wrapper to evaluate the splines 1st derivative.
 
 \end{fulllineitems}
 
@@ -1210,7 +1272,7 @@ Returns the value of the splines \code{d}-th derivative at \code{x}.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.f}\pysiglinewithargsret{\bfcode{f}}{\emph{x}}{}
-This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpline.evalf]{\code{evalf()}}} to evaluate the spline itself.
+This is just a wrapper to evaluate the spline itself.
 
 \end{fulllineitems}
 
@@ -1220,6 +1282,8 @@ This is just a wrapper for {\hyperref[pytrajectory:pytrajectory.spline.CubicSpli
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.makesteady}\pysiglinewithargsret{\bfcode{makesteady}}{}{}
 This method sets up and solves equations that satisfy boundary conditions and
 ensure steadiness and smoothness conditions of the spline in every joining point.
+
+Please see the documentation for more details: {\hyperref[guide/background:candidate-functions]{\emph{Candidate Functions}}}
 
 \end{fulllineitems}
 
@@ -1241,7 +1305,7 @@ and adding the vector.
 \end{itemize}
 
 \item[{Returns}] \leavevmode
-Matrix and vector that represent how the splines coefficients depend on the free parameters.
+Vectors that represent how the spline coefficients depend on the free parameters.
 
 \item[{Return type}] \leavevmode
 tuple
@@ -1255,6 +1319,8 @@ tuple
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.spline.CubicSpline.set_coeffs}\pysiglinewithargsret{\bfcode{set\_coeffs}}{\emph{c\_sol}}{}
 This function is used to set up numerical values for the spline coefficients.
+
+It replaces the symbolic coefficients of the polynomial parts with the calculated values.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{c\_sol} (\emph{numpy.ndarray}) -- Array with numerical values for the free spline coefficients
@@ -1320,7 +1386,7 @@ This class provides solver for the collocation equation system.
 This method is an implementation of the Levenberg-Marquardt-Method
 to solve nonlinear least squares problems.
 
-TODO: ref zu docu
+For more information see: {\hyperref[guide/background:levenberg-marquardt]{\emph{Levenberg-Marquardt Method}}}
 
 \end{fulllineitems}
 
@@ -1335,7 +1401,7 @@ TODO: ref zu docu
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.solver.Solver.solve}\pysiglinewithargsret{\bfcode{solve}}{}{}
 This is just a wrapper to call the chosen algorithm for solving the
-equation system
+collocation equation system.
 
 \end{fulllineitems}
 
@@ -1464,10 +1530,9 @@ Provides animation capabilities.
 \phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain}\pysiglinewithargsret{\strong{class }\code{pytrajectory.utilities.}\bfcode{IntegChain}}{\emph{lst}}{}
 This class provides a representation of a integrator chain consisting of sympy symbols.
 
-For the elements \((x_i)_{i=1,...,n}\) the following relation applies:
-\begin{gather}
-\begin{split}\dot{x}_i = x_{i+1} \quad i = 1,...,n-1\end{split}\notag
-\end{gather}\begin{quote}\begin{description}
+For the elements \((x_i)_{i=1,...,n}\) the relation
+\(\dot{x}_i = x_{i+1}\) applies:
+\begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{lst} (\emph{list}) -- Ordered list of elements for the integrator chain
 
@@ -1619,7 +1684,7 @@ variable and error function and plots the solution of the simulation.
 \index{set\_file() (in module pytrajectory.log)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname='/usr/bin/sphinx-build2\_140423-104958.log'}, \emph{suppress=False}}{}
+\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname='/usr/bin/sphinx-build2\_140424-182143.log'}, \emph{suppress=False}}{}
 \end{fulllineitems}
 
 \index{warn() (in module pytrajectory.log)}

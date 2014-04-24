@@ -144,8 +144,10 @@ equation system. With these conditions and those above one obtains the following
    :nowrap:
    
    \setcounter{MaxMatrixCols}{20}
+   \setlength{\arraycolsep}{3pt}
    \newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
    \begin{equation*}
+   \textstyle
    \underbrace{\begin{bmatrix}
          0 & 0   & 0  & 1 &  h^3  & -h^2   &  h & -1 \\
          0 & 0   & 1  & 0 & -3h^2 &  2h    & -1 &  0  &&&& \bigzero \\
@@ -197,7 +199,36 @@ remain as the free parameters of the spline function.
 Use of the system structure
 +++++++++++++++++++++++++++
 
-...
+
+In physical models often occur differential equations of the form
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+       \dot{x}_i = x_{i+1}
+   \end{equation*}
+
+For these equations, it is not necessary to determine a solution through collocation. Without severe impairment of the solution method, 
+it is sufficient to define a candidate function for :math:`x_i` and to win that of :math:`x_{i+1}` by differentiation.
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      P_{i+1}(t) = \frac{d}{d t}P_i(t)
+   \end{equation*}
+
+Then in addition to the boundary conditions of :math:`P_i(t)` applies
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
+   \end{equation*}
+
+Similar simplifications can be made if relations of the form :math:`\dot{x}_i = u_j` arise.
 
 
 .. _levenberg_marquardt:

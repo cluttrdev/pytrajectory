@@ -86,7 +86,13 @@
 </div>
 <div class="viewcode-block" id="CubicSpline"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline">[docs]</a><span class="k">class</span> <span class="nc">CubicSpline</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    This class provides an object that represents a cubic spline ...</span>
+<span class="sd">    This class represents a cubic spline.</span>
+<span class="sd">    </span>
+<span class="sd">    It simultaneously provides access to the spline function itself as well as to its derivatives</span>
+<span class="sd">    up to the 3rd order. Furthermore it has its own method to ensure the steadiness and smoothness </span>
+<span class="sd">    conditions of its polynomial parts in the joining points.</span>
+<span class="sd">    </span>
+<span class="sd">    For more information see: :ref:`candidate_functions`</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -170,7 +176,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        </span>
 <span class="sd">        tuple</span>
-<span class="sd">            Matrix and vector that represent how the splines coefficients depend on the free parameters.</span>
+<span class="sd">            Vectors that represent how the spline coefficients depend on the free parameters.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="c"># Get the spline part where x is in</span>
@@ -249,6 +255,8 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method sets up and solves equations that satisfy boundary conditions and</span>
 <span class="sd">        ensure steadiness and smoothness conditions of the spline in every joining point.</span>
+<span class="sd">        </span>
+<span class="sd">        Please see the documentation for more details: :ref:`candidate_functions`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;makesteady: &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
@@ -388,6 +396,8 @@
 <div class="viewcode-block" id="CubicSpline.set_coeffs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.CubicSpline.set_coeffs">[docs]</a>    <span class="k">def</span> <span class="nf">set_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_sol</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function is used to set up numerical values for the spline coefficients.</span>
+<span class="sd">        </span>
+<span class="sd">        It replaces the symbolic coefficients of the polynomial parts with the calculated values.</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>

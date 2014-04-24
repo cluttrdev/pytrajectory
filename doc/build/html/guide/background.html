@@ -165,9 +165,11 @@ the differential equation system.</p>
 equation system. With these conditions and those above one obtains the following equation system
 (<img class="math" src="../_images/math/7c720ab76a0a457fa572b3640728970adf26bd2c.png" alt="\nu = 2"/>).</p>
 <div class="math">
-<p><img src="../_images/math/367247c12dc88c25972d675e2b7ec09210aa2f96.png" alt="\setcounter{MaxMatrixCols}{20}
+<p><img src="../_images/math/0fb1827b6b6c14cf6598bc2b9aaa7d4e369041f8.png" alt="\setcounter{MaxMatrixCols}{20}
+\setlength{\arraycolsep}{3pt}
 \newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
 \begin{equation*}
+\textstyle
 \underbrace{\begin{bmatrix}
       0 &amp; 0   &amp; 0  &amp; 1 &amp;  h^3  &amp; -h^2   &amp;  h &amp; -1 \\
       0 &amp; 0   &amp; 1  &amp; 0 &amp; -3h^2 &amp;  2h    &amp; -1 &amp;  0  &amp;&amp;&amp;&amp; \bigzero \\
@@ -209,7 +211,23 @@ The two dies are the vectors <img class="math" src="../_images/math/701df29c5482
 remain as the free parameters of the spline function.</p>
 <div class="section" id="use-of-the-system-structure">
 <span id="system-structure"></span><h3>Use of the system structure<a class="headerlink" href="#use-of-the-system-structure" title="Permalink to this headline">¶</a></h3>
-<p>...</p>
+<p>In physical models often occur differential equations of the form</p>
+<div class="math">
+<p><img src="../_images/math/a1e3b85e0a10e9505224f51e08c2c348944c1913.png" alt="\begin{equation*}
+    \dot{x}_i = x_{i+1}
+\end{equation*}"/></p>
+</div><p>For these equations, it is not necessary to determine a solution through collocation. Without severe impairment of the solution method,
+it is sufficient to define a candidate function for <img class="math" src="../_images/math/33dfc32d00ebd5c5791c824010a155d9e5630b6f.png" alt="x_i"/> and to win that of <img class="math" src="../_images/math/acba4400cd63be725259cb638863fd2d28051ca4.png" alt="x_{i+1}"/> by differentiation.</p>
+<div class="math">
+<p><img src="../_images/math/6d6222b8b77dbd7c08731fe7ef14b4cc6abdf405.png" alt="\begin{equation*}
+   P_{i+1}(t) = \frac{d}{d t}P_i(t)
+\end{equation*}"/></p>
+</div><p>Then in addition to the boundary conditions of <img class="math" src="../_images/math/d8e03a2081c116dd0cdc1457b82a5acca537b5db.png" alt="P_i(t)"/> applies</p>
+<div class="math">
+<p><img src="../_images/math/596ce70945fb3c90be31c34d06fa02e2381cfacc.png" alt="\begin{equation*}
+   \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
+\end{equation*}"/></p>
+</div><p>Similar simplifications can be made if relations of the form <img class="math" src="../_images/math/497274294b2f28c0865fede0a95d2bca9e94fbe2.png" alt="\dot{x}_i = u_j"/> arise.</p>
 </div>
 </div>
 <div class="section" id="levenberg-marquardt-method">

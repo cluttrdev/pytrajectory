@@ -16,11 +16,8 @@ class IntegChain():
     '''
     This class provides a representation of a integrator chain consisting of sympy symbols.
     
-    For the elements :math:`(x_i)_{i=1,...,n}` the following relation applies:
-    
-    .. math::
-    
-       \dot{x}_i = x_{i+1} \quad i = 1,...,n-1
+    For the elements :math:`(x_i)_{i=1,...,n}` the relation
+    :math:`\dot{x}_i = x_{i+1}` applies:
     
     
     Parameters

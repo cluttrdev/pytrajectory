@@ -37,7 +37,13 @@ def fdiff(func):
 
 class CubicSpline():
     '''
-    This class provides an object that represents a cubic spline ...
+    This class represents a cubic spline.
+    
+    It simultaneously provides access to the spline function itself as well as to its derivatives
+    up to the 3rd order. Furthermore it has its own method to ensure the steadiness and smoothness 
+    conditions of its polynomial parts in the joining points.
+    
+    For more information see: :ref:`candidate_functions`
     
     
     Parameters
@@ -121,7 +127,7 @@ class CubicSpline():
         -------
         
         tuple
-            Matrix and vector that represent how the splines coefficients depend on the free parameters.
+            Vectors that represent how the spline coefficients depend on the free parameters.
         '''
         
         # Get the spline part where x is in
@@ -200,6 +206,8 @@ class CubicSpline():
         '''
         This method sets up and solves equations that satisfy boundary conditions and
         ensure steadiness and smoothness conditions of the spline in every joining point.
+        
+        Please see the documentation for more details: :ref:`candidate_functions`
         '''
         
         log.info("makesteady: "+self.tag)
@@ -339,6 +347,8 @@ class CubicSpline():
     def set_coeffs(self, c_sol):
         '''
         This function is used to set up numerical values for the spline coefficients.
+        
+        It replaces the symbolic coefficients of the polynomial parts with the calculated values.
         
         
         Parameters
