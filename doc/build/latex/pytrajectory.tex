@@ -14,8 +14,8 @@
 
 
 \title{pytrajectory Documentation}
-\date{April 24, 2014}
-\release{0.3.2}
+\date{April 25, 2014}
+\release{0.3.3}
 \author{Andreas Kunze}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -127,9 +127,21 @@
 
 \section{About PyTrajectory}
 \label{guide/about:about-pytrajectory}\label{guide/about::doc}
-PyTrajectory is being developed at Dresden University of Technology at the Institute for Control Theory.
+PyTrajectory is being developed at Dresden University of Technology at the
+\href{http://www.et.tu-dresden.de/rst/}{Institute for Control Theory}.
+
 Based upon a study work of Oliver Schnabel under the supervision of Carsten Knoll in February 2013
 it has been further developed by Andreas Kunze to increase its numeric performance.
+
+If you face any problems using PyTrajectory, feel free to contact us.
+\begin{itemize}
+\item {} 
+andreas.kunze \textless{}at\textgreater{} mailbox.tu-dresden.de
+
+\item {} 
+carsten.knoll \textless{}at\textgreater{} tu-dresden.de
+
+\end{itemize}
 
 
 \section{Getting Started}
@@ -151,15 +163,6 @@ For a more detailed view please have a look at the {\hyperref[pytrajectory:pytra
 \begin{itemize}
 \item {} 
 {\hyperref[guide/start:dependencies]{Dependencies}}
-
-\item {} 
-{\hyperref[guide/start:windows]{Windows}}
-
-\item {} 
-{\hyperref[guide/start:linux]{Linux}}
-
-\item {} 
-{\hyperref[guide/start:mac-os]{Mac OS}}
 
 \end{itemize}
 
@@ -186,7 +189,9 @@ In general this problem can not be solved analytically. It is therefore
 resorted to the method of collocation in order to obtain a numerical
 approximation.
 
-PyTrajectory allows a flexible implementation of various tasks.
+PyTrajectory allows a flexible implementation of various tasks and enables an easy
+implementation. It suffices to supply a function \(f(x,u)\) that represents the
+vectorfield of a control system and to specify the desired boundary values.
 
 
 \subsection{Installation}
@@ -222,20 +227,19 @@ ipython {[}debugging{]}
 
 \end{itemize}
 
+To install PyTrajectory, simply:
 
-\subsubsection{Windows}
-\label{guide/start:windows}
-... to do
+\begin{Verbatim}[commandchars=\\\{\}]
+pip install pytrajectory
+\end{Verbatim}
 
+or download the tarball from here (insert link!) extract it and run
 
-\subsubsection{Linux}
-\label{guide/start:linux}
-... to do
+\begin{Verbatim}[commandchars=\\\{\}]
+python setup.py install
+\end{Verbatim}
 
-
-\subsubsection{Mac OS}
-\label{guide/start:mac-os}
-... to do
+from within the extracted folder.
 
 
 \subsection{Usage}
@@ -246,6 +250,230 @@ ipython {[}debugging{]}
 \subsection{A First Example}
 \label{guide/start:a-first-example}
 ... to do
+
+
+\section{Background}
+\label{guide/background::doc}\label{guide/background:background}
+This section is intended to give some insights into the mathematical
+background that is the basis of PyTrajectory.
+\setbox0\vbox{
+\begin{minipage}{0.95\linewidth}
+\textbf{Contents}
+
+\medskip
+
+\begin{itemize}
+\item {} 
+{\hyperref[guide/background:collocation-method]{Collocation Method}}
+
+\item {} 
+{\hyperref[guide/background:candidate-functions]{Candidate Functions}}
+\begin{itemize}
+\item {} 
+{\hyperref[guide/background:use-of-the-system-structure]{Use of the system structure}}
+
+\end{itemize}
+
+\item {} 
+{\hyperref[guide/background:levenberg-marquardt-method]{Levenberg-Marquardt Method}}
+\begin{itemize}
+\item {} 
+{\hyperref[guide/background:control-of-the-parameter]{Control of the parameter \(\mu\)}}
+
+\end{itemize}
+
+\end{itemize}
+\end{minipage}}
+\begin{center}\setlength{\fboxsep}{5pt}\shadowbox{\box0}\end{center}
+
+
+\subsection{Collocation Method}
+\label{guide/background:collocation-method}\label{guide/background:id1}
+Given a system of autonomous differential equations
+\begin{gather}
+\begin{split}\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))\end{split}\notag\\\begin{split}\vdots \qquad \vdots\end{split}\notag\\\begin{split}\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))\end{split}\notag
+\end{gather}
+with \(t \in [a, b]\) and \emph{Dirichlet} boundary conditions
+\begin{gather}
+\begin{split}x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n\end{split}\notag
+\end{gather}
+the collocation method to solve the problem basically works as follows.
+
+We choose \(N+1\) collocation points \(t_j,\ j = 0,...,N\) from the interval
+\([a, b]\) where \(t_0 = a,\ t_{N} = b\) and search for functions
+\(P_i:[a,b] \rightarrow \mathbb{R}\) which for all \(j = 0,..,N\) satisfy the
+following conditions:
+\begin{equation}
+   P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+\end{equation}
+
+\begin{equation}
+   \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
+\end{equation}
+Through these demands the exact solution of the differential equation system will be approximated.
+The demands on the boundary values \((1)\) can be sure already by suitable
+construction of the candidate functions. This results in the following system of equations.
+\begin{gather}
+\begin{split}\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0\end{split}\notag
+\end{gather}
+Solving the boundary value problem is thus reduced to the finding of a zero point
+of \(G = (G_1^0 ,..., G_n^N)^T\), where \(c\) is the vector of all independent
+parameters that result from the candidate functions.
+
+
+\subsection{Candidate Functions}
+\label{guide/background:candidate-functions}\label{guide/background:id2}
+PyTrajectory uses cubic spline functions as candidates for the approximation of the
+solution. Splines are piecewise polynomials with a global differentiability.
+The connection points \(\tau_k\) between the polynomial sections are equidistantly
+and are referred to as nodes.
+\begin{gather}
+\begin{split}t_0 = \tau_0 < \tau_1 < ... < \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}\end{split}\notag\\\begin{split}\tau_{k+1} = \tau_k + h \quad k = 0,...,\eta-1\end{split}\notag
+\end{gather}
+The \(\eta\) polynomial sections can be created as follows.
+\begin{gather}
+\begin{split}S_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3}\end{split}\notag\\\begin{split}c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3\end{split}\notag
+\end{gather}
+Then, each spline function is defined by
+\begin{equation*}
+   P_i(t) =
+   \begin{cases}
+      S_1(t) & t_0 \leq t < h \\
+      \vdots & \vdots \\
+      S_k(t) & (k-1)h \leq t < k h \\
+      \vdots & \vdots \\
+      S_\eta(t) & (\eta-1)h \leq t \leq \eta h
+   \end{cases}
+\end{equation*}
+In addition to the steadiness the spline functions should be twice steadily differentiable in
+the nodes \(\tau\). Therefor, three smoothness conditions can be set up in all
+\(\tau_k, k = 1,...,\eta-1\).
+\begin{eqnarray*}
+   S_k(k h) & = & S_{k+1}(k h) \\
+   \frac{d}{d t} S_k(k h) & = & \frac{d}{d t} S_{k+1}(k h) \\
+   \frac{d^2}{d t^2} S_k(k h) & = & \frac{d^2}{d t^2} S_{k+1}(k h)
+\end{eqnarray*}
+In the later equation system these demands result in the block diagonal part of the matrix.
+Furthermore, conditions can be set up at the edges arising from the boundary conditions of
+the differential equation system.
+\begin{equation*}
+   \frac{d^j}{d t^j} S_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
+\end{equation*}
+The degree \(\nu\) of the boundary conditions depends on the structure of the differential
+equation system. With these conditions and those above one obtains the following equation system
+(\(\nu = 2\)).
+\setcounter{MaxMatrixCols}{20}
+\setlength{\arraycolsep}{3pt}
+\newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
+\begin{equation*}
+\textstyle
+\underbrace{\begin{bmatrix}
+      0 & 0   & 0  & 1 &  h^3  & -h^2   &  h & -1 \\
+      0 & 0   & 1  & 0 & -3h^2 &  2h    & -1 &  0  &&&& \bigzero \\
+      0 & 2   & 0  & 0 &   6h  &  -2    &  0 &  0 \\
+        &     &    &   &   0   &   0    &  0 &  1  &  h^3  & -h^2 &  h & -1 \\
+        &  \bigzero   &    &   &   0   &   0    &  1 &  0  & -3h^2 &  2h  & -1 &  0 &&&&&& \bigzero \\
+        &     &    &   &   0   &   2    &  0 &  0  &   6h  &  -2  &  0 &  0 \\
+        &&&&&&&&&&& \ddots \\
+        &     &    &   &       &        &    &     &       &      &    &    & 0 & 0 & 0 & 1 &  h^3  & -h^2 &  h & -1 \\
+        &     &    &   &       &        &  \bigzero  &     &       &      &    &    & 0 & 0 & 1 & 0 & -3h^2 &  2h  & -1 &  0 \\
+        &     &    &   &       &        &    &     &       &      &    &    & 0 & 2 & 0 & 0 &   6h  &  -2  &  0 &  0 \\
+        &     &    &   &       &        &    &     &       &      &    &    &   & \\
+   -h^3 & h^2 & -h & 1 \\
+   3h^2 & -2h &  1 & 0 &&&&&&&& \bigzero \\
+   -6h  &  2  &  0 & 0 \\
+        &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    0 &  0 &  1 \\
+        &     &    &   &       &        &  \bigzero  &     &       &      &    &    &   &   &   &   &   0   &    0 &  1 &  0 \\
+        &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    2 &  0 &  0 \\
+\end{bmatrix}}_{=: \boldsymbol{M}}
+\cdot
+\underbrace{\begin{bmatrix}
+   c_{1,0} \\ c_{1,1} \\ c_{1,2} \\ c_{1,3} \\ c_{2,0} \\ c_{2,1} \\ c_{2,2} \\ c_{2,3} \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ c_{\eta,0} \\ c_{\eta,1} \\ c_{\eta,2} \\ c_{\eta,3}
+\end{bmatrix}}_{=: \boldsymbol{c}}
+ =
+\underbrace{\begin{bmatrix}
+   0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ \vdots  \\ 0 \\ 0 \\ 0 \\ \\ \tilde{\alpha}_0 \\ \tilde{\alpha}_1 \\ \tilde{\alpha}_2 \\ \tilde{\beta}_0 \\ \tilde{\beta}_1 \\ \tilde{\beta}_2
+\end{bmatrix}}_{=: \boldsymbol{r}}
+\end{equation*}
+The matrix \(\boldsymbol{M}\) of dimension \(N_1 \times N_2,\ N_1 < N_2\), where \(N_2 = 4 \eta\) and \(N_1 = 3(\eta - 1) + 2(\nu + 1)\), can be decomposed
+into two subsystems \(\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}\) and \(\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}\).
+The two dies are the vectors \(\boldsymbol{a}\) and \(\boldsymbol{b}\) with the respective coefficients of \(\boldsymbol{c}\).
+\begin{eqnarray*}
+   \boldsymbol{M} \boldsymbol{c} & = & \boldsymbol{r} \\
+   \boldsymbol{A} \boldsymbol{a} + \boldsymbol{B} \boldsymbol{b} & = & \boldsymbol{r} \\
+   \boldsymbol{b} & = & \boldsymbol{B}^{-1} (\boldsymbol{r} - \boldsymbol{A} \boldsymbol{a})
+\end{eqnarray*}
+With this allocation, the system of equations can be solved for \(\boldsymbol{b}\) and the parameters in \(\boldsymbol{a}\)
+remain as the free parameters of the spline function.
+
+
+\subsubsection{Use of the system structure}
+\label{guide/background:system-structure}\label{guide/background:use-of-the-system-structure}
+In physical models often occur differential equations of the form
+\begin{equation*}
+    \dot{x}_i = x_{i+1}
+\end{equation*}
+For these equations, it is not necessary to determine a solution through collocation. Without severe impairment of the solution method,
+it is sufficient to define a candidate function for \(x_i\) and to win that of \(x_{i+1}\) by differentiation.
+\begin{equation*}
+   P_{i+1}(t) = \frac{d}{d t}P_i(t)
+\end{equation*}
+Then in addition to the boundary conditions of \(P_i(t)\) applies
+\begin{equation*}
+   \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
+\end{equation*}
+Similar simplifications can be made if relations of the form \(\dot{x}_i = u_j\) arise.
+
+
+\subsection{Levenberg-Marquardt Method}
+\label{guide/background:levenberg-marquardt}\label{guide/background:levenberg-marquardt-method}
+The Levenberg-Marquardt method can be used to solve nonlinear least squares problems. It is an extension of the Gauss-Newton method and
+solves the following minimization problem.
+\begin{equation*}
+   \| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|_2^2 \rightarrow \text{min!}
+\end{equation*}
+The real number \(\mu\) is a parameter that is used for the attenuation of the step size \((x_{k+1} - x_k)\) and is free to choose.
+Thus, the generation of excessive correction is prevented, as is often the case with the Gauss-Newton method and leads to a possible
+non-achievement of the local minimum. With a vanishing attenuation, \(\mu = 0\) the Gauss-Newton method represents a special case
+of the Levenberg-Marquardt method. The iteration can be specified in the following form.
+\begin{equation*}
+   x_{k+1} = x_k - (F'(x_k)^T F'(x_k) + \mu^2 I)^{-1} F'(x_k) F(x_k)
+\end{equation*}
+The convergence can now be influenced by means of the parameter \(\mu\). Disadvantage is that in order to ensure the convergence,
+\(\mu\) must be chosen large enough, at the same time, this also leads however to a very small correction. Thus, the Levenberg-Marquardt
+method has a lower order of convergence than the Gauss-Newton method but approaches the desired solution at each step.
+
+
+\subsubsection{Control of the parameter \(\mu\)}
+\label{guide/background:control-of-the-parameter}
+The feature after which the parameter is chosen, is the change of the actual residual
+\begin{eqnarray*}
+   R(x_k, s_k) & := & \| F(x_k) \|_2^2 - \| F(x_k + s_k) \|_2^2 \\
+   s_k         & := & x_{k+1} - x_k
+\end{eqnarray*}
+and the change of the residual of the linearized approximation.
+\begin{equation*}
+   \tilde{R}(x_k, s_k) := \| F(x_k) \|_2^2 - \| F(x_k) + F'(x_k)x_k \|_2^2
+\end{equation*}
+As a control criterion, the following quotient is introduced.
+\begin{equation*}
+   \rho = \frac{R(x_k, s_k)}{\tilde{R}(x_k, s_k)}
+\end{equation*}
+It follows that \(R(x_k,s_k) \geq 0\) and for a meaningful correction \(\tilde{R}(x_k, s_k) \geq 0\) must also hold.
+Thus, \(\rho\) is also positive and \(\rho \rightarrow 1\) for \(\mu \rightarrow \infty\).
+Therefor \(\rho\) should lie between 0 and 1. To control \(\mu\) two new limits \(b_0\) and \(b_1\) are introduced
+with \(0 < b_0 < b_1 < 1\) and for \(b_0 = 0.2, b_1 = 0.8\) we use the following criteria.
+\begin{itemize}
+\item {} 
+\(\rho \leq b_0 \qquad\quad :\) \(\mu\) is doubled and \(s_k\) is recalculated
+
+\item {} 
+\(b_0 < \rho < b_1 \quad :\) in the next step \(\mu\) is maintained and \(s_k\) is used
+
+\item {} 
+\(\rho \geq b_1 \qquad\quad :\) \(s_k\) is accepted and \(\mu\) is halved during the next iteration
+
+\end{itemize}
 
 
 \section{Examples}
@@ -635,228 +863,117 @@ to the equilibrium positions (\(\tilde{u}(0) = \tilde{u}(T) = 0\)).
 \end{Verbatim}
 
 
-\section{Background}
-\label{guide/background::doc}\label{guide/background:background}
-This section is intended to give some insights into the mathematical
-background that is the basis of PyTrajectory.
-\setbox0\vbox{
-\begin{minipage}{0.95\linewidth}
-\textbf{Contents}
+\subsection{Acrobot}
+\label{guide/examples/acrobot:ex-acrobot}\label{guide/examples/acrobot::doc}\label{guide/examples/acrobot:acrobot}
+One further interesting example is that of the acrobot. The model can be
+regarded as a simplified gymnast hanging on a horizontal bar with both hands.
+The movements of the entire system is to be controlled only by movement of the hip.
+The body of the gymnast is represented by two rods which are jointed in the joint
+\(G_2\). The first rod is movably connected at joint \(G_1\) with the inertial
+system, which corresponds to the encompassing of the stretching rod with the hands.
 
-\medskip
+For the model, two equal-length rods with a length \(l_1 = l_2 = l\) are assumed
+with a homogeneous distribution of mass \(m_1 = m_2 = m\) over the entire rod length.
+This does not correspond to the proportions of a man, also no restrictions were placed
+on the mobility of the hip joint.
 
-\begin{itemize}
-\item {} 
-{\hyperref[guide/background:collocation-method]{Collocation Method}}
+The following figure shows the schematic representation of the model.
 
-\item {} 
-{\hyperref[guide/background:candidate-functions]{Candidate Functions}}
-\begin{itemize}
-\item {} 
-{\hyperref[guide/background:use-of-the-system-structure]{Use of the system structure}}
+\includegraphics{acrobot.png}
 
-\end{itemize}
-
-\item {} 
-{\hyperref[guide/background:levenberg-marquardt-method]{Levenberg-Marquardt Method}}
-\begin{itemize}
-\item {} 
-{\hyperref[guide/background:control-of-the-parameter]{Control of the parameter \(\mu\)}}
-
-\end{itemize}
-
-\end{itemize}
-\end{minipage}}
-\begin{center}\setlength{\fboxsep}{5pt}\shadowbox{\box0}\end{center}
-
-
-\subsection{Collocation Method}
-\label{guide/background:collocation-method}\label{guide/background:id1}
-Given a system of autonomous differential equations
-\begin{gather}
-\begin{split}\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))\end{split}\notag\\\begin{split}\vdots \qquad \vdots\end{split}\notag\\\begin{split}\dot{x}_n(t) = f_n(x_1(t),...,x_n(t))\end{split}\notag
-\end{gather}
-with \(t \in [a, b]\) and \emph{Dirichlet} boundary conditions
-\begin{gather}
-\begin{split}x_i(a) = \alpha_i,\quad x_i(b) = \beta_i \qquad i = 1,...,n\end{split}\notag
-\end{gather}
-the collocation method to solve the problem basically works as follows.
-
-We choose \(N+1\) collocation points \(t_j,\ j = 0,...,N\) from the interval
-\([a, b]\) where \(t_0 = a,\ t_{N} = b\) and search for functions
-\(P_i:[a,b] \rightarrow \mathbb{R}\) which for all \(j = 0,..,N\) satisfy the
-following conditions:
-\begin{equation}
-   P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
-\end{equation}
-
-\begin{equation}
-   \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
-\end{equation}
-Through these demands the exact solution of the differential equation system will be approximated.
-The demands on the boundary values \((1)\) can be sure already by suitable
-construction of the candidate functions. This results in the following system of equations.
-\begin{gather}
-\begin{split}\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0\end{split}\notag\\\begin{split}\qquad \vdots\end{split}\notag\\\begin{split}\frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0\end{split}\notag
-\end{gather}
-Solving the boundary value problem is thus reduced to the finding of a zero point
-of \(G = (G_1^0 ,..., G_n^N)^T\), where \(c\) is the vector of all independent
-parameters that result from the candidate functions.
-
-
-\subsection{Candidate Functions}
-\label{guide/background:candidate-functions}\label{guide/background:id2}
-PyTrajectory uses cubic spline functions as candidates for the approximation of the
-solution. Splines are piecewise polynomials with a global differentiability.
-The connection points \(\tau_k\) between the polynomial sections are equidistantly
-and are referred to as nodes.
-\begin{gather}
-\begin{split}t_0 = \tau_0 < \tau_1 < ... < \tau_{\eta} = t_N \qquad h = \frac{t_N - t_0}{\eta}\end{split}\notag\\\begin{split}\tau_{k+1} = \tau_k + h \quad k = 0,...,\eta-1\end{split}\notag
-\end{gather}
-The \(\eta\) polynomial sections can be created as follows.
-\begin{gather}
-\begin{split}S_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3}\end{split}\notag\\\begin{split}c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3\end{split}\notag
-\end{gather}
-Then, each spline function is defined by
-\begin{equation*}
-   P_i(t) =
-   \begin{cases}
-      S_1(t) & t_0 \leq t < h \\
-      \vdots & \vdots \\
-      S_k(t) & (k-1)h \leq t < k h \\
-      \vdots & \vdots \\
-      S_\eta(t) & (\eta-1)h \leq t \leq \eta h
-   \end{cases}
-\end{equation*}
-In addition to the steadiness the spline functions should be twice steadily differentiable in
-the nodes \(\tau\). Therefor, three smoothness conditions can be set up in all
-\(\tau_k, k = 1,...,\eta-1\).
+Using the previously assumed model parameters and the write abbreviations
 \begin{eqnarray*}
-   S_k(k h) & = & S_{k+1}(k h) \\
-   \frac{d}{d t} S_k(k h) & = & \frac{d}{d t} S_{k+1}(k h) \\
-   \frac{d^2}{d t^2} S_k(k h) & = & \frac{d^2}{d t^2} S_{k+1}(k h)
-\end{eqnarray*}
-In the later equation system these demands result in the block diagonal part of the matrix.
-Furthermore, conditions can be set up at the edges arising from the boundary conditions of
-the differential equation system.
-\begin{equation*}
-   \frac{d^j}{d t^j} S_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
-\end{equation*}
-The degree \(\nu\) of the boundary conditions depends on the structure of the differential
-equation system. With these conditions and those above one obtains the following equation system
-(\(\nu = 2\)).
-\setcounter{MaxMatrixCols}{20}
-\setlength{\arraycolsep}{3pt}
-\newcommand\bigzero{\makebox(0,0){\text{\huge0}}}
-\begin{equation*}
-\textstyle
-\underbrace{\begin{bmatrix}
-      0 & 0   & 0  & 1 &  h^3  & -h^2   &  h & -1 \\
-      0 & 0   & 1  & 0 & -3h^2 &  2h    & -1 &  0  &&&& \bigzero \\
-      0 & 2   & 0  & 0 &   6h  &  -2    &  0 &  0 \\
-        &     &    &   &   0   &   0    &  0 &  1  &  h^3  & -h^2 &  h & -1 \\
-        &  \bigzero   &    &   &   0   &   0    &  1 &  0  & -3h^2 &  2h  & -1 &  0 &&&&&& \bigzero \\
-        &     &    &   &   0   &   2    &  0 &  0  &   6h  &  -2  &  0 &  0 \\
-        &&&&&&&&&&& \ddots \\
-        &     &    &   &       &        &    &     &       &      &    &    & 0 & 0 & 0 & 1 &  h^3  & -h^2 &  h & -1 \\
-        &     &    &   &       &        &  \bigzero  &     &       &      &    &    & 0 & 0 & 1 & 0 & -3h^2 &  2h  & -1 &  0 \\
-        &     &    &   &       &        &    &     &       &      &    &    & 0 & 2 & 0 & 0 &   6h  &  -2  &  0 &  0 \\
-        &     &    &   &       &        &    &     &       &      &    &    &   & \\
-   -h^3 & h^2 & -h & 1 \\
-   3h^2 & -2h &  1 & 0 &&&&&&&& \bigzero \\
-   -6h  &  2  &  0 & 0 \\
-        &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    0 &  0 &  1 \\
-        &     &    &   &       &        &  \bigzero  &     &       &      &    &    &   &   &   &   &   0   &    0 &  1 &  0 \\
-        &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    2 &  0 &  0 \\
-\end{bmatrix}}_{=: \boldsymbol{M}}
-\cdot
-\underbrace{\begin{bmatrix}
-   c_{1,0} \\ c_{1,1} \\ c_{1,2} \\ c_{1,3} \\ c_{2,0} \\ c_{2,1} \\ c_{2,2} \\ c_{2,3} \\ \\ \vdots \\ \\ \vdots \\ \\ \vdots \\ \\ c_{\eta,0} \\ c_{\eta,1} \\ c_{\eta,2} \\ c_{\eta,3}
-\end{bmatrix}}_{=: \boldsymbol{c}}
- =
-\underbrace{\begin{bmatrix}
-   0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ \vdots  \\ 0 \\ 0 \\ 0 \\ \\ \tilde{\alpha}_0 \\ \tilde{\alpha}_1 \\ \tilde{\alpha}_2 \\ \tilde{\beta}_0 \\ \tilde{\beta}_1 \\ \tilde{\beta}_2
-\end{bmatrix}}_{=: \boldsymbol{r}}
-\end{equation*}
-The matrix \(\boldsymbol{M}\) of dimension \(N_1 \times N_2,\ N_1 < N_2\), where \(N_2 = 4 \eta\) and \(N_1 = 3(\eta - 1) + 2(\nu + 1)\), can be decomposed
-into two subsystems \(\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}\) and \(\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}\).
-The two dies are the vectors \(\boldsymbol{a}\) and \(\boldsymbol{b}\) with the respective coefficients of \(\boldsymbol{c}\).
+   I      & = & \frac{1}{3}m l^2 \\
+   d_{11} & = & \frac{m l^2}{4} + m(l^2 + \frac{l^2}{4} + l^2 \cos(\theta_2)) + 2I \\
+   h_1    & = & - \frac{m l^2}{2} \sin(\theta_2) (\dot{\theta}_2 (\dot{\theta}_2 + 2\dot{\theta}_1)) \\
+   d_{12} & = & m (\frac{l^2}{4} + \frac{l^2}{2} \cos(\theta_1)) + I \\
+   \varphi_1 & = & \frac{3}{2}m l g \cos(\theta_1) + \frac{1}{2}m l g \cos(\theta_1 + \theta_2)
+ \end{eqnarray*}
+as well as the state vector \(x = [\theta_2, \dot{\theta}_2, \theta_1, \dot{\theta}_1]\) one obtains
+the following state representation with the virtual input \(u = \ddot{\theta}_2\)
 \begin{eqnarray*}
-   \boldsymbol{M} \boldsymbol{c} & = & \boldsymbol{r} \\
-   \boldsymbol{A} \boldsymbol{a} + \boldsymbol{B} \boldsymbol{b} & = & \boldsymbol{r} \\
-   \boldsymbol{b} & = & \boldsymbol{B}^{-1} (\boldsymbol{r} - \boldsymbol{A} \boldsymbol{a})
+   \dot{x}_1 & = & x_2 \\
+   \dot{x}_2 & = & u \\
+   \dot{x}_3 & = & x_4 \\
+   \dot{x}_4 & = & -d_{11}^{-1} (h_1 + \varphi_1 + d_{12}u)
 \end{eqnarray*}
-With this allocation, the system of equations can be solved for \(\boldsymbol{b}\) and the parameters in \(\boldsymbol{a}\)
-remain as the free parameters of the spline function.
+Now, the trajectory of the manipulated variable for an oscillation of the gymnast should be determined.
+The starting point of the exercise are the two downward hanging rods. These are to be transferred into another
+rest position in which the two bars show vertically upward within an operating time of \(T = 2 [s]\).
+At the beginning and end of the process, the input variable is to merge continuously into the rest
+position \(u(0) = u(T) = 0\).
 
-
-\subsubsection{Use of the system structure}
-\label{guide/background:system-structure}\label{guide/background:use-of-the-system-structure}
-In physical models often occur differential equations of the form
+The initial and final states thus are
 \begin{equation*}
-    \dot{x}_i = x_{i+1}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \frac{3}{2} \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ \frac{1}{2} \pi \\ 0 \end{bmatrix}
 \end{equation*}
-For these equations, it is not necessary to determine a solution through collocation. Without severe impairment of the solution method,
-it is sufficient to define a candidate function for \(x_i\) and to win that of \(x_{i+1}\) by differentiation.
-\begin{equation*}
-   P_{i+1}(t) = \frac{d}{d t}P_i(t)
-\end{equation*}
-Then in addition to the boundary conditions of \(P_i(t)\) applies
-\begin{equation*}
-   \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
-\end{equation*}
-Similar simplifications can be made if relations of the form \(\dot{x}_i = u_j\) arise.
+
+\subsubsection{Source Code}
+\label{guide/examples/acrobot:source-code}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} acrobot}
+
+\PYG{c}{\PYGZsh{} import trajectory class and necessary dependencies}
+\PYG{k+kn}{from} \PYG{n+nn}{pytrajectory.trajectory} \PYG{k+kn}{import} \PYG{n}{Trajectory}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k+kn}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{cos}\PYG{p}{,} \PYG{n}{sin}
+\PYG{k+kn}{from} \PYG{n+nn}{numpy} \PYG{k+kn}{import} \PYG{n}{pi}
+
+\PYG{c}{\PYGZsh{} define the function that returns the vectorfield}
+\PYG{k}{def} \PYG{n+nf}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{u}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{x1}\PYG{p}{,} \PYG{n}{x2}\PYG{p}{,} \PYG{n}{x3}\PYG{p}{,} \PYG{n}{x4} \PYG{o}{=} \PYG{n}{x}
+    \PYG{n}{u1}\PYG{p}{,} \PYG{o}{=} \PYG{n}{u}
+    
+    \PYG{n}{m} \PYG{o}{=} \PYG{l+m+mf}{1.0}             \PYG{c}{\PYGZsh{} masses of the rods [m1 = m2 = m]}
+    \PYG{n}{l} \PYG{o}{=} \PYG{l+m+mf}{0.5}             \PYG{c}{\PYGZsh{} lengths of the rods [l1 = l2 = l]}
+    
+    \PYG{n}{I} \PYG{o}{=} \PYG{l+m+mi}{1}\PYG{o}{/}\PYG{l+m+mf}{3.0}\PYG{o}{*}\PYG{n}{m}\PYG{o}{*}\PYG{n}{l}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}    \PYG{c}{\PYGZsh{} moments of inertia [I1 = I2 = I]}
+    \PYG{n}{g} \PYG{o}{=} \PYG{l+m+mf}{9.81}            \PYG{c}{\PYGZsh{} gravitational acceleration}
+    
+    \PYG{n}{lc} \PYG{o}{=} \PYG{n}{l}\PYG{o}{/}\PYG{l+m+mf}{2.0}
+    
+    \PYG{n}{d11} \PYG{o}{=} \PYG{n}{m}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{+}\PYG{n}{m}\PYG{o}{*}\PYG{p}{(}\PYG{n}{l}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{+}\PYG{n}{lc}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{+}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{l}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x1}\PYG{p}{)}\PYG{p}{)}\PYG{o}{+}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{I}
+    \PYG{n}{h1} \PYG{o}{=} \PYG{o}{\PYGZhy{}}\PYG{n}{m}\PYG{o}{*}\PYG{n}{l}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{*}\PYG{n}{sin}\PYG{p}{(}\PYG{n}{x1}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x2}\PYG{o}{*}\PYG{p}{(}\PYG{n}{x2}\PYG{o}{+}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{x4}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{d12} \PYG{o}{=} \PYG{n}{m}\PYG{o}{*}\PYG{p}{(}\PYG{n}{lc}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{o}{+}\PYG{n}{l}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x1}\PYG{p}{)}\PYG{p}{)}\PYG{o}{+}\PYG{n}{I}
+    \PYG{n}{phi1} \PYG{o}{=} \PYG{p}{(}\PYG{n}{m}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{+}\PYG{n}{m}\PYG{o}{*}\PYG{n}{l}\PYG{p}{)}\PYG{o}{*}\PYG{n}{g}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x3}\PYG{p}{)}\PYG{o}{+}\PYG{n}{m}\PYG{o}{*}\PYG{n}{lc}\PYG{o}{*}\PYG{n}{g}\PYG{o}{*}\PYG{n}{cos}\PYG{p}{(}\PYG{n}{x1}\PYG{o}{+}\PYG{n}{x3}\PYG{p}{)}
+
+    \PYG{n}{ff} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}	    \PYG{n}{x2}\PYG{p}{,}
+                        \PYG{n}{u1}\PYG{p}{,}
+                        \PYG{n}{x4}\PYG{p}{,}
+                \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{d11}\PYG{o}{*}\PYG{p}{(}\PYG{n}{h1}\PYG{o}{+}\PYG{n}{phi1}\PYG{o}{+}\PYG{n}{d12}\PYG{o}{*}\PYG{n}{u1}\PYG{p}{)}
+                \PYG{p}{]}\PYG{p}{)}
+    
+    \PYG{k}{return} \PYG{n}{ff}
 
 
-\subsection{Levenberg-Marquardt Method}
-\label{guide/background:levenberg-marquardt}\label{guide/background:levenberg-marquardt-method}
-The Levenberg-Marquardt method can be used to solve nonlinear least squares problems. It is an extension of the Gauss-Newton method and
-solves the following minimization problem.
-\begin{equation*}
-   \| F'(x_k)(x_{k+1} - x_k) + F(x_k) \|_2^2 + \mu^2 \|x_{k+1} - x_k \|_2^2 \rightarrow \text{min!}
-\end{equation*}
-The real number \(\mu\) is a parameter that is used for the attenuation of the step size \((x_{k+1} - x_k)\) and is free to choose.
-Thus, the generation of excessive correction is prevented, as is often the case with the Gauss-Newton method and leads to a possible
-non-achievement of the local minimum. With a vanishing attenuation, \(\mu = 0\) the Gauss-Newton method represents a special case
-of the Levenberg-Marquardt method. The iteration can be specified in the following form.
-\begin{equation*}
-   x_{k+1} = x_k - (F'(x_k)^T F'(x_k) + \mu^2 I)^{-1} F'(x_k) F(x_k)
-\end{equation*}
-The convergence can now be influenced by means of the parameter \(\mu\). Disadvantage is that in order to ensure the convergence,
-\(\mu\) must be chosen large enough, at the same time, this also leads however to a very small correction. Thus, the Levenberg-Marquardt
-method has a lower order of convergence than the Gauss-Newton method but approaches the desired solution at each step.
+\PYG{c}{\PYGZsh{} system state boundary values for a = 0.0 [s] and b = 2.0 [s]}
+\PYG{n}{xa} \PYG{o}{=} \PYG{p}{[}  \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mi}{3}\PYG{o}{/}\PYG{l+m+mf}{2.0}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
+\PYG{n}{xb} \PYG{o}{=} \PYG{p}{[}  \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{,}
+        \PYG{l+m+mi}{1}\PYG{o}{/}\PYG{l+m+mf}{2.0}\PYG{o}{*}\PYG{n}{pi}\PYG{p}{,}
+        \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
-\subsubsection{Control of the parameter \(\mu\)}
-\label{guide/background:control-of-the-parameter}
-The feature after which the parameter is chosen, is the change of the actual residual
-\begin{eqnarray*}
-   R(x_k, s_k) & := & \| F(x_k) \|_2^2 - \| F(x_k + s_k) \|_2^2 \\
-   s_k         & := & x_{k+1} - x_k
-\end{eqnarray*}
-and the change of the residual of the linearized approximation.
-\begin{equation*}
-   \tilde{R}(x_k, s_k) := \| F(x_k) \|_2^2 - \| F(x_k) + F'(x_k)x_k \|_2^2
-\end{equation*}
-As a control criterion, the following quotient is introduced.
-\begin{equation*}
-   \rho = \frac{R(x_k, s_k)}{\tilde{R}(x_k, s_k)}
-\end{equation*}
-It follows that \(R(x_k,s_k) \geq 0\) and for a meaningful correction \(\tilde{R}(x_k, s_k) \geq 0\) must also hold.
-Thus, \(\rho\) is also positive and \(\rho \rightarrow 1\) for \(\mu \rightarrow \infty\).
-Therefor \(\rho\) should lie between 0 and 1. To control \(\mu\) two new limits \(b_0\) and \(b_1\) are introduced
-with \(0 < b_0 < b_1 < 1\) and for \(b_0 = 0.2, b_1 = 0.8\) we use the following criteria.
-\begin{itemize}
-\item {} 
-\(\rho \leq b_0 \qquad\quad :\) \(\mu\) is doubled and \(s_k\) is recalculated
+\PYG{c}{\PYGZsh{} boundary values for the inputs}
+\PYG{n}{bvin} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
-\item {} 
-\(b_0 < \rho < b_1 \quad :\) in the next step \(\mu\) is maintained and \(s_k\) is used
+\PYG{c}{\PYGZsh{} create trajectory object}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{bvin}\PYG{p}{)}
 
-\item {} 
-\(\rho \geq b_1 \qquad\quad :\) \(s_k\) is accepted and \(\mu\) is halved during the next iteration
+\PYG{c}{\PYGZsh{} alter some method parameters to increase performance}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{su}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{10}\PYG{p}{)}
 
-\end{itemize}
+\PYG{c}{\PYGZsh{} run iteration}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{startIteration}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} show results}
+\PYG{n}{T}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{p}{)}
+\end{Verbatim}
 
 
 \chapter{PyTrajectory Modules Reference}
@@ -893,7 +1010,7 @@ system.
 \end{itemize}
 \end{minipage}}
 \begin{center}\setlength{\fboxsep}{5pt}\shadowbox{\box0}\end{center}
-\phantomsection\label{pytrajectory:module-pytrajectory}\index{pytrajectory (module)}
+
 
 \section{\texttt{trajectory} Module}
 \label{pytrajectory:module-pytrajectory.trajectory}\label{pytrajectory:trajectory-module}\index{pytrajectory.trajectory (module)}\index{Trajectory (class in pytrajectory.trajectory)}
@@ -962,7 +1079,8 @@ input variables as well as some capabilities for visualising the systems dynamic
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.DG}\pysiglinewithargsret{\bfcode{DG}}{\emph{c}}{}
-Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters.
+Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters
+evaluated at \code{c}.
 
 \end{fulllineitems}
 
@@ -1415,7 +1533,8 @@ collocation equation system.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.simulation.Simulation}\pysiglinewithargsret{\strong{class }\code{pytrajectory.simulation.}\bfcode{Simulation}}{\emph{ff}, \emph{T}, \emph{start}, \emph{u}, \emph{dt=0.01}}{}
-This class does something ...
+This class simulates the initial value problem that results from solving the
+boundary value problem of the control system.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -1437,18 +1556,29 @@ This class does something ...
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.simulation.Simulation.calcStep}\pysiglinewithargsret{\bfcode{calcStep}}{}{}
+Calculates one step of the simulation.
+
 \end{fulllineitems}
 
 \index{rhs() (pytrajectory.simulation.Simulation method)}
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.simulation.Simulation.rhs}\pysiglinewithargsret{\bfcode{rhs}}{\emph{t}, \emph{x}}{}
+Right hand side of the ode system.
+
 \end{fulllineitems}
 
 \index{simulate() (pytrajectory.simulation.Simulation method)}
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.simulation.Simulation.simulate}\pysiglinewithargsret{\bfcode{simulate}}{}{}
+Starts the simulation
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+List of numpy arrays with time steps and simulation data of system and input variables.
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 
@@ -1462,6 +1592,9 @@ This class does something ...
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.Animation}\pysiglinewithargsret{\strong{class }\code{pytrajectory.utilities.}\bfcode{Animation}}{\emph{drawfnc}, \emph{simdata}, \emph{plotsys=}\optional{}, \emph{plotinputs=}\optional{}}{}
 Provides animation capabilities.
+
+Given a callable function that draws an image of the system state and smiulation data
+this class provides a method to created an animated representation of the system.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -1482,7 +1615,9 @@ Provides animation capabilities.
 \index{Animation.Image (class in pytrajectory.utilities)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.Image}\pysigline{\strong{class }\bfcode{Image}}~\index{reset() (pytrajectory.utilities.Animation.Image method)}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.Image}\pysigline{\strong{class }\bfcode{Image}}
+This is just a container for the drawn system.
+\index{reset() (pytrajectory.utilities.Animation.Image method)}
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.Image.reset}\pysiglinewithargsret{\bfcode{reset}}{}{}
@@ -1495,6 +1630,8 @@ Provides animation capabilities.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.animate}\pysiglinewithargsret{\code{Animation.}\bfcode{animate}}{}{}
+Starts the animation of the system.
+
 \end{fulllineitems}
 
 \index{get\_axes() (pytrajectory.utilities.Animation method)}
@@ -1507,6 +1644,8 @@ Provides animation capabilities.
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.utilities.Animation.save}\pysiglinewithargsret{\code{Animation.}\bfcode{save}}{\emph{fname}, \emph{fps=None}, \emph{dpi=200}}{}
+Saves the animation as a video file or animated gif.
+
 \end{fulllineitems}
 
 \index{set\_label() (pytrajectory.utilities.Animation method)}
@@ -1537,6 +1676,22 @@ For the elements \((x_i)_{i=1,...,n}\) the relation
 \textbf{lst} (\emph{list}) -- Ordered list of elements for the integrator chain
 
 \end{description}\end{quote}
+\index{elements (pytrajectory.utilities.IntegChain attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.elements}\pysigline{\bfcode{elements}\strong{ = None}}
+IntegChain.elements is a list of all elements that are part of the integrator chain
+
+\end{fulllineitems}
+
+\index{lower (pytrajectory.utilities.IntegChain attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.lower}\pysigline{\bfcode{lower}\strong{ = None}}
+IntegChain.lower is the lower end of the integrator chain
+
+\end{fulllineitems}
+
 \index{pred() (pytrajectory.utilities.IntegChain method)}
 
 \begin{fulllineitems}
@@ -1562,6 +1717,14 @@ integrator chains, i.e. it returns \(\frac{d}{dt}[elem]\)
 \textbf{elem} (\emph{sympy.Symbol}) -- An element of the integrator chain
 
 \end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{upper (pytrajectory.utilities.IntegChain attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.upper}\pysigline{\bfcode{upper}\strong{ = None}}
+IntegChain.upper is the upper end of the integrator chain
 
 \end{fulllineitems}
 
@@ -1633,19 +1796,48 @@ variable and error function and plots the solution of the simulation.
 
 
 \section{\texttt{log} Module}
-\label{pytrajectory:module-pytrajectory.log}\label{pytrajectory:log-module}\index{pytrajectory.log (module)}\index{IPS() (in module pytrajectory.log)}
+\label{pytrajectory:module-pytrajectory.log}\label{pytrajectory:log-module}\index{pytrajectory.log (module)}\index{Logger (class in pytrajectory.log)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.IPS}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{IPS}}{\emph{loc=None}}{}
-\end{fulllineitems}
+\phantomsection\label{pytrajectory:pytrajectory.log.Logger}\pysiglinewithargsret{\strong{class }\code{pytrajectory.log.}\bfcode{Logger}}{\emph{fname=None}, \emph{mode='w'}, \emph{suppress=False}, \emph{verbosity=0}}{}
+This class the output of the log data.
 
-\index{Logger (class in pytrajectory.log)}
+It can simultaneously write to a specified file and the standard output as well as just the
+file. In addition a loglevel can be set to suppress some information.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{fname} (\emph{str}) -- The name of the log file to which all information will be written.
+
+\item {} 
+\textbf{mode} (\emph{str}) -- Either ``w'' if an existing file should be overwritten or ``a'' if it should be appended.
+
+\item {} 
+\textbf{suppress} (\emph{bool}) -- Whether or not to suppress output to the screen.
+
+\item {} 
+\textbf{verbosity} (\emph{int}) -- The level of verbosity that restricts the output.
+
+\end{itemize}
+
+\end{description}\end{quote}
+\index{write() (pytrajectory.log.Logger method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.Logger}\pysiglinewithargsret{\strong{class }\code{pytrajectory.log.}\bfcode{Logger}}{\emph{fname}, \emph{mode}, \emph{suppress}, \emph{verbosity=0}}{}~\index{write() (pytrajectory.log.Logger method)}
+\phantomsection\label{pytrajectory:pytrajectory.log.Logger.write}\pysiglinewithargsret{\bfcode{write}}{\emph{text}, \emph{verblvl=0}}{}
+Writes log information if \code{verblvl} is less or equal to the level of verbosity.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{text} (\emph{str}) -- The information to log.
 
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.Logger.write}\pysiglinewithargsret{\bfcode{write}}{\emph{text}, \emph{vblvl=0}}{}
+\item {} 
+\textbf{verblvl} (\emph{int}) -- The ``inportance'' of the information.
+
+\end{itemize}
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 
@@ -1684,7 +1876,9 @@ variable and error function and plots the solution of the simulation.
 \index{set\_file() (in module pytrajectory.log)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname='/usr/bin/sphinx-build2\_140424-182143.log'}, \emph{suppress=False}}{}
+\phantomsection\label{pytrajectory:pytrajectory.log.set_file}\pysiglinewithargsret{\code{pytrajectory.log.}\bfcode{set\_file}}{\emph{fname=None}, \emph{suppress=True}}{}
+Sets a file to which all log information are written.
+
 \end{fulllineitems}
 
 \index{warn() (in module pytrajectory.log)}
@@ -1713,7 +1907,6 @@ variable and error function and plots the solution of the simulation.
 \begin{theindex}
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 \bigletter{p}
-\item {\texttt{pytrajectory}}, \pageref{pytrajectory:module-pytrajectory}
 \item {\texttt{pytrajectory.log}}, \pageref{pytrajectory:module-pytrajectory.log}
 \item {\texttt{pytrajectory.simulation}}, \pageref{pytrajectory:module-pytrajectory.simulation}
 \item {\texttt{pytrajectory.solver}}, \pageref{pytrajectory:module-pytrajectory.solver}

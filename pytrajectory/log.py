@@ -1,14 +1,36 @@
 #!/bin/python2
 
-
 import time
 import sys
 
-from IPython import embed
-
 
 class Logger():
-    def __init__(self, fname, mode, suppress, verbosity=0):
+    '''
+    This class the output of the log data.
+    
+    It can simultaneously write to a specified file and the standard output as well as just the
+    file. In addition a loglevel can be set to suppress some information.
+    
+    
+    Parameters
+    ----------
+    
+    fname : str
+        The name of the log file to which all information will be written.
+    
+    mode : str
+        Either "w" if an existing file should be overwritten or "a" if it should be appended.
+    
+    suppress : bool
+        Whether or not to suppress output to the screen.
+    
+    verbosity : int
+        The level of verbosity that restricts the output.
+    '''
+    
+    def __init__(self, fname=None, mode="w", suppress=False, verbosity=0):
+        if not fname:
+            fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log"
         self.logfile = open(fname, mode)
         self.stdout = sys.stdout
         self.suppressed = suppress
@@ -16,8 +38,21 @@ class Logger():
         sys.stdout = self
 
 
-    def write(self, text, vblvl=0):
-        if vblvl <= self.verbosity:
+    def write(self, text, verblvl=0):
+        '''
+        Writes log information if :attr:`verblvl` is less or equal to the level of verbosity.
+        
+        
+        Parameters
+        ----------
+        
+        text : str
+            The information to log.
+        
+        verblvl : int
+            The "inportance" of the information.
+        '''
+        if verblvl <= self.verbosity:
             self.logfile.write(text)
             if not self.suppressed:
                 self.stdout.write(text)
@@ -41,28 +76,22 @@ class Timer():
             logtime("---> [%s elapsed %f s]"%(self.label, self.delta))
 
 
-def set_file(fname=sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log", suppress=False):
+def set_file(fname=None, suppress=True):
+    '''
+    Sets a file to which all log information are written.
+    '''
+    if not fname:
+        fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log"
     sys.stdout = Logger(fname, "w", suppress)
 
 
-def IPS(loc=None):
-    shelltime = time.time()
-    try:
-        fname = sys.stdout.logfile.name
-        suppress = sys.stdout.suppressed
-
-        del(sys.stdout)
-        embed(user_ns=loc)
-        sys.stdout = Logger(fname, "a", suppress)
-    except:
-        embed(user_ns=loc)
-    info("Embedded IPython shell")
-    logtime("---> [%s elapsed %f s]"%("IPS",time.time()-shelltime))
-
-
 def msg(label, text, lvl=0):
-    #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
-    sys.stdout.write(label+"\t"+text+"\n")
+    if isinstance(sys.stdout, Logger):
+        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
+        sys.stdout.write(label+"\t"+text+"\n", lvl)
+    else:
+        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
+        sys.stdout.write(label+"\t"+text+"\n")
 
 def info(text, lvl=0):
     msg("INFO:", text, lvl)
@@ -77,16 +106,30 @@ def err(text, lvl=0):
     msg("ERROR:", text, lvl)
 
 
+#def IPS(loc=None):
+#    shelltime = time.time()
+#    try:
+#        fname = sys.stdout.logfile.name
+#        suppress = sys.stdout.suppressed
+#
+#        del(sys.stdout)
+#        embed(user_ns=loc)
+#        sys.stdout = Logger(fname, "a", suppress)
+#    except:
+#        embed(user_ns=loc)
+#    info("Embedded IPython shell")
+#    logtime("---> [%s elapsed %f s]"%("IPS",time.time()-shelltime))
+
+
 if __name__ == "__main__":
     import log
 
-    log.set_file()
+    log.set_file(suppress=False)
 
     with log.Timer("testing"):
         log.info("Information")
         log.warn("Warning")
         log.err("Error")
 
-    log.IPS()
     log.info("succeeded")
 

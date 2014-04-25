@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Getting Started &mdash; pytrajectory 0.3.2 documentation</title>
+    <title>Getting Started &mdash; pytrajectory 0.3.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.3.2',
+        VERSION:     '0.3.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../index.html" />
+    <link rel="top" title="pytrajectory 0.3.3 documentation" href="../index.html" />
     <link rel="up" title="PyTrajectory User’s Guide" href="index.html" />
-    <link rel="next" title="Examples" href="examples/index.html" />
+    <link rel="next" title="Background" href="background.html" />
     <link rel="prev" title="About PyTrajectory" href="about.html" /> 
   </head>
   <body>
@@ -39,12 +39,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples/index.html" title="Examples"
+          <a href="background.html" title="Background"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="about.html" title="About PyTrajectory"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -64,13 +64,10 @@ For a more detailed view please have a look at the <a class="reference internal"
 <li><a class="reference internal" href="#what-is-pytrajectory" id="id1">What is PyTrajectory?</a></li>
 <li><a class="reference internal" href="#installation" id="id2">Installation</a><ul>
 <li><a class="reference internal" href="#dependencies" id="id3">Dependencies</a></li>
-<li><a class="reference internal" href="#windows" id="id4">Windows</a></li>
-<li><a class="reference internal" href="#linux" id="id5">Linux</a></li>
-<li><a class="reference internal" href="#mac-os" id="id6">Mac OS</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#usage" id="id7">Usage</a></li>
-<li><a class="reference internal" href="#a-first-example" id="id8">A First Example</a></li>
+<li><a class="reference internal" href="#usage" id="id4">Usage</a></li>
+<li><a class="reference internal" href="#a-first-example" id="id5">A First Example</a></li>
 </ul>
 </div>
 <div class="section" id="what-is-pytrajectory">
@@ -83,7 +80,9 @@ on a multi-dimensional boundary value problem with free parameters.
 In general this problem can not be solved analytically. It is therefore
 resorted to the method of collocation in order to obtain a numerical
 approximation.</p>
-<p>PyTrajectory allows a flexible implementation of various tasks.</p>
+<p>PyTrajectory allows a flexible implementation of various tasks and enables an easy
+implementation. It suffices to supply a function <img class="math" src="../_images/math/3926dc5c4479ee33a6c32c6c5697fd3d52fe1698.png" alt="f(x,u)"/> that represents the
+vectorfield of a control system and to specify the desired boundary values.</p>
 </div>
 <div class="section" id="installation">
 <h2><a class="toc-backref" href="#id2">Installation</a><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -109,26 +108,23 @@ dependencies installed on your system.</p>
 </dl>
 </li>
 </ul>
+<p>To install PyTrajectory, simply:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install pytrajectory
+</pre></div>
 </div>
-<div class="section" id="windows">
-<h3><a class="toc-backref" href="#id4">Windows</a><a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h3>
-<p>... to do</p>
+<p>or download the tarball from here (insert link!) extract it and run</p>
+<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
 </div>
-<div class="section" id="linux">
-<h3><a class="toc-backref" href="#id5">Linux</a><a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h3>
-<p>... to do</p>
-</div>
-<div class="section" id="mac-os">
-<h3><a class="toc-backref" href="#id6">Mac OS</a><a class="headerlink" href="#mac-os" title="Permalink to this headline">¶</a></h3>
-<p>... to do</p>
+<p>from within the extracted folder.</p>
 </div>
 </div>
 <div class="section" id="usage">
-<h2><a class="toc-backref" href="#id7">Usage</a><a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Usage</a><a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>... to do</p>
 </div>
 <div class="section" id="a-first-example">
-<h2><a class="toc-backref" href="#id8">A First Example</a><a class="headerlink" href="#a-first-example" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">A First Example</a><a class="headerlink" href="#a-first-example" title="Permalink to this headline">¶</a></h2>
 <p>... to do</p>
 </div>
 </div>
@@ -145,9 +141,6 @@ dependencies installed on your system.</p>
 <li><a class="reference internal" href="#what-is-pytrajectory">What is PyTrajectory?</a></li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li><a class="reference internal" href="#windows">Windows</a></li>
-<li><a class="reference internal" href="#linux">Linux</a></li>
-<li><a class="reference internal" href="#mac-os">Mac OS</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#usage">Usage</a></li>
@@ -160,8 +153,8 @@ dependencies installed on your system.</p>
   <p class="topless"><a href="about.html"
                         title="previous chapter">About PyTrajectory</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="examples/index.html"
-                        title="next chapter">Examples</a></p>
+  <p class="topless"><a href="background.html"
+                        title="next chapter">Background</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/guide/start.txt"
@@ -194,12 +187,12 @@ dependencies installed on your system.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples/index.html" title="Examples"
+          <a href="background.html" title="Background"
              >next</a> |</li>
         <li class="right" >
           <a href="about.html" title="About PyTrajectory"
              >previous</a> |</li>
-        <li><a href="../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>

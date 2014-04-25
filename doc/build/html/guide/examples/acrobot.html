@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Acrobot &mdash; pytrajectory 0.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.3 documentation" href="../../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="PyTrajectory Modules Reference" href="../../pytrajectory.html" />
+    <link rel="prev" title="Underactuated Manipulator" href="uact_manipulator.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../pytrajectory.html" title="PyTrajectory Modules Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="uact_manipulator.html" title="Underactuated Manipulator"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="acrobot">
+<span id="ex-acrobot"></span><h1>Acrobot<a class="headerlink" href="#acrobot" title="Permalink to this headline">¶</a></h1>
+<p>One further interesting example is that of the acrobot. The model can be
+regarded as a simplified gymnast hanging on a horizontal bar with both hands.
+The movements of the entire system is to be controlled only by movement of the hip.
+The body of the gymnast is represented by two rods which are jointed in the joint
+<img class="math" src="../../_images/math/576bb52be38d16b35d99d553a68e3632c764b41f.png" alt="G_2"/>. The first rod is movably connected at joint <img class="math" src="../../_images/math/7fb876996f317119f4a67c585344c9d153432a9b.png" alt="G_1"/> with the inertial
+system, which corresponds to the encompassing of the stretching rod with the hands.</p>
+<p>For the model, two equal-length rods with a length <img class="math" src="../../_images/math/d7a3f8f492d258c68ca994ee0f488d8d6ec5b90b.png" alt="l_1 = l_2 = l"/> are assumed
+with a homogeneous distribution of mass <img class="math" src="../../_images/math/bb4334b229dd1fc8df8fe705f4d45356b9f99e7b.png" alt="m_1 = m_2 = m"/> over the entire rod length.
+This does not correspond to the proportions of a man, also no restrictions were placed
+on the mobility of the hip joint.</p>
+<p>The following figure shows the schematic representation of the model.</p>
+<img alt="../../_images/acrobot.png" src="../../_images/acrobot.png" />
+<p>Using the previously assumed model parameters and the write abbreviations</p>
+<div class="math">
+<p><img src="../../_images/math/f3f0095f70ff28e9aceb49df29575b04f2204632.png" alt="\begin{eqnarray*}
+   I      &amp; = &amp; \frac{1}{3}m l^2 \\
+   d_{11} &amp; = &amp; \frac{m l^2}{4} + m(l^2 + \frac{l^2}{4} + l^2 \cos(\theta_2)) + 2I \\
+   h_1    &amp; = &amp; - \frac{m l^2}{2} \sin(\theta_2) (\dot{\theta}_2 (\dot{\theta}_2 + 2\dot{\theta}_1)) \\
+   d_{12} &amp; = &amp; m (\frac{l^2}{4} + \frac{l^2}{2} \cos(\theta_1)) + I \\
+   \varphi_1 &amp; = &amp; \frac{3}{2}m l g \cos(\theta_1) + \frac{1}{2}m l g \cos(\theta_1 + \theta_2)
+ \end{eqnarray*}"/></p>
+</div><p>as well as the state vector <img class="math" src="../../_images/math/c248fb58cf6727bb6dc4ad322f5adf60f5a1de3a.png" alt="x = [\theta_2, \dot{\theta}_2, \theta_1, \dot{\theta}_1]"/> one obtains
+the following state representation with the virtual input <img class="math" src="../../_images/math/11a8d869681e8237cd3846eb09b5dbd0df84a9f0.png" alt="u = \ddot{\theta}_2"/></p>
+<div class="math">
+<p><img src="../../_images/math/bee9b184b86c3aa127931f9dbc76fd688f6e779f.png" alt="\begin{eqnarray*}
+   \dot{x}_1 &amp; = &amp; x_2 \\
+   \dot{x}_2 &amp; = &amp; u \\
+   \dot{x}_3 &amp; = &amp; x_4 \\
+   \dot{x}_4 &amp; = &amp; -d_{11}^{-1} (h_1 + \varphi_1 + d_{12}u)
+\end{eqnarray*}"/></p>
+</div><p>Now, the trajectory of the manipulated variable for an oscillation of the gymnast should be determined.
+The starting point of the exercise are the two downward hanging rods. These are to be transferred into another
+rest position in which the two bars show vertically upward within an operating time of <img class="math" src="../../_images/math/48ac522661f248b225e21d35d8eb668d3cd75a73.png" alt="T = 2 [s]"/>.
+At the beginning and end of the process, the input variable is to merge continuously into the rest
+position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d9fcbfc362be.png" alt="u(0) = u(T) = 0"/>.</p>
+<p>The initial and final states thus are</p>
+<div class="math">
+<p><img src="../../_images/math/b5918328b86f5a932844fbcf4d893a0ee0693556.png" alt="\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \frac{3}{2} \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ \frac{1}{2} \pi \\ 0 \end{bmatrix}
+\end{equation*}"/></p>
+</div><div class="section" id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># acrobot</span>
+
+<span class="c"># import trajectory class and necessary dependencies</span>
+<span class="kn">from</span> <span class="nn">pytrajectory.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+
+<span class="c"># define the function that returns the vectorfield</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">u1</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span>
+    
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">1.0</span>             <span class="c"># masses of the rods [m1 = m2 = m]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>             <span class="c"># lengths of the rods [l1 = l2 = l]</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="mf">3.0</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span>    <span class="c"># moments of inertia [I1 = I2 = I]</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>            <span class="c"># gravitational acceleration</span>
+    
+    <span class="n">lc</span> <span class="o">=</span> <span class="n">l</span><span class="o">/</span><span class="mf">2.0</span>
+    
+    <span class="n">d11</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="n">lc</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">lc</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">lc</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">I</span>
+    <span class="n">h1</span> <span class="o">=</span> <span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">lc</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">x2</span><span class="o">*</span><span class="p">(</span><span class="n">x2</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">x4</span><span class="p">))</span>
+    <span class="n">d12</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">lc</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">l</span><span class="o">*</span><span class="n">lc</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span><span class="o">+</span><span class="n">I</span>
+    <span class="n">phi1</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="n">lc</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="p">)</span><span class="o">*</span><span class="n">g</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">lc</span><span class="o">*</span><span class="n">g</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="o">+</span><span class="n">x3</span><span class="p">)</span>
+
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>	    <span class="n">x2</span><span class="p">,</span>
+                        <span class="n">u1</span><span class="p">,</span>
+                        <span class="n">x4</span><span class="p">,</span>
+                <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="n">d11</span><span class="o">*</span><span class="p">(</span><span class="n">h1</span><span class="o">+</span><span class="n">phi1</span><span class="o">+</span><span class="n">d12</span><span class="o">*</span><span class="n">u1</span><span class="p">)</span>
+                <span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">ff</span>
+
+
+<span class="c"># system state boundary values for a = 0.0 [s] and b = 2.0 [s]</span>
+<span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mi">3</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mi">1</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># boundary values for the inputs</span>
+<span class="n">bvin</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># create trajectory object</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">bvin</span><span class="p">)</span>
+
+<span class="c"># alter some method parameters to increase performance</span>
+<span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;su&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c"># run iteration</span>
+<span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+
+<span class="c"># show results</span>
+<span class="n">T</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Acrobot</a><ul>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="uact_manipulator.html"
+                        title="previous chapter">Underactuated Manipulator</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../pytrajectory.html"
+                        title="next chapter">PyTrajectory Modules Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/guide/examples/acrobot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../pytrajectory.html" title="PyTrajectory Modules Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="uact_manipulator.html" title="Underactuated Manipulator"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

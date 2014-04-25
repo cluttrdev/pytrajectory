@@ -64,7 +64,7 @@ if calc:
     
     with log.Timer("Iteration"):
         T.startIteration()
-
+    IPS()
 
 ##################################################
 # NEW EXPERIMENTAL STUFF

@@ -3,36 +3,35 @@
 \contentsline {section}{\numberline {1.1}About PyTrajectory}{1}{section.1.1}
 \contentsline {section}{\numberline {1.2}Getting Started}{1}{section.1.2}
 \contentsline {subsection}{\numberline {1.2.1}What is PyTrajectory?}{1}{subsection.1.2.1}
-\contentsline {subsection}{\numberline {1.2.2}Installation}{1}{subsection.1.2.2}
+\contentsline {subsection}{\numberline {1.2.2}Installation}{2}{subsection.1.2.2}
 \contentsline {subsubsection}{Dependencies}{2}{subsubsection*.3}
-\contentsline {subsubsection}{Windows}{2}{subsubsection*.4}
-\contentsline {subsubsection}{Linux}{2}{subsubsection*.5}
-\contentsline {subsubsection}{Mac OS}{2}{subsubsection*.6}
 \contentsline {subsection}{\numberline {1.2.3}Usage}{2}{subsection.1.2.3}
 \contentsline {subsection}{\numberline {1.2.4}A First Example}{2}{subsection.1.2.4}
-\contentsline {section}{\numberline {1.3}Examples}{2}{section.1.3}
-\contentsline {subsection}{\numberline {1.3.1}Translation of the inverted pendulum}{2}{subsection.1.3.1}
-\contentsline {subsubsection}{Source Code}{3}{subsubsection*.7}
-\contentsline {subsection}{\numberline {1.3.2}Oscillation of the inverted double pendulum}{4}{subsection.1.3.2}
-\contentsline {subsubsection}{Source Code}{5}{subsubsection*.8}
-\contentsline {subsection}{\numberline {1.3.3}Aircraft}{6}{subsection.1.3.3}
-\contentsline {subsubsection}{Source Code}{7}{subsubsection*.9}
-\contentsline {subsection}{\numberline {1.3.4}Underactuated Manipulator}{8}{subsection.1.3.4}
-\contentsline {subsubsection}{Source Code}{9}{subsubsection*.10}
-\contentsline {section}{\numberline {1.4}Background}{10}{section.1.4}
-\contentsline {subsection}{\numberline {1.4.1}Collocation Method}{10}{subsection.1.4.1}
-\contentsline {subsection}{\numberline {1.4.2}Candidate Functions}{11}{subsection.1.4.2}
-\contentsline {subsubsection}{Use of the system structure}{12}{subsubsection*.11}
-\contentsline {subsection}{\numberline {1.4.3}Levenberg-Marquardt Method}{13}{subsection.1.4.3}
-\contentsline {subsubsection}{Control of the parameter \relax $\mu \relax \GenericError { }{LaTeX Error: Bad math environment delimiter}{See the LaTeX manual or LaTeX Companion for explanation.}{Your command was ignored.\MessageBreak Type I <command> <return> to replace it with another command,\MessageBreak or <return> to continue without it.}}{13}{subsubsection*.12}
-\contentsline {chapter}{\numberline {2}PyTrajectory Modules Reference}{15}{chapter.2}
-\contentsline {section}{\numberline {2.1}\texttt {trajectory} Module}{15}{section.2.1}
-\contentsline {section}{\numberline {2.2}\texttt {spline} Module}{17}{section.2.2}
-\contentsline {section}{\numberline {2.3}\texttt {solver} Module}{19}{section.2.3}
-\contentsline {section}{\numberline {2.4}\texttt {simulation} Module}{19}{section.2.4}
-\contentsline {section}{\numberline {2.5}\texttt {utilities} Module}{20}{section.2.5}
-\contentsline {paragraph}{Examples}{21}{paragraph*.66}
-\contentsline {section}{\numberline {2.6}\texttt {log} Module}{21}{section.2.6}
-\contentsline {chapter}{\numberline {3}Indices and tables}{23}{chapter.3}
-\contentsline {chapter}{Python Module Index}{25}{section*.78}
-\contentsline {chapter}{Index}{27}{section*.79}
+\contentsline {section}{\numberline {1.3}Background}{2}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}Collocation Method}{3}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}Candidate Functions}{3}{subsection.1.3.2}
+\contentsline {subsubsection}{Use of the system structure}{5}{subsubsection*.4}
+\contentsline {subsection}{\numberline {1.3.3}Levenberg-Marquardt Method}{5}{subsection.1.3.3}
+\contentsline {subsubsection}{Control of the parameter \relax $\mu \relax \GenericError { }{LaTeX Error: Bad math environment delimiter}{See the LaTeX manual or LaTeX Companion for explanation.}{Your command was ignored.\MessageBreak Type I <command> <return> to replace it with another command,\MessageBreak or <return> to continue without it.}}{5}{subsubsection*.5}
+\contentsline {section}{\numberline {1.4}Examples}{6}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}Translation of the inverted pendulum}{6}{subsection.1.4.1}
+\contentsline {subsubsection}{Source Code}{7}{subsubsection*.6}
+\contentsline {subsection}{\numberline {1.4.2}Oscillation of the inverted double pendulum}{8}{subsection.1.4.2}
+\contentsline {subsubsection}{Source Code}{8}{subsubsection*.7}
+\contentsline {subsection}{\numberline {1.4.3}Aircraft}{9}{subsection.1.4.3}
+\contentsline {subsubsection}{Source Code}{10}{subsubsection*.8}
+\contentsline {subsection}{\numberline {1.4.4}Underactuated Manipulator}{11}{subsection.1.4.4}
+\contentsline {subsubsection}{Source Code}{12}{subsubsection*.9}
+\contentsline {subsection}{\numberline {1.4.5}Acrobot}{13}{subsection.1.4.5}
+\contentsline {subsubsection}{Source Code}{14}{subsubsection*.10}
+\contentsline {chapter}{\numberline {2}PyTrajectory Modules Reference}{17}{chapter.2}
+\contentsline {section}{\numberline {2.1}\texttt {trajectory} Module}{17}{section.2.1}
+\contentsline {section}{\numberline {2.2}\texttt {spline} Module}{19}{section.2.2}
+\contentsline {section}{\numberline {2.3}\texttt {solver} Module}{21}{section.2.3}
+\contentsline {section}{\numberline {2.4}\texttt {simulation} Module}{21}{section.2.4}
+\contentsline {section}{\numberline {2.5}\texttt {utilities} Module}{22}{section.2.5}
+\contentsline {paragraph}{Examples}{23}{paragraph*.66}
+\contentsline {section}{\numberline {2.6}\texttt {log} Module}{23}{section.2.6}
+\contentsline {chapter}{\numberline {3}Indices and tables}{25}{chapter.3}
+\contentsline {chapter}{Python Module Index}{27}{section*.77}
+\contentsline {chapter}{Index}{29}{section*.78}

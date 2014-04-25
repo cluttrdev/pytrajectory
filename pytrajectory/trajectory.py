@@ -12,6 +12,7 @@ from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
 from utilities import IntegChain
+import log
 
 #####
 #NEW
@@ -19,10 +20,7 @@ from utilities import blockdiag as bdiag
 from utilities import plot as plotsim
 #####
 
-import log
-#from log import IPS
-from time import time
-
+# DEBUG
 from IPython import embed as IPS
 
 
@@ -785,7 +783,8 @@ class Trajectory():
 
     def DG(self, c):
         '''
-        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters.
+        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters
+        evaluated at :attr:`c`.
         '''
         
         Df = self.Df
@@ -813,20 +812,16 @@ class Trajectory():
             # evaluate jacobian at current collocation point
             DF_blocks.append(Df(*tmp_xu))
         
-        if 0:
+        if 1:
             ###############################################
             # OLD - working
             ###############################################
             DF = []
-            #for i,df in enumerate(DF_blocks):
-            #    # np.vstack is done in every call --> do it once in buildEQS...???
-            #    J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))
-            #    res = np.dot(df,J_XU)
             for i in xrange(len(DF_blocks)):
                 res = np.dot(DF_blocks[i], self.J_XU[i])
                 assert res.shape == (x_len,len(self.c_list))
                 DF.append(res)
-            #IPS()
+            
             DF = np.array(DF)[:,eqind,:]
             # 1st index : collocation point
             # 2nd index : equations that have to be solved --> end of an integrator chain
@@ -987,6 +982,12 @@ class Trajectory():
         This method calculates the error functions and then calls 
         the :func:`utilities.plot` function.
         '''
+        
+        try:
+            import matplotlib
+        except ImportError:
+            log.error('Matplotlib is not available for plotting.')
+            return
         
         # calculate the error functions H_i(t)
         H = dict()

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytrajectory.trajectory &mdash; pytrajectory 0.3.2 documentation</title>
+    <title>pytrajectory.trajectory &mdash; pytrajectory 0.3.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.2',
+        VERSION:     '0.3.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.2 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.3.3 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body>
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -61,6 +61,7 @@
 <span class="kn">from</span> <span class="nn">solver</span> <span class="kn">import</span> <span class="n">Solver</span>
 <span class="kn">from</span> <span class="nn">simulation</span> <span class="kn">import</span> <span class="n">Simulation</span>
 <span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="n">IntegChain</span>
+<span class="kn">import</span> <span class="nn">log</span>
 
 <span class="c">#####</span>
 <span class="c">#NEW</span>
@@ -68,10 +69,7 @@
 <span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">plotsim</span>
 <span class="c">#####</span>
 
-<span class="kn">import</span> <span class="nn">log</span>
-<span class="c">#from log import IPS</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
-
+<span class="c"># DEBUG</span>
 <span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
 
 
@@ -834,7 +832,8 @@
 </div>
 <div class="viewcode-block" id="Trajectory.DG"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.DG">[docs]</a>    <span class="k">def</span> <span class="nf">DG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters.</span>
+<span class="sd">        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters</span>
+<span class="sd">        evaluated at :attr:`c`.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="n">Df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Df</span>
@@ -862,20 +861,16 @@
             <span class="c"># evaluate jacobian at current collocation point</span>
             <span class="n">DF_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Df</span><span class="p">(</span><span class="o">*</span><span class="n">tmp_xu</span><span class="p">))</span>
         
-        <span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c">###############################################</span>
             <span class="c"># OLD - working</span>
             <span class="c">###############################################</span>
             <span class="n">DF</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="c">#for i,df in enumerate(DF_blocks):</span>
-            <span class="c">#    # np.vstack is done in every call --&gt; do it once in buildEQS...???</span>
-            <span class="c">#    J_XU = np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] ))</span>
-            <span class="c">#    res = np.dot(df,J_XU)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">)):</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_XU</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                 <span class="k">assert</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">x_len</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">))</span>
                 <span class="n">DF</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-            <span class="c">#IPS()</span>
+            
             <span class="n">DF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DF</span><span class="p">)[:,</span><span class="n">eqind</span><span class="p">,:]</span>
             <span class="c"># 1st index : collocation point</span>
             <span class="c"># 2nd index : equations that have to be solved --&gt; end of an integrator chain</span>
@@ -1037,6 +1032,12 @@
 <span class="sd">        the :func:`utilities.plot` function.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Matplotlib is not available for plotting.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
         <span class="c"># calculate the error functions H_i(t)</span>
         <span class="n">H</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         
@@ -1175,7 +1176,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.2 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

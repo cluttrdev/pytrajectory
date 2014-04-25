@@ -11,7 +11,6 @@ system.
 .. contents:: Contents
    :local:
 
-.. automodule:: pytrajectory
 
 :mod:`trajectory` Module
 ========================

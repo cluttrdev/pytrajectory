@@ -6,6 +6,6 @@ PyTrajectory User's Guide
 
    about
    start
-   examples/index
    background
+   examples/index
 

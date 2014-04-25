@@ -6,6 +6,7 @@ from sympy.core.symbol import Symbol
 from IPython import embed as IPS
 
 from numpy import sin,cos
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -28,8 +29,11 @@ class IntegChain():
     '''
     
     def __init__(self, lst):
+        #: IntegChain.elements is a list of all elements that are part of the integrator chain
         self.elements = lst
+        #: IntegChain.upper is the upper end of the integrator chain
         self.upper = self.elements[0]
+        #: IntegChain.lower is the lower end of the integrator chain
         self.lower = self.elements[-1]
     
     def __len__(self):
@@ -91,6 +95,9 @@ class Animation():
     '''
     Provides animation capabilities.
     
+    Given a callable function that draws an image of the system state and smiulation data
+    this class provides a method to created an animated representation of the system.
+    
     
     Parameters
     ----------
@@ -132,6 +139,9 @@ class Animation():
     
     
     class Image():
+        '''
+        This is just a container for the drawn system.
+        '''
         def __init__(self):
             self.patches = []
             self.lines = []
@@ -188,6 +198,9 @@ class Animation():
         
     
     def animate(self):
+        '''
+        Starts the animation of the system.
+        '''
         t = self.t
         xt = self.xt
         ut = self.ut
@@ -273,11 +286,13 @@ class Animation():
             
             plt.draw()
         
-        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes,
-                                            interval=1, blit=True)
+        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, interval=1, blit=True)
     
     
     def save(self, fname, fps=None, dpi=200):
+        '''
+        Saves the animation as a video file or animated gif.
+        '''
         if not fps:
             fps = self.nframes/float(self.T)
         

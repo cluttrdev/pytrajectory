@@ -21,7 +21,9 @@ In general this problem can not be solved analytically. It is therefore
 resorted to the method of collocation in order to obtain a numerical 
 approximation.
 
-PyTrajectory allows a flexible implementation of various tasks.
+PyTrajectory allows a flexible implementation of various tasks and enables an easy 
+implementation. It suffices to supply a function :math:`f(x,u)` that represents the 
+vectorfield of a control system and to specify the desired boundary values.
 
 
 Installation
@@ -42,20 +44,15 @@ dependencies installed on your system.
    * matplotlib [visualisation]
    * ipython [debugging]
 
-Windows
--------
+To install PyTrajectory, simply: ::
 
-... to do
+   pip install pytrajectory
 
-Linux
------
+or download the tarball from here (insert link!) extract it and run ::
 
-... to do
+   python setup.py install
 
-Mac OS
-------
-
-... to do
+from within the extracted folder.
 
 
 Usage
