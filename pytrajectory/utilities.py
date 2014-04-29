@@ -75,7 +75,6 @@ class IntegChain():
         This method returns the predecessor of the given element of the
         integrator chains, i.e. it returns :math:`\\int [elem]`
         
-        
         Parameters
         ----------
         elem : sympy.Symbol

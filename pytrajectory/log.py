@@ -102,7 +102,7 @@ def logtime(text, lvl=0):
 def warn(text, lvl=0):
     msg("WARN:", text, lvl)
 
-def err(text, lvl=0):
+def error(text, lvl=0):
     msg("ERROR:", text, lvl)
 
 
