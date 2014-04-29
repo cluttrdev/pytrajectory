@@ -20,7 +20,6 @@ def fdiff(func):
     func : callable - The spline function to derivate.
     '''
     
-    # Return derivative of callable function
     # im_func is the function's id
     # im_self is the object of which func is the method
     if(func.im_func == CubicSpline.f.im_func):
@@ -77,7 +76,7 @@ class CubicSpline():
         self.bcd = bcd
         self.bcdd = bcdd
 
-        # size of polynomial parts
+        # size of the polynomial parts
         self.h = (float(b)-float(a))/float(n)
 
         # create array of symbolic coefficients
@@ -86,8 +85,8 @@ class CubicSpline():
         #   key: spline part    value: coefficients of the polynom
         self.S = dict()
 
-        self.tmp_S = np.ones_like(self.coeffs)
-        self.tmp_S_abs = np.zeros((self.n,4))
+        self.prov_S = np.ones_like(self.coeffs)
+        self.prov_S_abs = np.zeros((self.n,4))
 
         for i in xrange(self.n):
             # create polynoms:  p_i(x)= c_i_0*x^3 + c_i_1*x^2 + c_i_2*x + c_i_3
@@ -109,26 +108,25 @@ class CubicSpline():
     
     def prov_evalf(self, x, d):
         '''
-        This function returns a matrix and vector to evaluate the spline or a derivative at x
-        by multiplying the matrix with numerical values of the independent variables
-        and adding the vector.
-        
-        
-        Parameters
-        ----------
-        
-        x : real
-            The point to evaluate the spline at
-        d : int
-            The derivation order
-        
-        
-        Returns
-        -------
-        
-        tuple
-            Vectors that represent how the spline coefficients depend on the free parameters.
+        This function yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the splines coefficients
+        on its free parameters (independent coefficients).
         '''
+        #This first vector ...
+        # to evaluate the spline or a derivative at x
+        #by multiplying the matrix with numerical values of the independent variables
+        #and adding the vector.
+        #
+        #
+        #Parameters
+        #----------
+        #
+        #x : real
+        #    The point to evaluate the spline at
+        #d : int
+        #    The derivation order
+        #'''
         
         # Get the spline part where x is in
         i = int(np.floor(x*self.n/(self.b)))
@@ -146,8 +144,8 @@ class CubicSpline():
         elif (d == 3):
             p = np.array([6.0,0.0,0.0,0.0])
         
-        M0 = np.array([m for m in self.tmp_S[i]],dtype=float)
-        m0 = self.tmp_S_abs[i]
+        M0 = np.array([m for m in self.prov_S[i]],dtype=float)
+        m0 = self.prov_S_abs[i]
         
         return np.dot(p,M0), np.dot(p,m0)
     
@@ -227,7 +225,7 @@ class CubicSpline():
         if (self.bcdd != None):
             mu += 1
 
-        # ---> docu p. 14
+        # now we determine the free parameters of the spline function
         v= 0
         if (mu == -1):
             a = coeffs[:,v]
@@ -249,7 +247,8 @@ class CubicSpline():
         b = sorted(list(b_set), key = lambda c: c.name)
         #b = np.array(sorted(list(b_set), key = lambda c: c.name))
         
-        # Build Matrix for equation system of smoothness conditions --> p. 13
+        # now we build the matrix for the equation system
+        # that ensures the smoothness conditions --> p. 13
 
         # get matrix dimensions --> (3.21) & (3.22)
         N2 = 4*self.n
@@ -260,7 +259,6 @@ class CubicSpline():
 
         # build block band matrix for smoothness in every joining point
         #   derivatives from order 0 to 2
-        #   --> (3.19), caution because of sign error in documentation
         repmat = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
                            [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
                            [0.0, 2.0, 0.0, 0.0,    6*h,  -2.0,  0.0, 0.0]])
@@ -335,10 +333,10 @@ class CubicSpline():
 
             tmp_coeffs[(j,k)] = tmp3[i]
 
-        self.tmp_S = tmp_coeffs
-        self.tmp_S_abs = tmp_coeffs_abs
+        self.prov_S = tmp_coeffs
+        self.prov_S_abs = tmp_coeffs_abs
 
-        # docu p. 13: a is vector of independent spline coeffs
+        # docu p. 13: a is vector of independent spline coeffs (free parameters)
         self.c_indep = a
 
         self.steady_flag = True
@@ -359,7 +357,8 @@ class CubicSpline():
         '''
         
         for i in xrange(self.n):
-            c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.tmp_S[i],self.tmp_S_abs[i])]
+            c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.prov_S[i],self.prov_S_abs[i])]
             self.S[i] = np.poly1d(c_num)
         
+        # now we hae numerical values for the coefficients so we can set this to False
         self.prov_flag = False
