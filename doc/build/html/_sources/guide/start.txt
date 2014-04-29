@@ -29,7 +29,7 @@ vectorfield of a control system and to specify the desired boundary values.
 Installation
 ============
 
-PyTrajectory was developed and tested on Python 2.7
+PyTrajectory has been developed and tested on Python 2.7
 
 Dependencies
 ------------
@@ -44,25 +44,31 @@ dependencies installed on your system.
    * matplotlib [visualisation]
    * ipython [debugging]
 
-To install PyTrajectory, simply: ::
+Source
+------
 
-   pip install pytrajectory
+To install PyTrajectory from the source files please download the latest release from
+here (insert link!). After the download is complete open the archive and change directory
+into the extracted folder. Then all you have to do is run the following command ::
 
-or download the tarball from here (insert link!) extract it and run ::
+   $ python setup.py install
 
-   python setup.py install
+PyPI
+----
 
-from within the extracted folder.
+The easiest way of installing PyTrajectory would be ::
+
+   $ pip install pytrajectory
+
+or ::
+
+   $ easy_install pytrajectory
+
+provided that you have the Python modules `pip` or `setuptools` installed on your system.
 
 
 Usage
 =====
-
-... to do
-
-
-A First Example
-===============
 
 ... to do
 

@@ -352,27 +352,10 @@ ensure steadiness and smoothness conditions of the spline in every joining point
 <dl class="method">
 <dt id="pytrajectory.spline.CubicSpline.prov_evalf">
 <tt class="descname">prov_evalf</tt><big>(</big><em>x</em>, <em>d</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/spline.html#CubicSpline.prov_evalf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.spline.CubicSpline.prov_evalf" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function returns a matrix and vector to evaluate the spline or a derivative at x
-by multiplying the matrix with numerical values of the independent variables
-and adding the vector.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> (<em>real</em>) &#8211; The point to evaluate the spline at</li>
-<li><strong>d</strong> (<em>int</em>) &#8211; The derivation order</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Vectors that represent how the spline coefficients depend on the free parameters.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
-</td>
-</tr>
-</tbody>
-</table>
+<dd><p>This function yields a provisionally evaluation of the spline while there are no numerical
+values for its free parameters.
+It returns a two vectors which reflect the dependence of the splines coefficients
+on its free parameters (independent coefficients).</p>
 </dd></dl>
 
 <dl class="method">
