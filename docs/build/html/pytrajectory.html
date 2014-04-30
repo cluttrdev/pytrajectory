@@ -104,22 +104,24 @@ input variables as well as some capabilities for visualising the systems dynamic
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.DG">
 <tt class="descname">DG</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.DG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.DG" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters
-evaluated at <tt class="xref py py-attr docutils literal"><span class="pre">c</span></tt>.</p>
+<dd><p>Returns the jacobian matrix of the collocation system w.r.t. the
+independent parameters evaluated at <tt class="xref py py-attr docutils literal"><span class="pre">c</span></tt>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.G">
 <tt class="descname">G</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.G"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.G" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the collocation system evaluated with numeric values for the independent parameters.</p>
+<dd><p>Returns the collocation system evaluated with numeric values for the
+independent parameters.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.analyseSystem">
 <tt class="descname">analyseSystem</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.analyseSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.analyseSystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Analyses the systems structure and sets values for some of the method parameters.</p>
-<p>By now, this method determines the number of state and input variables and searches for
-integrator chains.</p>
+<dd><p>Analyses the systems structure and sets values for some of the method
+parameters.</p>
+<p>By now, this method determines the number of state and input variables
+and searches for integrator chains.</p>
 </dd></dl>
 
 <dl class="method">
@@ -133,15 +135,15 @@ integrator chains.</p>
 <tt class="descname">checkAccuracy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.checkAccuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.checkAccuracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the desired accuracy for the boundary values was reached.</p>
 <p>It calculates the difference between the solution of the simulation
-and the given boundary values at the right border and compares its maximum against the
-tolerance set by self.eps</p>
+and the given boundary values at the right border and compares its
+maximum against the tolerance set by self.eps</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.clear">
 <tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.clear" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method is intended to delete some attributes of the object that are no longer
-neccessary after the iteration has finished.</p>
+<dd><p>This method is intended to delete some attributes of the object that
+are no longer neccessary after the iteration has finished.</p>
 <p>TODO: implement this ;-P</p>
 </dd></dl>
 
@@ -157,7 +159,8 @@ or the socalled Chebychev nodes (<cite>colltype = &#8216;chebychev&#8217;</cite>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.dx">
 <tt class="descname">dx</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.dx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the state of the 1st derivatives of the system variables at a <tt class="xref py py-attr docutils literal"><span class="pre">t</span></tt>.</p>
+<dd><p>Returns the state of the 1st derivatives of the system variables
+at <tt class="xref py py-attr docutils literal"><span class="pre">t</span></tt>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -165,12 +168,13 @@ or the socalled Chebychev nodes (<cite>colltype = &#8216;chebychev&#8217;</cite>
 <tt class="descname">getGuess</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.getGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.getGuess" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to determine a starting value (guess) for the
 solver of the collocation equation system.</p>
-<p>If it is the first iteration step, then a vector with the same length as the vector of
-independent parameters with arbitrarily values is returned.</p>
-<p>Else, for every variable a spline has been created for, the old spline of the iteration
-before and the new spline are evaluated at specific points and a equation system
-is solved which ensures that they are equal in these points.</p>
-<p>The solution of this equation system is the new start value for the solver.</p>
+<p>If it is the first iteration step, then a vector with the same length as
+the vector of the free parameters with arbitrarily values is returned.</p>
+<p>Else, for every variable a spline has been created for, the old spline
+of the iteration before and the new spline are evaluated at specific
+points and a equation system is solved which ensures that they are equal
+in these points.</p>
+<p>The solution of this system is the new start value for the solver.</p>
 </dd></dl>
 
 <dl class="method">
@@ -183,11 +187,12 @@ is solved which ensures that they are equal in these points.</p>
 <dt id="pytrajectory.trajectory.Trajectory.iterate">
 <tt class="descname">iterate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.iterate" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is used to run one iteration step.</p>
-<p>First, new splines are initialised for the variables that are the upper end of an
-integrator chain.</p>
-<p>Then, a start value for the solver is determined and the equation system is build.</p>
-<p>Next, the equation system is solved and the resulting numerical values for the free
-parameters are written back.</p>
+<p>First, new splines are initialised for the variables that are the upper
+end of an integrator chain.</p>
+<p>Then, a start value for the solver is determined and the equation
+system is build.</p>
+<p>Next, the equation system is solved and the resulting numerical values
+for the free parameters are written back.</p>
 <p>As a last, the initial value problem is simulated.</p>
 </dd></dl>
 
@@ -248,18 +253,24 @@ every created spline.</p>
 <dt id="pytrajectory.trajectory.Trajectory.startIteration">
 <tt class="descname">startIteration</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.startIteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.startIteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the main loop.</p>
-<p>At first the equations that have to be solved by collocation will be determined according to
-the integrator chains.</p>
+<p>At first the equations that have to be solved by collocation will be
+determined according to the integrator chains.</p>
 <p>Next, one step of the iteration is done by calling <a class="reference internal" href="#pytrajectory.trajectory.Trajectory.iterate" title="pytrajectory.trajectory.Trajectory.iterate"><tt class="xref py py-meth docutils literal"><span class="pre">iterate()</span></tt></a>.</p>
-<p>After that, the accuracy of the found solution is checked. If it is within the tolerance
-range the iteration will stop. Else, the number of spline parts is raised and another
-iteration step starts.</p>
+<p>After that, the accuracy of the found solution is checked.
+If it is within the tolerance range the iteration will stop.
+Else, the number of spline parts is raised and another step starts.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.u">
 <tt class="descname">u</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.u"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.u" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the state of the inputs at a given (time-) point <tt class="xref py py-attr docutils literal"><span class="pre">t</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytrajectory.trajectory.Trajectory.use_sparse">
+<tt class="descname">use_sparse</tt><em class="property"> = None</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.use_sparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>use_sparse defines whether or not we use sparse matrices where it makes sense</p>
 </dd></dl>
 
 <dl class="method">
@@ -718,8 +729,8 @@ file. In addition a loglevel can be set to suppress some information.</p>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="pytrajectory.log.err">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">err</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#err"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.err" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.log.error">
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">error</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.error" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

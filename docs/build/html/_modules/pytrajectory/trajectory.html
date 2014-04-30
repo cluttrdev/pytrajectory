@@ -47,13 +47,10 @@
           <div class="body">
             
   <h1>Source code for pytrajectory.trajectory</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sp</span>
 <span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">scp</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csr</span> <span class="kn">import</span> <span class="n">csr_matrix</span>
 
 <span class="kn">import</span> <span class="nn">pickle</span>
 
@@ -73,25 +70,25 @@
 <span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
 
 
-<div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory">[docs]</a><span class="k">class</span> <span class="nc">Trajectory</span><span class="p">():</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Base class of the PyTrajectory project. </span>
+<span class="k">class</span> <span class="nc">Trajectory</span><span class="p">():</span>
+<div class="viewcode-block" id="Trajectory"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base class of the PyTrajectory project.</span>
 
 <span class="sd">    Trajectory manages everything from analysing the given system over initialising the spline</span>
-<span class="sd">    functions, setting up and solving the collocation equation system up to the simulation of the </span>
+<span class="sd">    functions, setting up and solving the collocation equation system up to the simulation of the</span>
 <span class="sd">    resulting initial value problem.</span>
-<span class="sd">    </span>
-<span class="sd">    After the iteration has finished, it provides access to callable functions for the system and </span>
+
+<span class="sd">    After the iteration has finished, it provides access to callable functions for the system and</span>
 <span class="sd">    input variables as well as some capabilities for visualising the systems dynamic.</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
+
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    </span>
+
 <span class="sd">    ff :  callable</span>
 <span class="sd">        Vectorfield (rhs) of the control system</span>
 <span class="sd">    a : float</span>
-<span class="sd">        Left border </span>
+<span class="sd">        Left border</span>
 <span class="sd">    b : float</span>
 <span class="sd">        Right border</span>
 <span class="sd">    xa : list</span>
@@ -119,13 +116,13 @@
 <span class="sd">    use_chains : bool</span>
 <span class="sd">        Whether or not to use integrator chains</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sx</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">su</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                 <span class="n">delta</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxIt</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">algo</span><span class="o">=</span><span class="s">&#39;leven&#39;</span><span class="p">,</span> <span class="n">use_chains</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        
+
         <span class="c"># save symbolic vectorfield</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span> <span class="o">=</span> <span class="n">ff</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">=</span> <span class="n">algo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sx</span> <span class="o">=</span> <span class="n">sx</span>
@@ -139,23 +136,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">use_chains</span> <span class="o">=</span> <span class="n">use_chains</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">g</span>
         
-        <span class="c"># analyse the given system</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">analyseSystem</span><span class="p">()</span>
+        <span class="c"># initialise dimensions --&gt; they will be set afterwards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="mi">0</span>
         
+        <span class="c"># analyse the given system to set some parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyseSystem</span><span class="p">()</span>
+
         <span class="c"># a little check</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xa</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">xb</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&#39;Dimension mismatch xa,xb&#39;</span>
-        
+
         <span class="c">#: colltype defines the type of collocation points</span>
         <span class="c">#: that are used to build the equation system</span>
-        <span class="c">#: </span>
+        <span class="c">#:</span>
         <span class="c">#: You can either use equidistant collocation points (`colltype = &#39;equidistant&#39;`)</span>
         <span class="c">#: or the socalled Chebychev nodes (`colltype = &#39;chebychev&#39;`)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">=</span> <span class="s">&#39;equidistant&#39;</span> <span class="c"># or &#39;chebychev&#39;</span>
-        
-        <span class="c"># whether or not to use sparse matrices</span>
+
+        <span class="c">#: use_sparse defines whether or not we use sparse matrices where it makes sense</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_sparse</span> <span class="o">=</span> <span class="bp">True</span>
-        
+
         <span class="c"># reset iteration number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nIt</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -166,56 +167,69 @@
         <span class="c">#   key: variable   value: CubicSpline-object</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">splines</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c"># dictionaries for callable solution functions</span>
+        <span class="c"># dictionaries for callable (solution) functions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c"># create symbolic variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span> <span class="o">=</span> <span class="p">([</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;x</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span> <span class="o">=</span> <span class="p">([</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;u</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
-        
-        <span class="c"># transform symbolic ff_sym to numeric ff_num for faster evaluation</span>
+
+        <span class="c"># now we transform the symbolic function of the vectorfield to </span>
+        <span class="c"># a numeric one for faster evaluation</span>
+
+        <span class="c"># create sympy matrix of the vectorfield</span>
         <span class="n">F</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">ff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">))</span>
+        
+        <span class="c"># use lambdify to replace sympy functions in the vectorfield with</span>
+        <span class="c"># numpy equivalents</span>
         <span class="n">_ff_num</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="s">&#39;numpy&#39;</span><span class="p">)</span>
         
+        <span class="c"># create a wrapper as the actual function because of the behaviour</span>
+        <span class="c"># of lambdify()</span>
         <span class="k">def</span> <span class="nf">ff_num</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
             <span class="n">xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_ff_num</span><span class="p">(</span><span class="o">*</span><span class="n">xu</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_ff_num</span><span class="p">(</span><span class="o">*</span><span class="n">xu</span><span class="p">))</span><span class="c">#.squeeze()</span>
         
+        <span class="c"># this is now the callable (numerical) vectorfield of the system</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff_num</span>
 
         <span class="c"># dictionaries for boundary conditions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xa</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xb</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">xx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xa</span><span class="p">[</span><span class="n">xx</span><span class="p">]</span> <span class="o">=</span> <span class="n">xa</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="n">xx</span><span class="p">]</span> <span class="o">=</span> <span class="n">xb</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        
-        <span class="c"># we didn&#39;t do anything yet, so this should be false</span>
+
+        <span class="c"># we didn&#39;t really do anything yet, so this should be false</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="o">=</span> <span class="bp">False</span>
         
+        <span class="c"># and likewise this should not be existent yet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="bp">None</span>
+
         <span class="c"># set logfile</span>
         <span class="c">#log.set_file()</span>
-        
+
         <span class="c"># just for me</span>
         <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">__version__</span>
         <span class="k">print</span> <span class="n">sp</span><span class="o">.</span><span class="n">__version__</span>
         <span class="k">print</span> <span class="n">scp</span><span class="o">.</span><span class="n">__version__</span>
-    
-    
-<div class="viewcode-block" id="Trajectory.startIteration"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.startIteration">[docs]</a>    <span class="k">def</span> <span class="nf">startIteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">startIteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Trajectory.startIteration"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.startIteration">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This is the main loop.</span>
-<span class="sd">        </span>
-<span class="sd">        At first the equations that have to be solved by collocation will be determined according to</span>
-<span class="sd">        the integrator chains. </span>
-<span class="sd">        </span>
+
+<span class="sd">        At first the equations that have to be solved by collocation will be </span>
+<span class="sd">        determined according to the integrator chains.</span>
+
 <span class="sd">        Next, one step of the iteration is done by calling :meth:`iterate()`.</span>
-<span class="sd">        </span>
-<span class="sd">        After that, the accuracy of the found solution is checked. If it is within the tolerance </span>
-<span class="sd">        range the iteration will stop. Else, the number of spline parts is raised and another </span>
-<span class="sd">        iteration step starts.</span>
+
+<span class="sd">        After that, the accuracy of the found solution is checked. </span>
+<span class="sd">        If it is within the tolerance range the iteration will stop. </span>
+<span class="sd">        Else, the number of spline parts is raised and another step starts.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
@@ -227,14 +241,15 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_chains</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">chains</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c"># determine which equations have to be solved by collocation</span>
-        <span class="c"># --&gt; lower ends of integrator chains</span>
+        <span class="c"># now we determine the equations that have to be solved by collocation</span>
+        <span class="c"># (--&gt; lower ends of integrator chains)</span>
         <span class="n">eqind</span> <span class="o">=</span> <span class="p">[]</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
             <span class="c"># iterate over all integrator chains</span>
             <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
-                <span class="c"># if lower end is a system variable then its equation has to be solved</span>
+                <span class="c"># if lower end is a system variable </span>
+                <span class="c"># then its equation has to be solved</span>
                 <span class="k">if</span> <span class="n">ic</span><span class="o">.</span><span class="n">lower</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">):</span>
                     <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">ic</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
                     <span class="n">eqind</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
@@ -243,13 +258,13 @@
             <span class="c"># if integrator chains should not be used</span>
             <span class="c"># then every equation has to be solved by collocation</span>
             <span class="n">eqind</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
-        
+
         <span class="c"># save equation indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eqind</span><span class="p">)</span>
-        
+
         <span class="c"># start first iteration</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iterate</span><span class="p">()</span>
-        
+
         <span class="c"># check if desired accuracy is already reached</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">checkAccuracy</span><span class="p">()</span>
 
@@ -273,39 +288,40 @@
 
             <span class="c"># check if desired accuracy is reached</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">checkAccuracy</span><span class="p">()</span>
-        
+
         <span class="c"># clear workspace</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.analyseSystem"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.analyseSystem">[docs]</a>    <span class="k">def</span> <span class="nf">analyseSystem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Analyses the systems structure and sets values for some of the method parameters.</span>
-<span class="sd">        </span>
-<span class="sd">        By now, this method determines the number of state and input variables and searches for</span>
-<span class="sd">        integrator chains.</span>
+
+
+    <span class="k">def</span> <span class="nf">analyseSystem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.analyseSystem"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.analyseSystem">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Analyses the systems structure and sets values for some of the method </span>
+<span class="sd">        parameters.</span>
+
+<span class="sd">        By now, this method determines the number of state and input variables </span>
+<span class="sd">        and searches for integrator chains.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;####   Analysing System Strucutre   ####&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
-        
+
         <span class="c">###</span>
         <span class="c"># first, determine system dimensions</span>
         <span class="c">###</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Determine system/input dimensions&quot;</span><span class="p">)</span>
         <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="n">found_nm</span> <span class="o">=</span> <span class="bp">False</span>
-        
+
         <span class="k">while</span> <span class="ow">not</span> <span class="n">found_nm</span><span class="p">:</span>
             <span class="c"># iteratively increase system and input dimensions and try to call</span>
             <span class="c"># symbolic vectorfield ff_sym with i/j-dimensional vectors</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-            
+
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                 <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                
+
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
                     <span class="c"># if no ValueError is raised, i is the system dimension</span>
@@ -327,96 +343,97 @@
                             <span class="c">#~ break</span>
                         <span class="c">#~ except:</span>
                             <span class="c">#~ pass</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;---&gt; system: </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">n</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;---&gt; input : </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">m</span><span class="p">)</span>
-        
+
         <span class="c">###</span>
         <span class="c"># next, we look for integrator chains</span>
         <span class="c">###</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Look for integrator chains&quot;</span><span class="p">)</span>
-        
+
         <span class="c"># create symbolic variables to find integrator chains</span>
         <span class="n">x_sym</span> <span class="o">=</span> <span class="p">([</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;x</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
         <span class="n">u_sym</span> <span class="o">=</span> <span class="p">([</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s">&#39;u</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
-        
+
         <span class="n">fi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">u_sym</span><span class="p">)</span>
-    
+
         <span class="n">chaindict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fi</span><span class="p">)):</span>
             <span class="c"># substitution because of sympy difference betw. 1.0 and 1</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fi</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sp</span><span class="o">.</span><span class="n">Basic</span><span class="p">):</span>
                 <span class="n">fi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            
+
             <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="n">x_sym</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">fi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">xx</span><span class="p">:</span>
                     <span class="n">chaindict</span><span class="p">[</span><span class="n">xx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_sym</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            
+
             <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="n">u_sym</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">fi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">uu</span><span class="p">:</span>
                     <span class="n">chaindict</span><span class="p">[</span><span class="n">uu</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_sym</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    
+
         <span class="c"># chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}</span>
         <span class="c"># where x_4 = d x_3 / dt and so on</span>
-        
+
         <span class="c"># find upper ends of integrator chains</span>
         <span class="n">uppers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">chaindict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">chaindict</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">vv</span><span class="p">)):</span>
                 <span class="n">uppers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
-        
+
         <span class="c"># create ordered lists that temporarily represent the integrator chains</span>
         <span class="n">tmpchains</span> <span class="o">=</span> <span class="p">[]</span>
-        
-        <span class="c"># therefor we flip the dictionary to work our way through its keys (former values)</span>
+
+        <span class="c"># therefor we flip the dictionary to work our way through its keys </span>
+        <span class="c"># (former values)</span>
         <span class="n">dictchain</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">chaindict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        
+
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">uppers</span><span class="p">:</span>
             <span class="n">tmpchain</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">vv</span> <span class="o">=</span> <span class="n">var</span>
             <span class="n">tmpchain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
-            
+
             <span class="k">while</span> <span class="n">dictchain</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">vv</span><span class="p">):</span>
                 <span class="n">vv</span> <span class="o">=</span> <span class="n">dictchain</span><span class="p">[</span><span class="n">vv</span><span class="p">]</span>
                 <span class="n">tmpchain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
-            
+
             <span class="n">tmpchains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmpchain</span><span class="p">)</span>
-        
+
         <span class="c"># create an integrator chain object for every temporary chain</span>
         <span class="n">chains</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">tmpchains</span><span class="p">:</span>
             <span class="n">ic</span> <span class="o">=</span> <span class="n">IntegChain</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
             <span class="n">chains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ic</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;---&gt; found: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ic</span><span class="p">))</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">chains</span> <span class="o">=</span> <span class="n">chains</span>
-        
+
         <span class="c"># get minimal neccessary number of spline parts for the manipulated variables</span>
         <span class="c"># --&gt; (3.35)      ?????</span>
         <span class="c">#IPS()</span>
         <span class="c">#nu = -1</span>
         <span class="c">#...</span>
         <span class="c">#self.su = self.n - 3 + 2*(nu + 1)  ?????</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.setParam"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.setParam">[docs]</a>    <span class="k">def</span> <span class="nf">setParam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">setParam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.setParam"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.setParam">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Method to assign value :attr:`val` to method parameter :attr:`param`.</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
+
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
+
 <span class="sd">        param : str</span>
 <span class="sd">            Parameter of which to alter the value</span>
-<span class="sd">        </span>
+
 <span class="sd">        val : ???</span>
 <span class="sd">            New value for the passed parameter</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="c">#if param and val:</span>
         <span class="c">#    exec(&#39;self.%s = %s&#39;%(param, str(val)))</span>
         <span class="c">#elif val and not param:</span>
@@ -429,20 +446,21 @@
             <span class="k">exec</span><span class="p">(</span><span class="s">&#39;self.</span><span class="si">%s</span><span class="s"> = &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">exec</span><span class="p">(</span><span class="s">&#39;self.</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)))</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.iterate"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.iterate">[docs]</a>    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.iterate"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.iterate">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is used to run one iteration step.</span>
-<span class="sd">        </span>
-<span class="sd">        First, new splines are initialised for the variables that are the upper end of an </span>
-<span class="sd">        integrator chain.</span>
-<span class="sd">        </span>
-<span class="sd">        Then, a start value for the solver is determined and the equation system is build.</span>
-<span class="sd">        </span>
-<span class="sd">        Next, the equation system is solved and the resulting numerical values for the free</span>
-<span class="sd">        parameters are written back.</span>
-<span class="sd">        </span>
+
+<span class="sd">        First, new splines are initialised for the variables that are the upper </span>
+<span class="sd">        end of an integrator chain.</span>
+
+<span class="sd">        Then, a start value for the solver is determined and the equation </span>
+<span class="sd">        system is build.</span>
+
+<span class="sd">        Next, the equation system is solved and the resulting numerical values </span>
+<span class="sd">        for the free parameters are written back.</span>
+
 <span class="sd">        As a last, the initial value problem is simulated.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nIt</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -471,20 +489,21 @@
         <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;simulateIVP()&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">simulateIVP</span><span class="p">()</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.getGuess"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.getGuess">[docs]</a>    <span class="k">def</span> <span class="nf">getGuess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">getGuess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.getGuess"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.getGuess">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is used to determine a starting value (guess) for the</span>
 <span class="sd">        solver of the collocation equation system.</span>
-<span class="sd">        </span>
-<span class="sd">        If it is the first iteration step, then a vector with the same length as the vector of </span>
-<span class="sd">        independent parameters with arbitrarily values is returned.</span>
-<span class="sd">        </span>
-<span class="sd">        Else, for every variable a spline has been created for, the old spline of the iteration </span>
-<span class="sd">        before and the new spline are evaluated at specific points and a equation system</span>
-<span class="sd">        is solved which ensures that they are equal in these points. </span>
-<span class="sd">        </span>
-<span class="sd">        The solution of this equation system is the new start value for the solver.</span>
+
+<span class="sd">        If it is the first iteration step, then a vector with the same length as</span>
+<span class="sd">        the vector of the free parameters with arbitrarily values is returned.</span>
+
+<span class="sd">        Else, for every variable a spline has been created for, the old spline </span>
+<span class="sd">        of the iteration before and the new spline are evaluated at specific </span>
+<span class="sd">        points and a equation system is solved which ensures that they are equal</span>
+<span class="sd">        in these points.</span>
+
+<span class="sd">        The solution of this system is the new start value for the solver.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nIt</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
@@ -504,13 +523,13 @@
             <span class="c"># get new guess for every independent variable</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs_sol</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span> <span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">c_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">indep_coeffs</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
-                
+
                 <span class="k">if</span> <span class="p">(</span><span class="n">new_splines</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;x&#39;</span><span class="p">):</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;get new guess for spline </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                    
+
                     <span class="c"># how many unknown coefficients does the new spline have</span>
                     <span class="n">nn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indep_coeffs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                    
+
                     <span class="c"># and this will be the points to evaluate the old spline in</span>
                     <span class="c">#   but we don&#39;t want to use the borders because they got</span>
                     <span class="c">#   the boundary values already</span>
@@ -522,11 +541,11 @@
                     <span class="n">OLD</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span>
                     <span class="n">NEW</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span>
                     <span class="n">NEW_abs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span>
-                    
+
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gpts</span><span class="p">):</span>
                         <span class="n">OLD</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_splines</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
                         <span class="n">NEW</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">NEW_abs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_splines</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-                    
+
                     <span class="n">OLD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">OLD</span><span class="p">)</span>
                     <span class="n">NEW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">NEW</span><span class="p">)</span>
                     <span class="n">NEW_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">NEW_abs</span><span class="p">)</span>
@@ -540,10 +559,10 @@
 
         <span class="c"># the new guess</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="o">=</span> <span class="n">guess</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.initSplines"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.initSplines">[docs]</a>    <span class="k">def</span> <span class="nf">initSplines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">initSplines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.initSplines"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.initSplines">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is used to initialise the provisionally splines.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
@@ -555,13 +574,13 @@
         <span class="n">x_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">u_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">dx_fnc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        
+
         <span class="n">chains</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span>
-        
+
         <span class="c"># first handle variables that are part of an integrator chain</span>
         <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="n">chains</span><span class="p">:</span>
             <span class="n">upper</span> <span class="o">=</span> <span class="n">ic</span><span class="o">.</span><span class="n">upper</span>
-            
+
             <span class="c"># here we just create a spline object for the upper ends of every chain</span>
             <span class="c"># w.r.t. its lower end</span>
             <span class="k">if</span> <span class="n">ic</span><span class="o">.</span><span class="n">lower</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">):</span>
@@ -570,7 +589,7 @@
             <span class="k">elif</span> <span class="n">ic</span><span class="o">.</span><span class="n">lower</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;u&#39;</span><span class="p">):</span>
                 <span class="n">splines</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">su</span><span class="p">,</span><span class="n">bc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span><span class="n">steady</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">tag</span><span class="o">=</span><span class="n">upper</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">splines</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s">&#39;u&#39;</span>
-            
+
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ic</span><span class="o">.</span><span class="n">elements</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">elem</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">:</span>
                     <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
@@ -593,7 +612,7 @@
                     <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
                         <span class="n">splines</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span><span class="o">.</span><span class="n">bcdd</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">xa</span><span class="p">[</span><span class="n">elem</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="n">elem</span><span class="p">]]</span>
                         <span class="n">x_fnc</span><span class="p">[</span><span class="n">elem</span><span class="p">]</span> <span class="o">=</span> <span class="n">splines</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span><span class="o">.</span><span class="n">ddf</span>
-        
+
         <span class="c"># now handle the variables which are not part of any chain</span>
         <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">x_fnc</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">xx</span><span class="p">)):</span>
@@ -626,12 +645,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">u_fnc</span> <span class="o">=</span> <span class="n">u_fnc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dx_fnc</span> <span class="o">=</span> <span class="n">dx_fnc</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.buildEQS"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.buildEQS">[docs]</a>    <span class="k">def</span> <span class="nf">buildEQS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">buildEQS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.buildEQS"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.buildEQS">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Builds the collocation equation system.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;####  Building the equation system  ####&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
@@ -654,25 +673,26 @@
             <span class="c"># get equidistant collocation points</span>
             <span class="n">cpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sx</span><span class="o">*</span><span class="n">delta</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">colltype</span> <span class="o">==</span> <span class="s">&#39;chebychev&#39;</span><span class="p">:</span>
-            <span class="c"># determine rank of chebychev polynomial of which to calculate zero points</span>
+            <span class="c"># determine rank of chebychev polynomial </span>
+            <span class="c"># of which to calculate zero points</span>
             <span class="n">nc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sx</span><span class="o">*</span><span class="n">delta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            
+
             <span class="c"># calculate zero points of chebychev polynomial --&gt; in [-1,1]</span>
             <span class="n">cheb_cpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">nc</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nc</span><span class="p">)]</span>
             <span class="n">cheb_cpts</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-            
+
             <span class="c"># transfer chebychev nodes from [-1,1] to our interval [a,b]</span>
             <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span>
             <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
             <span class="n">chpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">chp</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">chp</span> <span class="ow">in</span> <span class="n">cheb_cpts</span><span class="p">]</span>
-            
+
             <span class="c"># add left and right borders</span>
             <span class="n">cpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">chpts</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Unknown type of collocation points.&#39;</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;--&gt; will use equidistant points!&#39;</span><span class="p">)</span>
             <span class="n">cpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sx</span><span class="o">*</span><span class="n">delta</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        
+
         <span class="n">lx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpts</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x_sym</span><span class="p">)</span>
         <span class="n">lu</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpts</span><span class="p">)</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">u_sym</span><span class="p">)</span>
 
@@ -682,7 +702,7 @@
         <span class="n">Mdx_abs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="n">lx</span>
         <span class="n">Mu</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="n">lu</span>
         <span class="n">Mu_abs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span><span class="o">*</span><span class="n">lu</span>
-        
+
         <span class="c"># here we do something that will be explained after we&#39;ve done it  ;-)</span>
         <span class="n">indic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -699,7 +719,7 @@
             <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">sq</span> <span class="ow">in</span> <span class="n">ic</span><span class="p">:</span>
                     <span class="n">indic</span><span class="p">[</span><span class="n">sq</span><span class="p">]</span> <span class="o">=</span> <span class="n">indic</span><span class="p">[</span><span class="n">ic</span><span class="o">.</span><span class="n">upper</span><span class="p">]</span>
-        
+
         <span class="c"># as promised: here comes the explanation</span>
         <span class="c">#</span>
         <span class="c"># now, the dictionary indic looks something like follows</span>
@@ -707,16 +727,16 @@
         <span class="c"># indic = {u1: (0, 6), x3: (18, 24), x4: (24, 30), x1: (6, 12), x2: (12, 18)}</span>
         <span class="c">#</span>
         <span class="c"># which means, that in the vector of all independent parameters of all splines</span>
-        <span class="c"># the 0th up to the 5st item [remember: Python starts indexing at 0 and leaves out the last] </span>
+        <span class="c"># the 0th up to the 5st item [remember: Python starts indexing at 0 and leaves out the last]</span>
         <span class="c"># belong to the spline created for u1, the items with indices from 6 to 11 belong to the</span>
         <span class="c"># spline created for x1 and so on...</span>
-        
+
         <span class="c"># total number of independent coefficients</span>
         <span class="n">c_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">)</span>
 
         <span class="n">eqx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">equ</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cpts</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">cpts</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="n">x_sym</span><span class="p">:</span>
                 <span class="n">mx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">c_len</span><span class="p">)</span>
                 <span class="n">mdx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">c_len</span><span class="p">)</span>
@@ -747,47 +767,53 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Mu</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Mu_abs</span><span class="p">)</span>
 
-        <span class="c"># for creation of the jacobian matrix</span>
+        <span class="c"># here we create a callable function for the jacobian matrix of the vectorfield </span>
+        <span class="c"># w.r.t. to the system and input variables</span>
         <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span><span class="n">u_sym</span><span class="p">)</span>
         <span class="n">Df_mat</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">x_sym</span><span class="o">+</span><span class="n">u_sym</span><span class="p">)</span>
-        
         <span class="bp">self</span><span class="o">.</span><span class="n">Df</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">x_sym</span><span class="o">+</span><span class="n">u_sym</span><span class="p">,</span> <span class="n">Df_mat</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="s">&#39;numpy&#39;</span><span class="p">)</span>
+
+        <span class="c"># the following would be created with every call to self.DG but it is possible to</span>
+        <span class="c"># only do it once. So we do it here to speed things up.</span>
         
-        <span class="c"># the following would be created with every call to self.DG but it is possible to </span>
-        <span class="c"># only do it once</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cpts</span><span class="p">),</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">)))[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">eqind</span><span class="p">,:]</span>
+        <span class="c"># here we compute the jacobian matrix of the derivatives of the system state functions</span>
+        <span class="c"># (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)</span>
+        <span class="n">DdX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">cpts</span><span class="p">),</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">)))[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">eqind</span><span class="p">,:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">DdX</span><span class="p">)</span>
         
-        <span class="c">##########</span>
-        <span class="c"># NEW</span>
-        <span class="n">J_XU</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c"># here we compute the jacobian matrix of the system/input functions as they also depend on</span>
+        <span class="c"># the free parameters</span>
+        <span class="n">DXU</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">x_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">)</span>
         <span class="n">u_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cpts</span><span class="p">)):</span>
-            <span class="n">J_XU</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">[</span><span class="n">x_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">x_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">[</span><span class="n">u_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">u_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)))</span>
+            <span class="n">DXU</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">[</span><span class="n">x_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">x_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">[</span><span class="n">u_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">u_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)))</span>
         
-        <span class="c">#self.J_XU = np.array(J_XU)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">J_XU</span> <span class="o">=</span> <span class="n">J_XU</span>
-        <span class="n">J_XU2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">J_XU</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">J_XU2</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">J_XU2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DXU</span> <span class="o">=</span> <span class="n">DXU</span>
+        
         <span class="c">##########</span>
-        
+        <span class="c"># NEW - experimental</span>
+        <span class="c">#DXU2 = np.vstack(np.array(DXU))</span>
+        <span class="c">#self.DXU2 = csr_matrix(DXU2)</span>
+        <span class="c">##########</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_sparse</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span><span class="p">)</span>
-            
-            <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DdX</span><span class="p">))</span>
-    
-</div>
-<div class="viewcode-block" id="Trajectory.solveEQS"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.solveEQS">[docs]</a>    <span class="k">def</span> <span class="nf">solveEQS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DdX</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">solveEQS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.solveEQS"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.solveEQS">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is used to solve the collocation equation system.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;#####  Solving the equation system  ####&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
@@ -799,12 +825,13 @@
         <span class="c"># solve the equation system</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.G"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.G">[docs]</a>    <span class="k">def</span> <span class="nf">G</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the collocation system evaluated with numeric values for the independent parameters.</span>
+
+    <span class="k">def</span> <span class="nf">G</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.G"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.G">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the collocation system evaluated with numeric values for the </span>
+<span class="sd">        independent parameters.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">ff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span>
         <span class="n">eqind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span>
 
@@ -821,7 +848,7 @@
         <span class="c"># to lower ends of integrator chains (via eqind)</span>
         <span class="c"># other equations need not to be solved</span>
         <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">u</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">U</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()[:,</span><span class="n">eqind</span><span class="p">]</span>
-        
+
         <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span>
         <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dX</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">x_len</span><span class="p">))[:,</span><span class="n">eqind</span><span class="p">]</span>
 
@@ -829,85 +856,87 @@
 
         <span class="k">return</span> <span class="n">G</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.DG"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.DG">[docs]</a>    <span class="k">def</span> <span class="nf">DG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the Jacobian matrix of the collocation system w.r.t. the independent parameters</span>
-<span class="sd">        evaluated at :attr:`c`.</span>
+
+    <span class="k">def</span> <span class="nf">DG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.DG"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.DG">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the jacobian matrix of the collocation system w.r.t. the </span>
+<span class="sd">        independent parameters evaluated at :attr:`c`.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
+        <span class="c"># make callable function for the jacobian matrix of the vectorfield local</span>
         <span class="n">Df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Df</span>
         <span class="n">eqind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span>
 
         <span class="n">x_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">)</span>
         <span class="n">u_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">)</span>
 
-        <span class="c"># x-/u-values in all collocation points</span>
+        <span class="c"># first we calculate the x and u values in all collocation points</span>
+        <span class="c"># with the current numerical values of the free parameters</span>
         <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">x_len</span><span class="p">))</span> <span class="c"># one column for every state component</span>
         <span class="n">U</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span>
         <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">U</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">u_len</span><span class="p">))</span> <span class="c"># one column for every input component</span>
-        
-        <span class="c">##########</span>
-        <span class="c"># The following two loops are time consuming</span>
-        <span class="c">#</span>
-        
-        <span class="c"># construct jacobian of rhs w.r.t. indep coeffs</span>
+
+        <span class="c"># now we compute blocks of the jacobian matrix of the vectorfield with those values</span>
         <span class="n">DF_blocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">u</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">U</span><span class="p">):</span>
-            <span class="c"># get one row of U and X respectively</span>
+            <span class="c"># get one row of X and U respectively</span>
             <span class="n">tmp_xu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">))</span>
-        
-            <span class="c"># evaluate jacobian at current collocation point</span>
+
+            <span class="c"># evaluate the jacobian of the vectorfield at current collocation point represented by </span>
+            <span class="c"># the row of X and U</span>
             <span class="n">DF_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Df</span><span class="p">(</span><span class="o">*</span><span class="n">tmp_xu</span><span class="p">))</span>
         
-        <span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c">###############################################</span>
-            <span class="c"># OLD - working</span>
-            <span class="c">###############################################</span>
-            <span class="n">DF</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">)):</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_XU</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                <span class="k">assert</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">x_len</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">))</span>
-                <span class="n">DF</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-            
-            <span class="n">DF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DF</span><span class="p">)[:,</span><span class="n">eqind</span><span class="p">,:]</span>
-            <span class="c"># 1st index : collocation point</span>
-            <span class="c"># 2nd index : equations that have to be solved --&gt; end of an integrator chain</span>
-            <span class="c"># 3rd index : component of c</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c">###############################################</span>
-            <span class="c"># NEW - experimental</span>
-            <span class="c">###############################################</span>
-            <span class="n">block_DF</span> <span class="o">=</span> <span class="n">bdiag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">)),</span> <span class="p">(</span><span class="n">x_len</span><span class="p">,</span> <span class="n">x_len</span><span class="o">+</span><span class="n">u_len</span><span class="p">),</span><span class="bp">True</span><span class="p">)</span>
-            <span class="n">J_XU</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_XU2</span>
-            <span class="n">DF2</span> <span class="o">=</span> <span class="n">block_DF</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J_XU</span><span class="p">)</span>
-            <span class="c">#DF2.reshape((-1,x_len,len(c))) # --&gt; to many reshape dimensions for sparse matrix</span>
-            <span class="n">DF2</span> <span class="o">=</span> <span class="n">DF2</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">x_len</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
-            <span class="n">DF</span> <span class="o">=</span> <span class="n">DF2</span><span class="p">[:,</span><span class="n">eqind</span><span class="p">,:]</span>
+        <span class="c"># because the system/input variables depend on the free parameters we have to multiply each</span>
+        <span class="c"># jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters</span>
+        <span class="c"># --&gt; see buildEQS()</span>
+        <span class="c">###############################################</span>
+        <span class="c"># OLD - working</span>
+        <span class="c">###############################################</span>
+        <span class="n">DF</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">)):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">DXU</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">assert</span> <span class="n">res</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">x_len</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_list</span><span class="p">))</span>
+            <span class="n">DF</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
         
+        <span class="n">DF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DF</span><span class="p">)[:,</span><span class="n">eqind</span><span class="p">,:]</span>
+        <span class="c"># 1st index : collocation point</span>
+        <span class="c"># 2nd index : equations that have to be solved --&gt; end of an integrator chain</span>
+        <span class="c"># 3rd index : component of c</span>
         
+        <span class="c">###############################################</span>
+        <span class="c"># NEW - experimental</span>
+        <span class="c">###############################################</span>
+        <span class="c">#block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)</span>
+        <span class="c">#DXU = self.DXU2</span>
+        <span class="c">#DF2 = block_DF.dot(DXU)</span>
+        <span class="c">##DF2.reshape((-1,x_len,len(c))) # --&gt; to many reshape dimensions for sparse matrix</span>
+        <span class="c">#DF2 = DF2.toarray().reshape((-1,x_len,len(c)))</span>
+        <span class="c">#DF = DF2[:,eqind,:]</span>
+        <span class="c">###############################################</span>
+
+
         <span class="c"># now compute jacobian of x_dot w.r.t. to indep coeffs</span>
         <span class="c"># --&gt; see buildEQS()</span>
         <span class="c">#DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]</span>
         <span class="n">DdX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span>
-        
+
         <span class="c"># stack matrices in vertical direction</span>
         <span class="c">#DG = np.vstack(DF) - np.vstack(DdX)</span>
         <span class="n">DG</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">DF</span><span class="p">)</span> <span class="o">-</span> <span class="n">DdX</span>
-        
+
         <span class="k">return</span> <span class="n">DG</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.setCoeff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.setCoeff">[docs]</a>    <span class="k">def</span> <span class="nf">setCoeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">setCoeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.setCoeff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.setCoeff">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Set found numerical values for the independent parameters of each spline.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method is used to get the actual splines by using the numerical</span>
 <span class="sd">        solutions to set up the coefficients of the polynomial spline parts of</span>
 <span class="sd">        every created spline.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Set spline coefficients&quot;</span><span class="p">)</span>
 
         <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sol</span>
@@ -917,12 +946,12 @@
             <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="n">subs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
             <span class="n">sol</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
-        
+
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ic</span><span class="p">:</span>
                     <span class="n">subs</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">subs</span><span class="p">[</span><span class="n">ic</span><span class="o">.</span><span class="n">upper</span><span class="p">]</span>
-        
+
         <span class="c"># set numerical coefficients for each spline</span>
         <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">splines</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">splines</span><span class="p">[</span><span class="n">cc</span><span class="p">]</span><span class="o">.</span><span class="n">set_coeffs</span><span class="p">(</span><span class="n">subs</span><span class="p">[</span><span class="n">cc</span><span class="p">])</span>
@@ -933,17 +962,17 @@
         <span class="c"># used for indexing</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-        
+
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indep_coeffs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span> <span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
             <span class="n">j</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="n">coeffs_sol</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sol</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">coeffs_sol</span> <span class="o">=</span> <span class="n">coeffs_sol</span>
 
-</div>
-<div class="viewcode-block" id="Trajectory.simulateIVP"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.simulateIVP">[docs]</a>    <span class="k">def</span> <span class="nf">simulateIVP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">simulateIVP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.simulateIVP"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.simulateIVP">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This method is used to solve the initial value problem.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
@@ -955,151 +984,157 @@
         <span class="n">start</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">:</span>
             <span class="n">start</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xa</span><span class="p">[</span><span class="n">xx</span><span class="p">])</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;start: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">))</span>
-        
+
         <span class="c"># calulate simulation time</span>
         <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span>
-        
+
         <span class="c"># create simulation object</span>
         <span class="n">S</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">)</span>
-        
+
         <span class="c"># start forward simulation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
 
-        
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.checkAccuracy"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.checkAccuracy">[docs]</a>    <span class="k">def</span> <span class="nf">checkAccuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+
+    <span class="k">def</span> <span class="nf">checkAccuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.checkAccuracy"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.checkAccuracy">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Checks whether the desired accuracy for the boundary values was reached.</span>
-<span class="sd">        </span>
-<span class="sd">        It calculates the difference between the solution of the simulation </span>
-<span class="sd">        and the given boundary values at the right border and compares its maximum against the</span>
-<span class="sd">        tolerance set by self.eps</span>
+
+<span class="sd">        It calculates the difference between the solution of the simulation</span>
+<span class="sd">        and the given boundary values at the right border and compares its </span>
+<span class="sd">        maximum against the tolerance set by self.eps</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="c"># this is the solution of the simulation</span>
         <span class="n">xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="c"># what is the error</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="s">&quot;-&quot;</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Ending up with:</span><span class="se">\t</span><span class="s"> Should Be: </span><span class="se">\t</span><span class="s"> Difference:&quot;</span><span class="p">)</span>
-        
+
         <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">xx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">):</span>
             <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="n">xx</span><span class="p">]</span> <span class="o">-</span> <span class="n">xt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:][</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span><span class="o">+</span><span class="s">&quot; : </span><span class="si">%f</span><span class="s"> </span><span class="se">\t</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="se">\t</span><span class="s"> </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">xt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="n">xx</span><span class="p">],</span> <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="s">&quot;-&quot;</span><span class="p">)</span>
-        
+
         <span class="c"># save difference</span>
         <span class="c"># --&gt; really neccessary?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">err</span> <span class="o">=</span> <span class="n">err</span>
-        
+
         <span class="c"># check if tolerance is satisfied</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
-        
+
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;--&gt; reached desired accuracy: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span><span class="p">))</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.x"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.x">[docs]</a>    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.x"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.x">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns the system state at a given (time-) point :attr:`t`.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
-    
-</div>
-<div class="viewcode-block" id="Trajectory.u"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.u">[docs]</a>    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.u"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.u">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns the state of the inputs at a given (time-) point :attr:`t`.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">u_fnc</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">])</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.dx"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.dx">[docs]</a>    <span class="k">def</span> <span class="nf">dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the state of the 1st derivatives of the system variables at a :attr:`t`.</span>
+
+
+    <span class="k">def</span> <span class="nf">dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.dx"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.dx">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the state of the 1st derivatives of the system variables </span>
+<span class="sd">        at :attr:`t`.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dx_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.plot"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.plot"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.plot">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Plot the calculated trajectories and error functions.</span>
-<span class="sd">        </span>
-<span class="sd">        This method calculates the error functions and then calls </span>
+
+<span class="sd">        This method calculates the error functions and then calls</span>
 <span class="sd">        the :func:`utilities.plot` function.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">matplotlib</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;Matplotlib is not available for plotting.&#39;</span><span class="p">)</span>
             <span class="k">return</span>
-        
+
         <span class="c"># calculate the error functions H_i(t)</span>
         <span class="n">H</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        
+
         <span class="n">error</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">xe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
             <span class="n">ue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            
+
             <span class="n">ffe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">xe</span><span class="p">,</span> <span class="n">ue</span><span class="p">)</span>
             <span class="n">dxe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-            
+
             <span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ffe</span> <span class="o">-</span> <span class="n">dxe</span><span class="p">)</span>
         <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-        
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span><span class="p">:</span>
             <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
-        
+
         <span class="c"># call utilities.plot() [ imported as plotsim() ]</span>
         <span class="n">plotsim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.save"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
+
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.save"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.save">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Save system data, callable solution functions and simulation results.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        
+
         <span class="n">save</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        
+
         <span class="c"># system data</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;ff_sym&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_sym</span>
-        <span class="n">save</span><span class="p">[</span><span class="s">&#39;ff_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_num</span>
+        <span class="n">save</span><span class="p">[</span><span class="s">&#39;ff_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
-        
+
         <span class="c"># boundary values</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;xa&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xa</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;xb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xb</span>
-        
+
         <span class="c"># solution functions</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;u&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;dx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
-        
+
         <span class="c"># simulation resutls</span>
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;sim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span>
-    
-    </div>
-<div class="viewcode-block" id="Trajectory.clear"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        This method is intended to delete some attributes of the object that are no longer </span>
-<span class="sd">        neccessary after the iteration has finished.</span>
-<span class="sd">        </span>
+
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Trajectory.clear"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.clear">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This method is intended to delete some attributes of the object that </span>
+<span class="sd">        are no longer neccessary after the iteration has finished.</span>
+
 <span class="sd">        TODO: implement this ;-P</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx_abs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu_abs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mdx_abs</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DXU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DdX</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_list</span>
+        
         <span class="k">return</span>
 
 
-</div></div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span></div></div>
     <span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
     <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
-    
+
     <span class="c"># partiell linearisiertes inverses Pendel [6.1.3]</span>
 
     <span class="n">calc</span> <span class="o">=</span> <span class="bp">True</span>
@@ -1124,7 +1159,7 @@
             <span class="mf">0.0</span><span class="p">,</span>
             <span class="mf">0.0</span><span class="p">,</span>
             <span class="mf">0.0</span><span class="p">]</span>
-    
+
     <span class="k">if</span><span class="p">(</span><span class="n">calc</span><span class="p">):</span>
         <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span>
@@ -1141,7 +1176,7 @@
 
         <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;Iteration&quot;</span><span class="p">):</span>
             <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
-        
+
         <span class="n">IPS</span><span class="p">()</span>
 </pre></div>
 

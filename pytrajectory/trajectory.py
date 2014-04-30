@@ -10,12 +10,12 @@ from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
 from utilities import IntegChain
+from utilities import plot as plotsim
 import log
 
 #####
 #NEW
-from utilities import blockdiag as bdiag
-from utilities import plot as plotsim
+#from utilities import blockdiag as bdiag
 #####
 
 # DEBUG
@@ -26,12 +26,13 @@ class Trajectory():
     '''
     Base class of the PyTrajectory project.
 
-    Trajectory manages everything from analysing the given system over initialising the spline
-    functions, setting up and solving the collocation equation system up to the simulation of the
-    resulting initial value problem.
+    Trajectory manages everything from analysing the given system over
+    initialising the spline functions, setting up and solving the collocation
+    equation system up to the simulation of the resulting initial value problem.
 
-    After the iteration has finished, it provides access to callable functions for the system and
-    input variables as well as some capabilities for visualising the systems dynamic.
+    After the iteration has finished, it provides access to callable functions
+    for the system and input variables as well as some capabilities for
+    visualising the systems dynamic.
 
 
     Parameters
@@ -88,12 +89,16 @@ class Trajectory():
         self.use_chains = use_chains
         self.g = g
 
-        # analyse the given system
+        # initialise dimensions --> they will be set afterwards
+        self.n = 0
+        self.m = 0
+
+        # analyse the given system to set some parameters
         self.analyseSystem()
 
         # a little check
         if not (len(xa) == len(xb) == self.n):
-            raise ValueError, 'Dimension mismatch xa,xb'
+            raise ValueError('Dimension mismatch xa,xb')
 
         #: colltype defines the type of collocation points
         #: that are used to build the equation system
@@ -102,7 +107,7 @@ class Trajectory():
         #: or the socalled Chebychev nodes (`colltype = 'chebychev'`)
         self.colltype = 'equidistant' # or 'chebychev'
 
-        # whether or not to use sparse matrices
+        #: use_sparse defines whether or not we use sparse matrices where it makes sense
         self.use_sparse = True
 
         # reset iteration number
@@ -124,22 +129,22 @@ class Trajectory():
         self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
 
-        # now we transform the symbolic function of the vectorfield to 
+        # now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
 
         # create sympy matrix of the vectorfield
         F = sp.Matrix(ff(self.x_sym,self.u_sym))
-        
+
         # use lambdify to replace sympy functions in the vectorfield with
         # numpy equivalents
         _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
-        
+
         # create a wrapper as the actual function because of the behaviour
         # of lambdify()
         def ff_num(x, u):
             xu = np.hstack((x, u))
             return np.array(_ff_num(*xu))#.squeeze()
-        
+
         # this is now the callable (numerical) vectorfield of the system
         self.ff = ff_num
 
@@ -151,8 +156,11 @@ class Trajectory():
             self.xa[xx] = xa[i]
             self.xb[xx] = xb[i]
 
-        # we didn't do anything yet, so this should be false
+        # we didn't really do anything yet, so this should be false
         self.reached_accuracy = False
+
+        # and likewise this should not be existent yet
+        self.sol = None
 
         # set logfile
         #log.set_file()
@@ -167,13 +175,13 @@ class Trajectory():
         '''
         This is the main loop.
 
-        At first the equations that have to be solved by collocation will be 
+        At first the equations that have to be solved by collocation will be
         determined according to the integrator chains.
 
         Next, one step of the iteration is done by calling :meth:`iterate()`.
 
-        After that, the accuracy of the found solution is checked. 
-        If it is within the tolerance range the iteration will stop. 
+        After that, the accuracy of the found solution is checked.
+        If it is within the tolerance range the iteration will stop.
         Else, the number of spline parts is raised and another step starts.
         '''
 
@@ -186,14 +194,14 @@ class Trajectory():
         if not self.use_chains:
             self.chains = dict()
 
-        # determine which equations have to be solved by collocation
-        # --> lower ends of integrator chains
+        # now we determine the equations that have to be solved by collocation
+        # (--> lower ends of integrator chains)
         eqind = []
 
         if self.chains:
             # iterate over all integrator chains
             for ic in self.chains:
-                # if lower end is a system variable 
+                # if lower end is a system variable
                 # then its equation has to be solved
                 if ic.lower.name.startswith('x'):
                     idx = self.x_sym.index(ic.lower)
@@ -240,10 +248,10 @@ class Trajectory():
 
     def analyseSystem(self):
         '''
-        Analyses the systems structure and sets values for some of the method 
+        Analyses the systems structure and sets values for some of the method
         parameters.
 
-        By now, this method determines the number of state and input variables 
+        By now, this method determines the number of state and input variables
         and searches for integrator chains.
         '''
 
@@ -251,9 +259,7 @@ class Trajectory():
         log.info("####   Analysing System Strucutre   ####")
         log.info( 40*"#")
 
-        ###
         # first, determine system dimensions
-        ###
         log.info("Determine system/input dimensions")
         i = -1
         found_nm = False
@@ -295,14 +301,12 @@ class Trajectory():
         log.info("---> system: %d"%n)
         log.info("---> input : %d"%m)
 
-        ###
         # next, we look for integrator chains
-        ###
         log.info("Look for integrator chains")
 
         # create symbolic variables to find integrator chains
-        x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,n+1)])
-        u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,m+1)])
+        x_sym = ([sp.symbols('x%d' % k, type=float) for k in xrange(1,n+1)])
+        u_sym = ([sp.symbols('u%d' % k, type=float) for k in xrange(1,m+1)])
 
         fi = self.ff_sym(x_sym, u_sym)
 
@@ -332,7 +336,7 @@ class Trajectory():
         # create ordered lists that temporarily represent the integrator chains
         tmpchains = []
 
-        # therefor we flip the dictionary to work our way through its keys 
+        # therefor we flip the dictionary to work our way through its keys
         # (former values)
         dictchain = {v:k for k,v in chaindict.items()}
 
@@ -356,9 +360,10 @@ class Trajectory():
 
         self.chains = chains
 
-        # get minimal neccessary number of spline parts for the manipulated variables
+        # get minimal neccessary number of spline parts
+        # for the manipulated variables
+        # TODO: implement this!?
         # --> (3.35)      ?????
-        #IPS()
         #nu = -1
         #...
         #self.su = self.n - 3 + 2*(nu + 1)  ?????
@@ -378,7 +383,7 @@ class Trajectory():
         val : ???
             New value for the passed parameter
         '''
-
+        
         #if param and val:
         #    exec('self.%s = %s'%(param, str(val)))
         #elif val and not param:
@@ -397,13 +402,13 @@ class Trajectory():
         '''
         This method is used to run one iteration step.
 
-        First, new splines are initialised for the variables that are the upper 
+        First, new splines are initialised for the variables that are the upper
         end of an integrator chain.
 
-        Then, a start value for the solver is determined and the equation 
+        Then, a start value for the solver is determined and the equation
         system is build.
 
-        Next, the equation system is solved and the resulting numerical values 
+        Next, the equation system is solved and the resulting numerical values
         for the free parameters are written back.
 
         As a last, the initial value problem is simulated.
@@ -443,8 +448,8 @@ class Trajectory():
         If it is the first iteration step, then a vector with the same length as
         the vector of the free parameters with arbitrarily values is returned.
 
-        Else, for every variable a spline has been created for, the old spline 
-        of the iteration before and the new spline are evaluated at specific 
+        Else, for every variable a spline has been created for, the old spline
+        of the iteration before and the new spline are evaluated at specific
         points and a equation system is solved which ensures that they are equal
         in these points.
 
@@ -570,7 +575,7 @@ class Trajectory():
                 splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
-
+        
         # solve smoothness conditions of each spline
         for ss in splines:
             with log.Timer("makesteady()"):
@@ -613,12 +618,12 @@ class Trajectory():
         b = self.b
         delta = self.delta
 
-        # generate collocation points ---> [3.3]
+        # now we generate the collocation points
         if self.colltype == 'equidistant':
             # get equidistant collocation points
             cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
         elif self.colltype == 'chebychev':
-            # determine rank of chebychev polynomial 
+            # determine rank of chebychev polynomial
             # of which to calculate zero points
             nc = int(self.sx*delta - 1)
 
@@ -681,7 +686,7 @@ class Trajectory():
 
         eqx = 0
         equ = 0
-        for i,p in enumerate(cpts):
+        for p in cpts:
             for xx in x_sym:
                 mx = np.zeros(c_len)
                 mdx = np.zeros(c_len)
@@ -712,29 +717,35 @@ class Trajectory():
         self.Mu = np.array(Mu)
         self.Mu_abs = np.array(Mu_abs)
 
-        # for creation of the jacobian matrix
+        # here we create a callable function for the jacobian matrix of the vectorfield
+        # w.r.t. to the system and input variables
         f = self.ff_sym(x_sym,u_sym)
         Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
-
         self.Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
 
         # the following would be created with every call to self.DG but it is possible to
-        # only do it once
-        self.DdX = self.Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,self.eqind,:]
+        # only do it once. So we do it here to speed things up.
 
-        ##########
-        # NEW
-        J_XU = []
+        # here we compute the jacobian matrix of the derivatives of the system state functions
+        # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
+        DdX = self.Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,self.eqind,:]
+        self.DdX = np.vstack(DdX)
+
+        # here we compute the jacobian matrix of the system/input functions as they also depend on
+        # the free parameters
+        DXU = []
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
 
         for i in xrange(len(cpts)):
-            J_XU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
+            DXU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
 
-        #self.J_XU = np.array(J_XU)
-        self.J_XU = J_XU
-        J_XU2 = np.vstack(np.array(J_XU))
-        self.J_XU2 = csr_matrix(J_XU2)
+        self.DXU = DXU
+
+        ##########
+        # NEW - experimental
+        #DXU2 = np.vstack(np.array(DXU))
+        #self.DXU2 = csr_matrix(DXU2)
         ##########
 
         if self.use_sparse:
@@ -745,7 +756,7 @@ class Trajectory():
             self.Mu = csr_matrix(self.Mu)
             self.Mu_abs = csr_matrix(self.Mu_abs)
 
-            self.DdX = csr_matrix(np.vstack(self.DdX))
+            self.DdX = csr_matrix(self.DdX)
 
 
     def solveEQS(self):
@@ -767,7 +778,7 @@ class Trajectory():
 
     def G(self, c):
         '''
-        Returns the collocation system evaluated with numeric values for the 
+        Returns the collocation system evaluated with numeric values for the
         independent parameters.
         '''
 
@@ -798,59 +809,61 @@ class Trajectory():
 
     def DG(self, c):
         '''
-        Returns the Jacobian matrix of the collocation system w.r.t. the 
+        Returns the jacobian matrix of the collocation system w.r.t. the
         independent parameters evaluated at :attr:`c`.
         '''
 
+        # make callable function for the jacobian matrix of the vectorfield local
         Df = self.Df
         eqind = self.eqind
 
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
 
-        # x-/u-values in all collocation points
+        # first we calculate the x and u values in all collocation points
+        # with the current numerical values of the free parameters
         X = self.Mx.dot(c) + self.Mx_abs
         X = np.array(X).reshape((-1,x_len)) # one column for every state component
         U = self.Mu.dot(c) + self.Mu_abs
         U = np.array(U).reshape((-1,u_len)) # one column for every input component
 
-        ##########
-        # The following two loops are time consuming
-        #
-
-        # construct jacobian of rhs w.r.t. indep coeffs
+        # now we compute blocks of the jacobian matrix of the vectorfield with those values
         DF_blocks = []
         for x,u in zip(X,U):
-            # get one row of U and X respectively
+            # get one row of X and U respectively
             tmp_xu = np.hstack((x,u))
 
-            # evaluate jacobian at current collocation point
+            # evaluate the jacobian of the vectorfield at current collocation point represented by
+            # the row of X and U
             DF_blocks.append(Df(*tmp_xu))
 
-        if 1:
-            ###############################################
-            # OLD - working
-            ###############################################
-            DF = []
-            for i in xrange(len(DF_blocks)):
-                res = np.dot(DF_blocks[i], self.J_XU[i])
-                assert res.shape == (x_len,len(self.c_list))
-                DF.append(res)
+        # because the system/input variables depend on the free parameters we have to multiply each
+        # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
+        # --> see buildEQS()
+        ###############################################
+        # OLD - working
+        ###############################################
+        DF = []
+        for i in xrange(len(DF_blocks)):
+            res = np.dot(DF_blocks[i], self.DXU[i])
+            assert res.shape == (x_len,len(self.c_list))
+            DF.append(res)
 
-            DF = np.array(DF)[:,eqind,:]
-            # 1st index : collocation point
-            # 2nd index : equations that have to be solved --> end of an integrator chain
-            # 3rd index : component of c
-        else:
-            ###############################################
-            # NEW - experimental
-            ###############################################
-            block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
-            J_XU = self.J_XU2
-            DF2 = block_DF.dot(J_XU)
-            #DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions for sparse matrix
-            DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
-            DF = DF2[:,eqind,:]
+        DF = np.array(DF)[:,eqind,:]
+        # 1st index : collocation point
+        # 2nd index : equations that have to be solved --> end of an integrator chain
+        # 3rd index : component of c
+
+        ###############################################
+        # NEW - experimental
+        ###############################################
+        #block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
+        #DXU = self.DXU2
+        #DF2 = block_DF.dot(DXU)
+        ##DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions for sparse matrix
+        #DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
+        #DF = DF2[:,eqind,:]
+        ###############################################
 
 
         # now compute jacobian of x_dot w.r.t. to indep coeffs
@@ -941,7 +954,7 @@ class Trajectory():
         Checks whether the desired accuracy for the boundary values was reached.
 
         It calculates the difference between the solution of the simulation
-        and the given boundary values at the right border and compares its 
+        and the given boundary values at the right border and compares its
         maximum against the tolerance set by self.eps
         '''
 
@@ -950,12 +963,12 @@ class Trajectory():
 
         # what is the error
         log.info(40*"-")
-        log.info("Ending up with:\t Should Be: \t Difference:")
+        log.info("Ending up with:   Should Be:  Difference:")
 
         err = np.empty(self.n)
         for i, xx in enumerate(self.x_sym):
             err[i] = abs(self.xb[xx] - xt[-1:][0][i])
-            log.info(str(xx)+" : %f \t %f \t %f"%(xt[-1][i], self.xb[xx], err[i]))
+            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]))
 
         log.info(40*"-")
 
@@ -985,7 +998,7 @@ class Trajectory():
 
     def dx(self, t):
         '''
-        Returns the state of the 1st derivatives of the system variables 
+        Returns the state of the 1st derivatives of the system variables
         at :attr:`t`.
         '''
         return np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
@@ -1054,11 +1067,16 @@ class Trajectory():
 
     def clear(self):
         '''
-        This method is intended to delete some attributes of the object that 
+        This method is intended to delete some attributes of the object that
         are no longer neccessary after the iteration has finished.
 
         TODO: implement this ;-P
         '''
+
+        del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
+        del self.Df, self.DXU, self.DdX
+        del self.c_list
+
         return
 
 
