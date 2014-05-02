@@ -2,7 +2,7 @@
 This file is part of PyTrajectory.
 '''
 
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 from setuptools import setup, find_packages
 import os
