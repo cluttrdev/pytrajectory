@@ -71,11 +71,12 @@ system.</p>
 <dt id="pytrajectory.trajectory.Trajectory">
 <em class="property">class </em><tt class="descclassname">pytrajectory.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>ff</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>xa=None</em>, <em>xb=None</em>, <em>g=None</em>, <em>sx=5</em>, <em>su=5</em>, <em>kx=2</em>, <em>delta=2</em>, <em>maxIt=10</em>, <em>eps=0.01</em>, <em>tol=1e-05</em>, <em>algo='leven'</em>, <em>use_chains=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class of the PyTrajectory project.</p>
-<p>Trajectory manages everything from analysing the given system over initialising the spline
-functions, setting up and solving the collocation equation system up to the simulation of the
-resulting initial value problem.</p>
-<p>After the iteration has finished, it provides access to callable functions for the system and
-input variables as well as some capabilities for visualising the systems dynamic.</p>
+<p>Trajectory manages everything from analysing the given system over
+initialising the spline functions, setting up and solving the collocation
+equation system up to the simulation of the resulting initial value problem.</p>
+<p>After the iteration has finished, it provides access to callable functions
+for the system and input variables as well as some capabilities for
+visualising the systems dynamic.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -454,17 +455,17 @@ collocation equation system.</p>
 <dl class="class">
 <dt id="pytrajectory.simulation.Simulation">
 <em class="property">class </em><tt class="descclassname">pytrajectory.simulation.</tt><tt class="descname">Simulation</tt><big>(</big><em>ff</em>, <em>T</em>, <em>start</em>, <em>u</em>, <em>dt=0.01</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class simulates the initial value problem that results from solving the
-boundary value problem of the control system.</p>
+<dd><p>This class simulates the initial value problem that results from solving
+the boundary value problem of the control system.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of the control system</li>
-<li><strong>T</strong> (<em>float</em>) &#8211; Simulation time</li>
-<li><strong>u</strong> (<em>callable</em>) &#8211; Function of the input variables</li>
-<li><strong>dt</strong> (<em>float</em>) &#8211; Time step</li>
+<li><strong>ff</strong> (<em>callable</em>) &#8211; Vectorfield of the control system.</li>
+<li><strong>T</strong> (<em>float</em>) &#8211; Simulation time.</li>
+<li><strong>u</strong> (<em>callable</em>) &#8211; Function of the input variables.</li>
+<li><strong>dt</strong> (<em>float</em>) &#8211; Time step.</li>
 </ul>
 </td>
 </tr>
@@ -479,7 +480,7 @@ boundary value problem of the control system.</p>
 <dl class="method">
 <dt id="pytrajectory.simulation.Simulation.rhs">
 <tt class="descname">rhs</tt><big>(</big><em>t</em>, <em>x</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/simulation.html#Simulation.rhs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.simulation.Simulation.rhs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Right hand side of the ode system.</p>
+<dd><p>Retruns the right hand side (vectorfield) of the ode system.</p>
 </dd></dl>
 
 <dl class="method">
@@ -490,7 +491,11 @@ boundary value problem of the control system.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">List of numpy arrays with time steps and simulation data of system and input variables.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><em>List of numpy arrays with time steps and simulation data of system and</em></li>
+<li><em>input variables.</em></li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
