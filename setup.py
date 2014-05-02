@@ -19,9 +19,9 @@ long_description = read('README.rst')
 
 setup(name='PyTrajectory',
     version=pytrajectory.__version__,
-    install_requires=['NumPy>=1.8.1',
-                    'SymPy>=0.7.5',
-                    'Scipy>=0.13.3']
+    install_requires=['numpy>=1.8.1',
+                    'sympy>=0.7.5',
+                    'scipy>=0.13.3']
     extras_require={'visualisation' : ['Matplotlib']},
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
     author_email='Andreas.Kunze@mailbox.tu-dresden.de',
