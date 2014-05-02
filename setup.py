@@ -8,7 +8,7 @@ from setuptools import setup
 import os
 import codecs
 
-import pytrajectory
+#import pytrajectory
 
 here = os.path.abspath(ox.path.dirname(__file__))
 
@@ -18,7 +18,8 @@ def read(*parts):
 long_description = read('README.rst')
 
 setup(name='PyTrajectory',
-    version=pytrajectory.__version__,
+    #version=pytrajectory.__version__,
+    version='0.3.3',
     install_requires=['numpy>=1.8.1',
                     'sympy>=0.7.5',
                     'scipy>=0.13.3'],
