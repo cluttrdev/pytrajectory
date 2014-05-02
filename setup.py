@@ -21,7 +21,7 @@ setup(name='PyTrajectory',
     version=pytrajectory.__version__,
     install_requires=['numpy>=1.8.1',
                     'sympy>=0.7.5',
-                    'scipy>=0.13.3']
+                    'scipy>=0.13.3'],
     extras_requires={'visualisation' : ['Matplotlib']},
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
     author_email='Andreas.Kunze@mailbox.tu-dresden.de',
