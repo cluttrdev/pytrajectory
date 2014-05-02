@@ -103,13 +103,10 @@ class Animation():
     
     drawfnc : callable
         Function that returns an image of the current system state according to :attr:`simdata`
-    
     simdata : numpy.ndarray
         Array that contains simulation data (time, system states, input states)
-    
     plotsys : list
         List of tuples with indices and labels of system variables that will be plotted along the picture
-    
     plotinputs : list
         List of tuples with indices and labels of input variables that will be plotted along the picture
     '''

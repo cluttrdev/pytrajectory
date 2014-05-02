@@ -40,45 +40,32 @@ class Trajectory():
 
     ff :  callable
         Vectorfield (rhs) of the control system
-    
     a : float
         Left border
-    
     b : float
         Right border
-    
     xa : list
         Boundary values at the left border
-    
     xb : list
         Boundary values at the right border
-    
     g : list
         Boundary values of the input variables
-    
     sx : int
         Initial number of spline parts for the system variables
-    
     su : int
         Initial number of spline parts for the input variables
-    
     kx : int
         Factor for raising the number of spline parts for the system variables
-    
     delta : int
         Constant for calculation of collocation points
-    
     maxIt : int
         Maximum number of iterations
     eps : float
         Tolerance for the solution of the initial value problem
-    
     tol : float
         Tolerance for the solver of the equation system
-    
     algo : str
         Solver to use
-    
     use_chains : bool
         Whether or not to use integrator chains
     '''

@@ -18,19 +18,14 @@ class Solver:
     
     F : callable
         The callable function that represents the equation system
-    
     DF : callable
         The function for the jacobian matrix of the eqs
-    
     x0: numpy.ndarray
         The start value for the sover
-    
     tol : float
         The (absolute) tolerance of the solver
-    
     maxx : int
         The maximum number of iterations of the solver
-    
     algo : str
         The solver to use
     '''

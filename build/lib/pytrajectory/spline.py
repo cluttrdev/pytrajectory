@@ -50,25 +50,18 @@ class CubicSpline():
     
     a : float
         Left border of the spline interval.
-    
     b : float
         Right border of the spline interval.
-    
     n : int
         Number of polynomial parts the spline will be devided into.
-    
     tag : str
         The 'name' of the spline object.
-    
     bc : tuple
         Boundary values for the spline function itself.
-    
     bcd : tuple
         Boundary values for the splines 1st derivative
-    
     bcdd : tuple
         Boundary values for the splines 2nd derivative
-    
     steady : bool
         Whether or not to call :meth:`makesteady()` when instanciated.
     
@@ -167,7 +160,6 @@ class CubicSpline():
         
         x : float
             The point to evaluate the spline at
-        
         d : int
             The derivation order
         '''
