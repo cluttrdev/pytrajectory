@@ -31,7 +31,5 @@ setup(name='PyTrajectory',
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
     author_email='Andreas.Kunze@mailbox.tu-dresden.de',
     description='Python library for trajectory planning.',
-    #long_description=long_description
-    
-    zip_safe=True
+    long_description=long_description
     )
