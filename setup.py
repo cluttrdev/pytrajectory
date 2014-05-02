@@ -10,7 +10,7 @@ import codecs
 
 #import pytrajectory
 
-here = os.path.abspath(ox.path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
 def read(*parts):
     return codecs.open(os.path.join(here, *parts), 'r').read()
