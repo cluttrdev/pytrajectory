@@ -29,5 +29,4 @@ setup(name='PyTrajectory',
     description='Python library for trajectory planning.',
     long_description=long_description,
     packages=['pytrajectory'],
-    platforms='any'
     )
