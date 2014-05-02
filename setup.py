@@ -21,7 +21,7 @@ setup(name='PyTrajectory',
     #version=pytrajectory.__version__,
     version='0.3.3',
     #packages=['pytrajectory'],
-    packages=find_packages()
+    packages=find_packages(),
     
     install_requires=['numpy>=1.8.1',
                     'sympy>=0.7.5',
