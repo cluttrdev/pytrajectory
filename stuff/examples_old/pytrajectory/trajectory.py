@@ -4,6 +4,7 @@ import sympy as sp
 import scipy as scp
 from scipy.sparse.csr import csr_matrix
 
+import sys
 import pickle
 
 from spline import CubicSpline, fdiff
@@ -104,38 +105,32 @@ class Trajectory():
         self.b = b
         
         # Boundary values for the input variable(s)
-        self.g = g
+        self.uab = g
         
-        # Initial numbers of spline parts for the system and input variables
+        # Set default values for method parameters
         self.sx = 5
         self.su = 5
-        
-        # Factor for raising the number of spline parts for the system variables
         self.kx = 2
-        
-        # Constant for the calculation of the collocation points (see docu)
         self.delta = 2
-        
-        # Maximum nuber of iteration steps
         self.maxIt = 10
-        
-        # Tolerance for the solution of the initial value problem
         self.eps = 1e-2
-        
-        # Tolerance for the solver of the equation system
         self.tol = 1e-5
-        
-        # The solver algorithm to use
         self.algo = 'leven'
-        
-        # Wheter or not to use integrator chains
         self.use_chains = True
-        
-        # The type of collocation points
         self.colltype = 'equidistant'
-        
-        # Whether or not to use sparse matrices where it makes sense
         self.use_sparse = True
+        
+        self.mparam = {'sx' : 5,
+                        'su' : 5,
+                        'kx' : 2,
+                        'delta' : 2,
+                        'maxIt' : 7,
+                        'eps' : 1e-2,
+                        'tol' : 1e-5,
+                        'algo' : 'leven',
+                        'use_chains' : True,
+                        'colltype' : 'equidistant',
+                        'use_sparse' : True}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -154,9 +149,6 @@ class Trajectory():
 
         # Reset iteration number
         self.nIt = 0
-
-        # Error of simulation
-        self.err = 2*self.eps*np.ones(self.n)
 
         # Dictionary for spline objects
         #   key: variable   value: CubicSpline-object
@@ -326,16 +318,15 @@ class Trajectory():
                 except ValueError:
                     # unpacking error inside ff_sym
                     # (that means the dimensions don't match)
-                    pass
-                    #~ if j == 0:
-                        #~ try:
-                            #~ self.ff_sym(x)
-                            #~ found_nm = True
-                            #~ n = i
-                            #~ m = j
-                            #~ break
-                        #~ except:
-                            #~ pass
+                    if j == 0:
+                        try:
+                            self.ff_sym(x)
+                            found_nm = True
+                            n = i
+                            m = j
+                            break
+                        except:
+                            pass
 
         self.n = n
         self.m = m
@@ -433,7 +424,7 @@ class Trajectory():
             exec('self.%s = %s'%(param, str(val)))
         
         # TODO: collect all method parameters in a dictionary 'mparam'
-        #       and change this to:  self.mparam[param] = value
+        #self.mparam[param] = val
 
 
     def iterate(self):
@@ -575,7 +566,7 @@ class Trajectory():
                 splines[upper] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
                 splines[upper].type = 'x'
             elif ic.lower.name.startswith('u'):
-                splines[upper] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=self.su,bc=self.uab,steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
             for i,elem in enumerate(ic.elements):
@@ -589,13 +580,13 @@ class Trajectory():
                 elif elem in self.x_sym:
                     if (i == 0):
                         splines[upper].bc = [self.xa[elem],self.xb[elem]]
-                        if ((self.g != None) and (splines[upper].type == 'u')):
-                            splines[upper].bcd = self.g
+                        if ((self.uab != None) and (splines[upper].type == 'u')):
+                            splines[upper].bcd = self.uab
                         x_fnc[elem] = splines[upper].f
                     if (i == 1):
                         splines[upper].bcd = [self.xa[elem],self.xb[elem]]
-                        if ((self.g != None) and (splines[upper].type == 'u')):
-                            splines[upper].bcdd = self.g
+                        if ((self.uab != None) and (splines[upper].type == 'u')):
+                            splines[upper].bcdd = self.uab
                         x_fnc[elem] = splines[upper].df
                     if (i == 2):
                         splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
@@ -610,7 +601,7 @@ class Trajectory():
 
         for uu in self.u_sym:
             if (not u_fnc.has_key(uu)):
-                splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.g,steady=False,tag=str(uu))
+                splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.uab,steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
         
@@ -1010,10 +1001,6 @@ class Trajectory():
 
         log.info(40*"-")
 
-        # save difference
-        # --> really neccessary?
-        self.err = err
-
         # check if tolerance is satisfied
         self.reached_accuracy = max(err) < self.eps
 
@@ -1077,7 +1064,7 @@ class Trajectory():
         plotsim(self.sim, H)
 
 
-    def save(self):
+    def save(self, fname=None):
         '''
         Save system data, callable solution functions and simulation results.
         '''
@@ -1093,14 +1080,26 @@ class Trajectory():
         # boundary values
         save['xa'] = self.xa
         save['xb'] = self.xb
+        save['uab'] = self.uab
 
         # solution functions
+        save['x_fnc'] = self.x_fnc
+        save['u_fnc'] = self.u_fnc
+        save['dx_fnc'] = self.dx_fnc        
         save['x'] = self.x
         save['u'] = self.u
         save['dx'] = self.dx
 
         # simulation resutls
         save['sim'] = self.sim
+        
+        if not fname:
+            fname = sys.argv[0].split('.')[0] + '.pkl'
+        elif not fname.endswith('.pkl'):
+            fname += '.pkl'
+        
+        with open(fname, 'wb') as dumpfile:
+            pickle.dump(save, dumpfile)
 
 
     def clear(self):

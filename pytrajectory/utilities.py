@@ -160,16 +160,18 @@ class Animation():
         if not sys+inputs:
             gs = GridSpec(1,1)
         else:
-            gs = GridSpec(2, len(sys+inputs))
+            l = len(sys+inputs)
+            
+            gs = GridSpec(l, 2)
         
         axes = dict()
         syscurves = []
         inputcurves = []
         
-        axes['ax_img'] = self.fig.add_subplot(gs[0,:])
+        axes['ax_img'] = self.fig.add_subplot(gs[:,0])
         
         for i in xrange(len(sys)):
-            axes['ax_x%d'%i] = self.fig.add_subplot(gs[1,i])
+            axes['ax_x%d'%i] = self.fig.add_subplot(gs[i,1])
             
             curve = mpl.lines.Line2D([], [], color='black')
             syscurves.append(curve)
@@ -178,7 +180,7 @@ class Animation():
         
         lensys = len(sys)
         for i in xrange(len(inputs)):
-            axes['ax_u%d'%i] = self.fig.add_subplot(gs[1,lensys+i])
+            axes['ax_u%d'%i] = self.fig.add_subplot(gs[lensys+i,1])
             
             curve = mpl.lines.Line2D([], [], color='black')
             inputcurves.append(curve)

@@ -5,17 +5,6 @@ This file is part of PyTrajectory.
 #! /usr/bin/env python2
 
 from distutils.core import setup
-import os
-import codecs
-
-#import pytrajectory
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-def read(*parts):
-    return codecs.open(os.path.join(here, *parts), 'r').read()
-
-long_description = read('README.rst')
 
 setup(name='PyTrajectory',
     #version=pytrajectory.__version__,
@@ -28,6 +17,5 @@ setup(name='PyTrajectory',
     # metadata for upload to PyPI
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
     author_email='Andreas.Kunze@mailbox.tu-dresden.de',
-    description='Python library for trajectory planning.',
-    long_description=long_description
+    description='Python library for trajectory planning.'
     )

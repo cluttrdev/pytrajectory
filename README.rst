@@ -30,6 +30,6 @@ from within the extracted folder.
 Documentation
 =============
 
-Please visit PyTrajectory on ReadTheDocs.
+For the documentation please visit PyTrajectory on ReadTheDocs.
 
 `PyTrajectory documentation <https://pytrajectory.readthedocs.org>`

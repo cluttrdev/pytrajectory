@@ -108,5 +108,4 @@ if animate:
     A.set_limits(xlim=(-1.0,0.8), ylim=(-0.8,0.8))
     
     A.animate()
-    A.save('ex4_100.mp4')
-    A.save('ex4_200.mp4', dpi=200)
+    A.save('ex4.mp4')
