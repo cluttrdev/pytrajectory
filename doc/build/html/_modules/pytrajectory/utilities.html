@@ -152,10 +152,13 @@
 <span class="sd">    </span>
 <span class="sd">    drawfnc : callable</span>
 <span class="sd">        Function that returns an image of the current system state according to :attr:`simdata`</span>
+<span class="sd">    </span>
 <span class="sd">    simdata : numpy.ndarray</span>
 <span class="sd">        Array that contains simulation data (time, system states, input states)</span>
+<span class="sd">    </span>
 <span class="sd">    plotsys : list</span>
 <span class="sd">        List of tuples with indices and labels of system variables that will be plotted along the picture</span>
+<span class="sd">    </span>
 <span class="sd">    plotinputs : list</span>
 <span class="sd">        List of tuples with indices and labels of input variables that will be plotted along the picture</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -178,7 +181,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s">&#39;equal&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_axis_bgcolor</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span> <span class="o">=</span> <span class="mi">80</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">24</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">drawfnc</span>
         

@@ -53,19 +53,19 @@ construction of the candidate functions. This results in the following system of
 
 .. math::
 
-   \frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0
+   G_1^0(c) := \frac{d}{d t}P_1(t_0) - f(P_1(t_0)) = 0
 
    \qquad \vdots
 
-   \frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0
+   G_n^0(c) := \frac{d}{d t}P_n(t_0) - f(P_n(t_0)) = 0
 
    \qquad \vdots
 
-   \frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0
+   G_1^1(c) := \frac{d}{d t}P_1(t_1) - f(P_1(t_1)) = 0
 
    \qquad \vdots
 
-   \frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0
+   G_n^N(c) := \frac{d}{d t}P_n(t_N) - f(P_n(t_N)) = 0
 
 Solving the boundary value problem is thus reduced to the finding of a zero point 
 of :math:`G = (G_1^0 ,..., G_n^N)^T`, where :math:`c` is the vector of all independent
@@ -179,7 +179,7 @@ equation system. With these conditions and those above one obtains the following
 
 The matrix :math:`\boldsymbol{M}` of dimension :math:`N_1 \times N_2,\ N_1 < N_2`, where :math:`N_2 = 4 \eta` and :math:`N_1 = 3(\eta - 1) + 2(\nu + 1)`, can be decomposed 
 into two subsystems :math:`\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}` and :math:`\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}`.
-The two dies are the vectors :math:`\boldsymbol{a}` and :math:`\boldsymbol{b}` with the respective coefficients of :math:`\boldsymbol{c}`.
+The vectors :math:`\boldsymbol{a}` and :math:`\boldsymbol{b}` belong to the two matrices with the respective coefficients of :math:`\boldsymbol{c}`.
 
 .. math::
    :nowrap:

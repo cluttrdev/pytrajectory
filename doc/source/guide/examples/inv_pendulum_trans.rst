@@ -12,6 +12,7 @@ using the carts position :math:`x_w(t)` and the pendulum deflection
 :math:`\varphi(t)` and their derivatives. 
 
 .. image:: /../pic/inv_pendulum.png
+   :scale: 80
 
 With the *Lagrangian Formalism* the model has the following state 
 representation where :math:`u_1 = F` and 
@@ -38,4 +39,9 @@ The operating time here is :math:`T = 1 [s]`.
 Source Code
 +++++++++++
 
-.. literalinclude:: /../../examples/ex1_InversePendulumTranslation.py
+.. literalinclude:: /../../examples/ex1_InvertedPendulumTranslation.py
+
+.. only:: html
+
+   .. image:: /../pic/inv_pendulum.gif
+

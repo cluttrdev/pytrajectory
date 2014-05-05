@@ -16,6 +16,7 @@ aircraft axes are rotated by the angle :math:`\theta` with respect to
 the :math:`z_2`-axis.
 
 .. image:: /../pic/aircraft.png
+   :scale: 80
 
 Through the establishment of the momentum balances for the model one
 obtains the equations
@@ -69,4 +70,8 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex3_Aircraft.py
+
+.. only:: html
+
+   .. image:: /../pic/aircraft.gif
 

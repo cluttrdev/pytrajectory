@@ -6,6 +6,7 @@ Oscillation of the inverted double pendulum
 In this example we add another pendulum to the cart in the system.
 
 .. image:: /../pic/inv_double_pendulum.png
+   :scale: 80
 
 The system has the state vector :math:`x = [x_1, \dot{x}_1, 
 \varphi_1, \dot{\varphi}_1, \varphi_2, \dot{\varphi}_2]`. A partial 
@@ -44,3 +45,8 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py
+
+.. only:: html
+
+   .. image:: /../pic/inv_double_pendulum.gif
+

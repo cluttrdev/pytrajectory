@@ -15,6 +15,7 @@ distances between the centers of mass to the joints are :math:`r_1` and
 :math:`r_2`. 
 
 .. image:: /../pic/uact_manipulator.png
+   :scale: 80
 
 The modeling was taken from the thesis of Carsten Knoll 
 (April, 2009) where in addition the inertia parameter :math:`\eta` was 
@@ -63,3 +64,8 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex4_UnderactuatedManipulator.py
+
+.. only:: html
+
+   .. image:: /../pic/uact_manipulator.gif
+

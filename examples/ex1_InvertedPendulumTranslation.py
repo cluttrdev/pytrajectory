@@ -1,4 +1,4 @@
-# translation of the inverse pendulum
+# translation of the inverted pendulum
 
 # import trajectory class and necessary dependencies
 from pytrajectory import Trajectory

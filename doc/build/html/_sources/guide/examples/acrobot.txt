@@ -18,6 +18,7 @@ on the mobility of the hip joint.
 The following figure shows the schematic representation of the model.
 
 .. image:: /../pic/acrobot.png
+   :scale: 80
 
 Using the previously assumed model parameters and the write abbreviations
 
@@ -62,7 +63,13 @@ The initial and final states thus are
       x(T) = \begin{bmatrix} 0 \\ 0 \\ \frac{1}{2} \pi \\ 0 \end{bmatrix}
    \end{equation*}
 
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex5_Acrobot.py
+
+.. only:: html
+
+   .. image:: /../pic/acrobot.gif
+

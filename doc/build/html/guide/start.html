@@ -57,7 +57,7 @@
   <div class="section" id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <p>This section provides an overview on what PyTrajectory is and how to use it.
-For a more detailed view please have a look at the <a class="reference internal" href="../pytrajectory.html#pytrajectory"><em>PyTrajectory Modules Reference</em></a>.</p>
+For a more detailed view please have a look at the <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a>.</p>
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
@@ -134,7 +134,104 @@ into the extracted folder. Then all you have to do is run the following command<
 </div>
 <div class="section" id="usage">
 <h2><a class="toc-backref" href="#id6">Usage</a><a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>... to do</p>
+<p>In order to illustrate the usage of PyTrajectory we consider the following simple example.</p>
+<p>A pendulum mass <img class="math" src="../_images/math/a877a305b5188a6f2b60dd1f2591cc601956f0d9.png" alt="m_p"/> is connected by a massless rod of length <img class="math" src="../_images/math/d99efde75c84ef402a92cd4497530d2366fb112f.png" alt="l"/> to a cart <img class="math" src="../_images/math/406f7634fe28d6c2293548b82ef8e8ba71c8c6bd.png" alt="M_w"/>
+on which a force <img class="math" src="../_images/math/183421431fcc0a42e22f825a33dcc3c51607fa6e.png" alt="F"/> acts to accelerate it.</p>
+<img alt="../_images/inv_pendulum.png" src="../_images/inv_pendulum.png" />
+<p>A possible task would be the transfer between two angular positions of the pendulum.
+In this case, the pendulum should hang at first down (<img class="math" src="../_images/math/b5622b0eab64b96220f40bf50203846e5ef87fab.png" alt="\varphi = \pi"/>) and is
+to be turned upwards (<img class="math" src="../_images/math/455f59eb1bb4256dadc224fb7637a62fee3e364e.png" alt="\varphi = 0"/>). At the end of the process, the car should be at
+the same position and both the pendulum and the cart should be at rest.
+The (partial linearised) system is represented by the following differential equations,
+where <img class="math" src="../_images/math/0ee49f05e559cd6e9155c3ff4ca086ad4efd7665.png" alt="[x_1, x_2, x_3, x_4] = [x_w, \dot{x_w}, \varphi, \dot{\varphi}]"/> and
+<img class="math" src="../_images/math/6b1914e67bf535b8905a5a338fb15ef1bb1ad7a8.png" alt="u = \ddot{x}_w"/> is our control variable:</p>
+<div class="math">
+<p><img src="../_images/math/7e82bb6f5257656e9e4475a273fe8c38f27b4ef0.png" alt="\begin{eqnarray*}
+    \dot{x_1} &amp; = &amp; x_2 \\
+    \dot{x_2} &amp; = &amp; u \\
+    \dot{x_3} &amp; = &amp; x_4 \\
+    \dot{x_4} &amp; = &amp; \frac{1}{l}(g\ sin(x_3) + u\ cos(x_3))
+\end{eqnarray*}"/></p>
+</div><p>To solve this problem we first have to define a function that returns the vectorfield of
+the system above. Therefor it is important that you use SymPy functions if necessary, which is
+the case here with <img class="math" src="../_images/math/93b45ffca250b08bf9d43c384fc1642de9497a85.png" alt="sin"/> and <img class="math" src="../_images/math/ba43aae1058695f0d40740e13b2b53745ae40e55.png" alt="cos"/>.</p>
+<p>So in Python this would be</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>  <span class="c"># system variables</span>
+<span class="gp">... </span>    <span class="n">u1</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span>             <span class="c"># input variable</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c"># length of the pendulum</span>
+<span class="gp">... </span>    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>    <span class="c"># gravitational acceleration</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c"># this is the vectorfield</span>
+<span class="gp">... </span>    <span class="n">ff</span> <span class="o">=</span> <span class="p">[</span>          <span class="n">x2</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">u1</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">x4</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">l</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">g</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span><span class="o">+</span><span class="n">u1</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">))]</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">ff</span>
+<span class="gp">...</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Wanted is now the course for <img class="math" src="../_images/math/f80dfa25e7e2a6b804cd72f7dd67174aa2b22e03.png" alt="u(t)"/>, which transforms the system with the following start
+and end states within <img class="math" src="../_images/math/48ac522661f248b225e21d35d8eb668d3cd75a73.png" alt="T = 2 [s]"/>.</p>
+<div class="math">
+<p><img src="../_images/math/34b4c7f114e8b867789a2edcfdfe182c3f4f817a.png" alt="\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+\end{equation*}"/></p>
+</div><p>so we have to specify the boundary values at the beginning</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xa</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>and end</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The boundary values for the input variable are</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">uab</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>because we want <img class="math" src="../_images/math/f861eb0dc0f495534a416a007f91d9fcbfc362be.png" alt="u(0) = u(T) = 0"/>.</p>
+<p>Now we import all we need from PyTrajectory</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytrajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+</pre></div>
+</div>
+<p>and pass our parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="p">,</span> <span class="n">uab</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>All we have to do now, to solve our problem is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>After the 7th iteration step with 320 spline parts, this would yield a solution which satisfies
+the default tolerance for the boundary values of <img class="math" src="../_images/math/e58ca820bd5ddd2060a7dee4295df732246172de.png" alt="10^{-02}"/>. But PyTrajectory enables
+you to improve its performance by altering some of its method parameters.</p>
+<p>For example if we increase the factor for raising the spline parts (default: 2)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;kx&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and don&#8217;t take advantage of the system structure (integrator chains)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;use_chains&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>we get a solution after 3 steps with 125 spline parts.</p>
+<p>There are more method parameters you can change to speed things up, i.e. the type of
+collocation points to use or the number of spline parts for the input variables.
+To do so, just type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;&lt;param&gt;&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please have a look at the <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a> for more information.</p>
 </div>
 </div>
 

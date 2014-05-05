@@ -2,7 +2,7 @@ Getting Started
 ***************
 
 This section provides an overview on what PyTrajectory is and how to use it.
-For a more detailed view please have a look at the :ref:`pytrajectory`.
+For a more detailed view please have a look at the :ref:`reference`.
 
 .. contents:: Contents
    :local:
@@ -70,5 +70,117 @@ provided that you have the Python modules `pip` or `setuptools` installed on you
 Usage
 =====
 
-... to do
+In order to illustrate the usage of PyTrajectory we consider the following simple example.
 
+
+A pendulum mass :math:`m_p` is connected by a massless rod of length :math:`l` to a cart :math:`M_w`
+on which a force :math:`F` acts to accelerate it.
+
+.. image:: /../pic/inv_pendulum.png
+
+A possible task would be the transfer between two angular positions of the pendulum. 
+In this case, the pendulum should hang at first down (:math:`\varphi = \pi`) and is 
+to be turned upwards (:math:`\varphi = 0`). At the end of the process, the car should be at 
+the same position and both the pendulum and the cart should be at rest.
+The (partial linearised) system is represented by the following differential equations,
+where :math:`[x_1, x_2, x_3, x_4] = [x_w, \dot{x_w}, \varphi, \dot{\varphi}]` and 
+:math:`u = \ddot{x}_w` is our control variable:
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray*}
+       \dot{x_1} & = & x_2 \\
+       \dot{x_2} & = & u \\
+       \dot{x_3} & = & x_4 \\
+       \dot{x_4} & = & \frac{1}{l}(g\ sin(x_3) + u\ cos(x_3))
+   \end{eqnarray*}
+
+To solve this problem we first have to define a function that returns the vectorfield of
+the system above. Therefor it is important that you use SymPy functions if necessary, which is
+the case here with :math:`sin` and :math:`cos`.
+
+So in Python this would be ::
+
+   >>> from sympy import sin, cos
+   >>>
+   >>> def f(x,u):
+   ...     x1, x2, x3, x4 = x  # system variables
+   ...     u1, = u             # input variable
+   ...     
+   ...     l = 0.5     # length of the pendulum
+   ...     g = 9.81    # gravitational acceleration
+   ...     
+   ...     # this is the vectorfield
+   ...     ff = [          x2,
+   ...                     u1,
+   ...                     x4,
+   ...         (1/l)*(g*sin(x3)+u1*cos(x3))]
+   ...     
+   ...     return ff
+   ...
+   >>> 
+
+Wanted is now the course for :math:`u(t)`, which transforms the system with the following start 
+and end states within :math:`T = 2 [s]`.
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \end{bmatrix} 
+      \rightarrow
+      x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+   \end{equation*}
+
+so we have to specify the boundary values at the beginning ::
+
+   >>> from numpy import pi
+   >>> 
+   >>> a = 0.0
+   >>> xa = [0.0, 0.0, pi, 0.0]
+
+and end ::
+
+   >>> b = 2.0
+   >>> xb = [0.0, 0.0, 0.0, 0.0]
+
+The boundary values for the input variable are
+
+   >>> uab = [0.0, 0.0]
+
+because we want :math:`u(0) = u(T) = 0`.
+
+Now we import all we need from PyTrajectory ::
+
+   >>> from pytrajectory import Trajectory
+
+and pass our parameters. ::
+
+   >>> T = Trajectory(f, a, b, xa, xb, uab)
+
+All we have to do now, to solve our problem is ::
+
+   >>> T.startIteration()
+
+After the 7th iteration step with 320 spline parts, this would yield a solution which satisfies 
+the default tolerance for the boundary values of :math:`10^{-02}`. But PyTrajectory enables 
+you to improve its performance by altering some of its method parameters.
+
+For example if we increase the factor for raising the spline parts (default: 2) ::
+
+   >>> T.setParam('kx', 5)
+
+and don't take advantage of the system structure (integrator chains) ::
+
+   >>> T.setParam('use_chains', False)
+
+we get a solution after 3 steps with 125 spline parts.
+
+There are more method parameters you can change to speed things up, i.e. the type of 
+collocation points to use or the number of spline parts for the input variables. 
+To do so, just type::
+
+   >>> T.setParam('<param>', <value>)
+
+Please have a look at the :ref:`reference` for more information.

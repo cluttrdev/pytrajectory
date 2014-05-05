@@ -4,7 +4,7 @@ This file is part of PyTrajectory.
 
 #! /usr/bin/env python2
 
-from setuptools import setup, find_packages
+from distutils.core import setup
 import os
 import codecs
 
@@ -20,9 +20,7 @@ long_description = read('README.rst')
 setup(name='PyTrajectory',
     #version=pytrajectory.__version__,
     version='0.3.3',
-    #packages=['pytrajectory'],
-    packages=find_packages(),
-    
+    packages=['pytrajectory'],
     install_requires=['numpy>=1.8.1',
                     'sympy>=0.7.5',
                     'scipy>=0.13.3'],

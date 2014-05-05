@@ -1,4 +1,4 @@
-.. _pytrajectory:
+.. _reference:
 
 PyTrajectory Modules Reference
 ******************************
@@ -17,6 +17,7 @@ system.
 
 .. automodule:: pytrajectory.trajectory
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -25,6 +26,7 @@ system.
 
 .. automodule:: pytrajectory.spline
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -33,6 +35,7 @@ system.
 
 .. automodule:: pytrajectory.solver
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -41,6 +44,7 @@ system.
 
 .. automodule:: pytrajectory.simulation
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -49,6 +53,7 @@ system.
 
 .. automodule:: pytrajectory.utilities
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
@@ -57,6 +62,7 @@ system.
 
 .. automodule:: pytrajectory.log
     :members:
+    :member-order: bysource
     :undoc-members:
     :show-inheritance:
 

@@ -101,19 +101,19 @@ following conditions:</p>
 The demands on the boundary values <img class="math" src="../_images/math/c499758f3261214459d92fd4f444117a603af2cc.png" alt="(1)"/> can be sure already by suitable
 construction of the candidate functions. This results in the following system of equations.</p>
 <div class="math">
-<p><img src="../_images/math/07b5f277ee75bf9ecf1993de1704a4e01729f5fa.png" alt="\frac{d}{d t}P_1(t_0) - f(P_1(t_0)) := G_1^0(c) = 0
+<p><img src="../_images/math/5f1bff7a7cd067a71da05f42293173f9d31d073c.png" alt="G_1^0(c) := \frac{d}{d t}P_1(t_0) - f(P_1(t_0)) = 0
 
 \qquad \vdots
 
-\frac{d}{d t}P_n(t_0) - f(P_n(t_0)) := G_n^0(c) = 0
+G_n^0(c) := \frac{d}{d t}P_n(t_0) - f(P_n(t_0)) = 0
 
 \qquad \vdots
 
-\frac{d}{d t}P_1(t_1) - f(P_1(t_1)) := G_1^1(c) = 0
+G_1^1(c) := \frac{d}{d t}P_1(t_1) - f(P_1(t_1)) = 0
 
 \qquad \vdots
 
-\frac{d}{d t}P_n(t_N) - f(P_n(t_N)) := G_n^N(c) = 0"/></p>
+G_n^N(c) := \frac{d}{d t}P_n(t_N) - f(P_n(t_N)) = 0"/></p>
 </div><p>Solving the boundary value problem is thus reduced to the finding of a zero point
 of <img class="math" src="../_images/math/ea0446ff6185bc88bddd71f99ec82764e0b4e290.png" alt="G = (G_1^0 ,..., G_n^N)^T"/>, where <img class="math" src="../_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> is the vector of all independent
 parameters that result from the candidate functions.</p>
@@ -200,7 +200,7 @@ equation system. With these conditions and those above one obtains the following
 \end{equation*}"/></p>
 </div><p>The matrix <img class="math" src="../_images/math/12c5dd56417928ab25db67a424258931cefdefe9.png" alt="\boldsymbol{M}"/> of dimension <img class="math" src="../_images/math/52ed6c90e781c8b609004ea5144a49ef06fd484b.png" alt="N_1 \times N_2,\ N_1 &lt; N_2"/>, where <img class="math" src="../_images/math/d372fe6ce419dbbf610b209950846e7011ca0ca7.png" alt="N_2 = 4 \eta"/> and <img class="math" src="../_images/math/c0e0d4e749102b9ae234395b776513b87c753742.png" alt="N_1 = 3(\eta - 1) + 2(\nu + 1)"/>, can be decomposed
 into two subsystems <img class="math" src="../_images/math/0e87ee866cb7b5b8384c2e93919c3ccdb19da6fb.png" alt="\boldsymbol{A}\in \mathbb{R}^{N_1 \times (N_2 - N_1)}"/> and <img class="math" src="../_images/math/38320a4fe65125a5921a23efb9b76a4c73435a37.png" alt="\boldsymbol{B}\in \mathbb{R}^{N_1 \times N_1}"/>.
-The two dies are the vectors <img class="math" src="../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/> and <img class="math" src="../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> with the respective coefficients of <img class="math" src="../_images/math/cceff292975e2aa217b3de4e89562e2cae81eac6.png" alt="\boldsymbol{c}"/>.</p>
+The vectors <img class="math" src="../_images/math/701df29c5482cdf1e577052c537c176f5a12caf5.png" alt="\boldsymbol{a}"/> and <img class="math" src="../_images/math/1ce095b3e559c5d121fb22f098efad3128063914.png" alt="\boldsymbol{b}"/> belong to the two matrices with the respective coefficients of <img class="math" src="../_images/math/cceff292975e2aa217b3de4e89562e2cae81eac6.png" alt="\boldsymbol{c}"/>.</p>
 <div class="math">
 <p><img src="../_images/math/7e50327f743c2b93fb07611e84455dd533035ecd.png" alt="\begin{eqnarray*}
    \boldsymbol{M} \boldsymbol{c} &amp; = &amp; \boldsymbol{r} \\

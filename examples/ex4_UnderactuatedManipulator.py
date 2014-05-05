@@ -36,10 +36,10 @@ xb = [  0.2*pi,
         0.0]
 
 # boundary values for the inputs
-g = [0.0, 0.0]
+uab = [0.0, 0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=1.8, xa=xa, xb=xb, g=g)
+T = Trajectory(f, a=0.0, b=1.8, xa=xa, xb=xb, g=uab)
 
 # also alter some method parameters to increase performance
 T.setParam('su', 20)
