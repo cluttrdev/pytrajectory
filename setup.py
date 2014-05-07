@@ -14,7 +14,8 @@ setup(name='PyTrajectory',
                 'sympy (>=0.7.5)',
                 'scipy (>=0.13.3)',
                 'ipython',
-                'matplotlib'],
+                'matplotlib',
+                'sphinxcontrib-napoleon'],
     
     # metadata for upload to PyPI
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
