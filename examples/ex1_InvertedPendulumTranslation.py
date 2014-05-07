@@ -40,8 +40,8 @@ xb = [  0.5,
 # create trajectory object
 T = Trajectory(f, a=0.0, b=1.0, xa=xa, xb=xb)
 
+# change method parameter to increase performance
+T.setParam('use_chains', False)
+
 # run iteration
 T.startIteration()
-
-# show results
-T.plot()

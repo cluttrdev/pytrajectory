@@ -94,69 +94,68 @@ visualising the systems dynamic.</p>
 </tbody>
 </table>
 <dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.sx">
-<tt class="descname">sx</tt><em class="property"> int</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.sx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initial number of spline parts for the system variables (default: 5)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.su">
-<tt class="descname">su</tt><em class="property"> int</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.su" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initial number of spline parts for the input variables (default: 5)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.kx">
-<tt class="descname">kx</tt><em class="property"> int</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.kx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Factor for raising the number of spline parts for the system variables (default: 2)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.delta">
-<tt class="descname">delta</tt><em class="property"> int</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.delta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constant for calculation of collocation points (default: 2)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.maxIt">
-<tt class="descname">maxIt</tt><em class="property"> int</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.maxIt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maximum number of iterations (default: 10)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.eps">
-<tt class="descname">eps</tt><em class="property"> float</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.eps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tolerance for the solution of the initial value problem (default: 1e-2)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.tol">
-<tt class="descname">tol</tt><em class="property"> float</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.tol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tolerance for the solver of the equation system (default: 1e-5)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.algo">
-<tt class="descname">algo</tt><em class="property"> str</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.algo" title="Permalink to this definition">¶</a></dt>
-<dd><p>The solver algorithm to use (default: &#8216;leven&#8217;)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.use_chains">
-<tt class="descname">use_chains</tt><em class="property"> bool</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.use_chains" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether or not to use integrator chains (default: True)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.colltype">
-<tt class="descname">colltype</tt><em class="property"> ['equidistant', 'chebychev']</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.colltype" title="Permalink to this definition">¶</a></dt>
-<dd><p>The type of the collocation points (default: &#8216;equidistant&#8217;)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytrajectory.trajectory.Trajectory.use_sparse">
-<tt class="descname">use_sparse</tt><em class="property"> bool</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.use_sparse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether or not to use sparse matrices (default: True)</p>
+<dt id="pytrajectory.trajectory.Trajectory.mparam">
+<tt class="descname">mparam</tt><em class="property"> dict</em><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.mparam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary with method parameters</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="17%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">key</th>
+<th class="head">default value</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>sx</td>
+<td>5</td>
+<td>Initial number of spline parts for the system variables</td>
+</tr>
+<tr class="row-odd"><td>su</td>
+<td>5</td>
+<td>Initial number of spline parts for the input variables</td>
+</tr>
+<tr class="row-even"><td>kx</td>
+<td>2</td>
+<td>Factor for raising the number of spline parts</td>
+</tr>
+<tr class="row-odd"><td>delta</td>
+<td>2</td>
+<td>Constant for calculation of collocation points</td>
+</tr>
+<tr class="row-even"><td>maxIt</td>
+<td>7</td>
+<td>Maximum number of iteration steps</td>
+</tr>
+<tr class="row-odd"><td>eps</td>
+<td>1e-2</td>
+<td>Tolerance for the solution of the initial value problem</td>
+</tr>
+<tr class="row-even"><td>tol</td>
+<td>1e-5</td>
+<td>Tolerance for the solver of the equation system</td>
+</tr>
+<tr class="row-odd"><td>algo</td>
+<td>&#8216;leven&#8217;</td>
+<td>The solver algorithm to use</td>
+</tr>
+<tr class="row-even"><td>use_chains</td>
+<td>True</td>
+<td>Whether or not to use integrator chains</td>
+</tr>
+<tr class="row-odd"><td>colltype</td>
+<td>&#8216;equidistant&#8217;</td>
+<td>The type of the collocation points</td>
+</tr>
+<tr class="row-even"><td>use_sparse</td>
+<td>True</td>
+<td>Whether or not to use sparse matrices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -310,7 +309,7 @@ the <tt class="xref py py-func docutils literal"><span class="pre">utilities.plo
 
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.save">
-<tt class="descname">save</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>fname=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save system data, callable solution functions and simulation results.</p>
 </dd></dl>
 
@@ -576,50 +575,20 @@ the boundary value problem of the control system.</p>
 </table>
 <dl class="attribute">
 <dt id="pytrajectory.utilities.IntegChain.elements">
-<tt class="descname">elements</tt><em class="property"> = None</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.elements" title="Permalink to this definition">¶</a></dt>
-<dd><p>IntegChain.elements is a list of all elements that are part of the integrator chain</p>
+<tt class="descname">elements</tt><em class="property"> tuple</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ordered list of all elements that are part of the integrator chain</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pytrajectory.utilities.IntegChain.upper">
-<tt class="descname">upper</tt><em class="property"> = None</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.upper" title="Permalink to this definition">¶</a></dt>
-<dd><p>IntegChain.upper is the upper end of the integrator chain</p>
+<tt class="descname">upper</tt><em class="property"> sympy.Symbol</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.upper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upper end of the integrator chain</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pytrajectory.utilities.IntegChain.lower">
-<tt class="descname">lower</tt><em class="property"> = None</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.lower" title="Permalink to this definition">¶</a></dt>
-<dd><p>IntegChain.lower is the lower end of the integrator chain</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.utilities.IntegChain.succ">
-<tt class="descname">succ</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#IntegChain.succ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.IntegChain.succ" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method returns the successor of the given element of the
-integrator chains, i.e. it returns <img class="math" src="_images/math/2f00cb192f825ebdc549ab63679672853eec2513.png" alt="\frac{d}{dt}[elem]"/></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>elem</strong> (<em>sympy.Symbol</em>) &#8211; An element of the integrator chain</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytrajectory.utilities.IntegChain.pred">
-<tt class="descname">pred</tt><big>(</big><em>elem</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#IntegChain.pred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.IntegChain.pred" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method returns the predecessor of the given element of the
-integrator chains, i.e. it returns <img class="math" src="_images/math/d7fad783f4568edf0ff146c16e101c8c095de5f6.png" alt="\int [elem]"/></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>elem</strong> (<em>sympy.Symbol</em>) &#8211; An element of the integrator chain</td>
-</tr>
-</tbody>
-</table>
+<tt class="descname">lower</tt><em class="property"> sympy.Symbol</em><a class="headerlink" href="#pytrajectory.utilities.IntegChain.lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lower end of the integrator chain</p>
 </dd></dl>
 
 </dd></dl>
@@ -753,10 +722,10 @@ file. In addition a loglevel can be set to suppress some information.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fname</strong> (<em>str</em>) &#8211; The name of the log file to which all information will be written.</li>
-<li><strong>mode</strong> (<em>str</em>) &#8211; Either &#8220;w&#8221; if an existing file should be overwritten or &#8220;a&#8221; if it should be appended.</li>
-<li><strong>suppress</strong> (<em>bool</em>) &#8211; Whether or not to suppress output to the screen.</li>
-<li><strong>verbosity</strong> (<em>int</em>) &#8211; The level of verbosity that restricts the output.</li>
+<li><strong>fname</strong> (<em>str</em>) &#8211; The name of the log file to which all information will be written</li>
+<li><strong>mode</strong> (<em>str</em>) &#8211; Either &#8216;w&#8217; if an existing file should be overwritten or &#8216;a&#8217; if it should be appended</li>
+<li><strong>suppress</strong> (<em>bool</em>) &#8211; Whether or not to suppress output to the screen</li>
+<li><strong>verbosity</strong> (<em>int</em>) &#8211; The level of verbosity that restricts the output</li>
 </ul>
 </td>
 </tr>
@@ -772,7 +741,7 @@ file. In addition a loglevel can be set to suppress some information.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>text</strong> (<em>str</em>) &#8211; The information to log.</li>
-<li><strong>verblvl</strong> (<em>int</em>) &#8211; The &#8220;inportance&#8221; of the information.</li>
+<li><strong>verblvl</strong> (<em>int</em>) &#8211; The &#8216;inportance&#8217; of the information.</li>
 </ul>
 </td>
 </tr>
@@ -785,7 +754,20 @@ file. In addition a loglevel can be set to suppress some information.</p>
 <dl class="class">
 <dt id="pytrajectory.log.Timer">
 <em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Timer</tt><big>(</big><em>label='~'</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Timer" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Provides a context manager that takes the time of a code block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>label</strong> (<em>str</em>) &#8211; The &#8216;name&#8217; of the code block which is timed</li>
+<li><strong>verbose</strong> (<em>bool</em>) &#8211; Whether or not to output the elapsed time at exit</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.set_file">

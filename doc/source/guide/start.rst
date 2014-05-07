@@ -184,3 +184,12 @@ To do so, just type::
    >>> T.setParam('<param>', <value>)
 
 Please have a look at the :ref:`reference` for more information.
+
+.. only:: html
+
+   .. image:: /../pic/inv_pendulum_osc.gif
+
+.. only:: latex
+
+  .. image:: /../pic/inv_pendulum_osc.png
+

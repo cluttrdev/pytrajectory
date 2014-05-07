@@ -26,14 +26,24 @@ class IntegChain():
     
     lst : list
         Ordered list of elements for the integrator chain
+    
+    
+    Attributes
+    ----------
+    
+    elements : tuple
+        Ordered list of all elements that are part of the integrator chain
+    
+    upper : sympy.Symbol
+        Upper end of the integrator chain
+    
+    lower : sympy.Symbol
+        Lower end of the integrator chain
     '''
     
     def __init__(self, lst):
-        #: IntegChain.elements is a list of all elements that are part of the integrator chain
-        self.elements = lst
-        #: IntegChain.upper is the upper end of the integrator chain
+        self.elements = tuple(lst)
         self.upper = self.elements[0]
-        #: IntegChain.lower is the lower end of the integrator chain
         self.lower = self.elements[-1]
     
     def __len__(self):
@@ -50,44 +60,6 @@ class IntegChain():
         for elem in self.elements:#[::-1]:
             s += ' -> ' + elem.name
         return s[4:]
-    
-    def succ(self, elem):
-        '''
-        This method returns the successor of the given element of the
-        integrator chains, i.e. it returns :math:`\\frac{d}{dt}[elem]`
-        
-        Parameters
-        ----------
-        elem : sympy.Symbol
-            An element of the integrator chain
-        '''
-        if not elem == self.bottom:
-            i = self.elements.index(elem)
-            succ = self.elements[i+1]
-        else:
-            print 'ERROR: lower end of integrator chain has no successor'
-            succ = elem
-        
-        return succ
-    
-    def pred(self, elem):
-        '''
-        This method returns the predecessor of the given element of the
-        integrator chains, i.e. it returns :math:`\\int [elem]`
-        
-        Parameters
-        ----------
-        elem : sympy.Symbol
-            An element of the integrator chain
-        '''
-        if not elem == self.top:
-            i = self.elements.index(elem)
-            pred = self.elements[i-1]
-        else:
-            print 'ERROR: uper end of integrator chain has no successor'
-            pred = elem
-        
-        return pred
 
 
 class Animation():
@@ -162,16 +134,19 @@ class Animation():
         else:
             l = len(sys+inputs)
             
-            gs = GridSpec(l, 2)
+            gs = GridSpec(l, 3)
         
         axes = dict()
         syscurves = []
         inputcurves = []
         
-        axes['ax_img'] = self.fig.add_subplot(gs[:,0])
+        if not sys+inputs:
+            axes['ax_img'] = self.fig.add_subplot(gs[:,:])
+        else:
+            axes['ax_img'] = self.fig.add_subplot(gs[:,1:])
         
         for i in xrange(len(sys)):
-            axes['ax_x%d'%i] = self.fig.add_subplot(gs[i,1])
+            axes['ax_x%d'%i] = self.fig.add_subplot(gs[i,0])
             
             curve = mpl.lines.Line2D([], [], color='black')
             syscurves.append(curve)
@@ -180,7 +155,7 @@ class Animation():
         
         lensys = len(sys)
         for i in xrange(len(inputs)):
-            axes['ax_u%d'%i] = self.fig.add_subplot(gs[lensys+i,1])
+            axes['ax_u%d'%i] = self.fig.add_subplot(gs[lensys+i,0])
             
             curve = mpl.lines.Line2D([], [], color='black')
             inputcurves.append(curve)
@@ -198,7 +173,7 @@ class Animation():
     
     
     def set_label(self, ax='ax_img', label=''):
-        self.axes[ax].set_title(label)
+        self.axes[ax].set_ylabel(label, rotation='horizontal', horizontalalignment='right')
         
     
     def animate(self):

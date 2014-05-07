@@ -61,38 +61,24 @@ class Trajectory():
     Attributes
     ----------
     
-    sx : int
-        Initial number of spline parts for the system variables (default: 5)
-    
-    su : int
-        Initial number of spline parts for the input variables (default: 5)
-    
-    kx : int
-        Factor for raising the number of spline parts for the system variables (default: 2)
-    
-    delta : int
-        Constant for calculation of collocation points (default: 2)
-    
-    maxIt : int
-        Maximum number of iterations (default: 10)
-    
-    eps : float
-        Tolerance for the solution of the initial value problem (default: 1e-2)
-    
-    tol : float
-        Tolerance for the solver of the equation system (default: 1e-5)
-    
-    algo : str
-        The solver algorithm to use (default: 'leven')
-    
-    use_chains : bool
-        Whether or not to use integrator chains (default: True)
-    
-    colltype : ['equidistant', 'chebychev']
-        The type of the collocation points (default: 'equidistant')
-    
-    use_sparse : bool
-        Whether or not to use sparse matrices (default: True)
+    mparam : dict
+        Dictionary with method parameters
+        
+        ++++++++++  +++++++++++++   +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        key         default value   meaning
+        ++++++++++  +++++++++++++   +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        sx          5               Initial number of spline parts for the system variables
+        su          5               Initial number of spline parts for the input variables
+        kx          2               Factor for raising the number of spline parts
+        delta       2               Constant for calculation of collocation points
+        maxIt       7               Maximum number of iteration steps
+        eps         1e-2            Tolerance for the solution of the initial value problem
+        tol         1e-5            Tolerance for the solver of the equation system
+        algo        'leven'         The solver algorithm to use
+        use_chains  True            Whether or not to use integrator chains
+        colltype    'equidistant'   The type of the collocation points
+        use_sparse  True            Whether or not to use sparse matrices
+        ++++++++++  +++++++++++++   +++++++++++++++++++++++++++++++++++++++++++++++++++++++
     '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, **kwargs):
@@ -108,18 +94,6 @@ class Trajectory():
         self.uab = g
         
         # Set default values for method parameters
-        self.sx = 5
-        self.su = 5
-        self.kx = 2
-        self.delta = 2
-        self.maxIt = 10
-        self.eps = 1e-2
-        self.tol = 1e-5
-        self.algo = 'leven'
-        self.use_chains = True
-        self.colltype = 'equidistant'
-        self.use_sparse = True
-        
         self.mparam = {'sx' : 5,
                         'su' : 5,
                         'kx' : 2,
@@ -222,10 +196,10 @@ class Trajectory():
         log.info( 40*"#")
         log.info("       ---- First Iteration ----")
         log.info( 40*"#")
-        log.info("# spline parts: %d"%self.sx)
+        log.info("# spline parts: %d"%self.mparam['sx'])
 
         # resetting integrator chains according to value of self.use_chains
-        if not self.use_chains:
+        if not self.mparam['use_chains']:
             self.chains = dict()
 
         # now we determine the equations that have to be solved by collocation
@@ -257,15 +231,15 @@ class Trajectory():
 
         # this was the first iteration
         # now we are getting into the loop, see fig [8]
-        while not self.reached_accuracy:
+        while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
             log.info( 40*"#")
             log.info("       ---- Next Iteration ----")
             log.info( 40*"#")
 
             # raise the number of spline parts
-            self.sx = round(self.kx*self.sx)
+            self.mparam['sx'] = round(self.mparam['kx']*self.mparam['sx'])
 
-            log.info("# spline parts: %d"%self.sx)
+            log.info("# spline parts: %d"%self.mparam['sx'])
 
             # store the old spline to calculate the guess later
             self.old_splines = self.splines
@@ -318,15 +292,16 @@ class Trajectory():
                 except ValueError:
                     # unpacking error inside ff_sym
                     # (that means the dimensions don't match)
-                    if j == 0:
-                        try:
-                            self.ff_sym(x)
-                            found_nm = True
-                            n = i
-                            m = j
-                            break
-                        except:
-                            pass
+                    pass
+                    #if j == 0:
+                    #    try:
+                    #        self.ff_sym(x)
+                    #        found_nm = True
+                    #        n = i
+                    #        m = j
+                    #        break
+                    #    except:
+                    #        pass
 
         self.n = n
         self.m = m
@@ -417,14 +392,11 @@ class Trajectory():
             New value for the passed parameter
         '''
         
-        # The following works but is not very elegant...
-        if isinstance(val, str):
-            exec('self.%s = "%s"'%(param, val))
-        else:
-            exec('self.%s = %s'%(param, str(val)))
+        # check if current and new value have the same type
+        # --> should they?
+        assert type(val) == type(self.mparam[param])
         
-        # TODO: collect all method parameters in a dictionary 'mparam'
-        #self.mparam[param] = val
+        self.mparam[param] = val
 
 
     def iterate(self):
@@ -553,8 +525,11 @@ class Trajectory():
         x_fnc = dict()
         u_fnc = dict()
         dx_fnc = dict()
-
+        
+        # make some stuff local
         chains = self.chains
+        sx = self.mparam['sx']
+        su = self.mparam['su']
 
         # first handle variables that are part of an integrator chain
         for ic in chains:
@@ -563,10 +538,10 @@ class Trajectory():
             # here we just create a spline object for the upper ends of every chain
             # w.r.t. its lower end
             if ic.lower.name.startswith('x'):
-                splines[upper] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
                 splines[upper].type = 'x'
             elif ic.lower.name.startswith('u'):
-                splines[upper] = CubicSpline(self.a,self.b,n=self.su,bc=self.uab,steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=su,bc=self.uab,steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
             for i,elem in enumerate(ic.elements):
@@ -595,13 +570,13 @@ class Trajectory():
         # now handle the variables which are not part of any chain
         for xx in self.x_sym:
             if (not x_fnc.has_key(xx)):
-                splines[xx] = CubicSpline(self.a,self.b,n=self.sx,bc=[self.xa[xx],self.xb[xx]],steady=False,tag=str(xx))
+                splines[xx] = CubicSpline(self.a,self.b,n=sx,bc=[self.xa[xx],self.xb[xx]],steady=False,tag=str(xx))
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx].f
 
         for uu in self.u_sym:
             if (not u_fnc.has_key(uu)):
-                splines[uu] = CubicSpline(self.a,self.b,n=self.su,bc=self.uab,steady=False,tag=str(uu))
+                splines[uu] = CubicSpline(self.a,self.b,n=su,bc=self.uab,steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
         
@@ -645,16 +620,16 @@ class Trajectory():
 
         a = self.a
         b = self.b
-        delta = self.delta
+        delta = self.mparam['delta']
 
         # now we generate the collocation points
-        if self.colltype == 'equidistant':
+        if self.mparam['colltype'] == 'equidistant':
             # get equidistant collocation points
-            cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
-        elif self.colltype == 'chebychev':
+            cpts = np.linspace(a,b,(self.mparam['sx']*delta+1),endpoint=True)
+        elif self.mparam['colltype'] == 'chebychev':
             # determine rank of chebychev polynomial
             # of which to calculate zero points
-            nc = int(self.sx*delta - 1)
+            nc = int(self.mparam['sx']*delta - 1)
 
             # calculate zero points of chebychev polynomial --> in [-1,1]
             cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
@@ -670,7 +645,7 @@ class Trajectory():
         else:
             log.warn('Unknown type of collocation points.')
             log.warn('--> will use equidistant points!')
-            cpts = np.linspace(a,b,(self.sx*delta+1),endpoint=True)
+            cpts = np.linspace(a,b,(self.mparam['sx']*delta+1),endpoint=True)
 
         lx = len(cpts)*len(x_sym)
         lu = len(cpts)*len(u_sym)
@@ -703,7 +678,7 @@ class Trajectory():
         #
         # now, the dictionary indic looks something like follows
         #
-        # indic = {u1: (0, 6), x3: (18, 24), x4: (24, 30), x1: (6, 12), x2: (12, 18)}
+        # indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}
         #
         # which means, that in the vector of all independent parameters of all splines
         # the 0th up to the 5st item [remember: Python starts indexing at 0 and leaves out the last]
@@ -777,7 +752,7 @@ class Trajectory():
         #self.DXU2 = csr_matrix(DXU2)
         ##########
 
-        if self.use_sparse:
+        if self.mparam['use_sparse']:
             self.Mx = csr_matrix(self.Mx)
             self.Mx_abs = csr_matrix(self.Mx_abs)
             self.Mdx = csr_matrix(self.Mdx)
@@ -798,8 +773,8 @@ class Trajectory():
         log.info( 40*"#")
 
         # create our solver
-        solver = Solver(self.G, self.DG, self.guess, tol= self.tol,
-                        maxx= 20, algo=self.algo)
+        solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
+                        maxx= 20, algo=self.mparam['algo'])
 
         # solve the equation system
         self.sol = solver.solve()
@@ -1002,7 +977,7 @@ class Trajectory():
         log.info(40*"-")
 
         # check if tolerance is satisfied
-        self.reached_accuracy = max(err) < self.eps
+        self.reached_accuracy = max(err) < self.mparam['eps']
 
         log.info("--> reached desired accuracy: "+str(self.reached_accuracy))
 

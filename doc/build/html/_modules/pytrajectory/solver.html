@@ -149,6 +149,10 @@
             <span class="n">Fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="n">DFx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             
+            <span class="c"># NEW -experimental</span>
+            <span class="c">#if res &gt;= 1:</span>
+            <span class="c">#    DFx = self.DF(x)</span>
+            
             <span class="c"># SPARSE</span>
             <span class="n">DFx</span> <span class="o">=</span> <span class="n">scp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">DFx</span><span class="p">)</span>
             
@@ -179,7 +183,7 @@
             
             <span class="c"># NEW - experimental</span>
             <span class="c">#if res&lt;1.0:</span>
-            <span class="c">#    reltol = 1e-2</span>
+            <span class="c">#    reltol = 1e-3</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span>
     

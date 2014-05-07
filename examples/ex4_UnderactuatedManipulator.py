@@ -47,6 +47,3 @@ T.setParam('kx', 3)
 
 # run iteration
 T.startIteration()
-
-# show results
-T.plot()

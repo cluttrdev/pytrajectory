@@ -148,10 +148,10 @@ position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values for the inputs</span>
-<span class="n">bvin</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+<span class="n">uab</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># create trajectory object</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">bvin</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">uab</span><span class="p">)</span>
 
 <span class="c"># alter some method parameters to increase performance</span>
 <span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;su&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>

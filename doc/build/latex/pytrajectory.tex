@@ -14,7 +14,7 @@
 
 
 \title{pytrajectory Documentation}
-\date{May 04, 2014}
+\date{May 06, 2014}
 \release{0.3.3}
 \author{Andreas Kunze}
 \newcommand{\sphinxlogo}{}
@@ -384,6 +384,8 @@ To do so, just type:
 \end{Verbatim}
 
 Please have a look at the {\hyperref[pytrajectory:reference]{\emph{PyTrajectory Modules Reference}}} for more information.
+
+\includegraphics{inv_pendulum_osc.png}
 
 
 \section{Background}
@@ -766,10 +768,10 @@ same position again and the pendulums should be at rest with
 \PYG{n}{xb} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
 \PYG{c}{\PYGZsh{} boundary values for the input}
-\PYG{n}{g}\PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+\PYG{n}{uab}\PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
 \PYG{c}{\PYGZsh{} create trajectory object}
-\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{g}\PYG{p}{)}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{uab}\PYG{p}{)}
 
 \PYG{c}{\PYGZsh{} alter some method parameters to increase performance}
 \PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{su}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{10}\PYG{p}{)}
@@ -980,10 +982,10 @@ to the equilibrium positions (\(\tilde{u}(0) = \tilde{u}(T) = 0\)).
         \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
 \PYG{c}{\PYGZsh{} boundary values for the inputs}
-\PYG{n}{g} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
+\PYG{n}{uab} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{]}
 
 \PYG{c}{\PYGZsh{} create trajectory object}
-\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{1.8}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{g}\PYG{p}{)}
+\PYG{n}{T} \PYG{o}{=} \PYG{n}{Trajectory}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{a}\PYG{o}{=}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{n}{b}\PYG{o}{=}\PYG{l+m+mf}{1.8}\PYG{p}{,} \PYG{n}{xa}\PYG{o}{=}\PYG{n}{xa}\PYG{p}{,} \PYG{n}{xb}\PYG{o}{=}\PYG{n}{xb}\PYG{p}{,} \PYG{n}{g}\PYG{o}{=}\PYG{n}{uab}\PYG{p}{)}
 
 \PYG{c}{\PYGZsh{} also alter some method parameters to increase performance}
 \PYG{n}{T}\PYG{o}{.}\PYG{n}{setParam}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{su}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,} \PYG{l+m+mi}{20}\PYG{p}{)}
@@ -1183,91 +1185,100 @@ visualising the systems dynamic.
 \end{itemize}
 
 \end{description}\end{quote}
-\index{sx (pytrajectory.trajectory.Trajectory attribute)}
+\index{mparam (pytrajectory.trajectory.Trajectory attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.sx}\pysigline{\bfcode{sx}\strong{ int}}
-Initial number of spline parts for the system variables (default: 5)
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.mparam}\pysigline{\bfcode{mparam}\strong{ dict}}
+Dictionary with method parameters
 
-\end{fulllineitems}
+\begin{tabulary}{\linewidth}{|L|L|L|}
+\hline
+\textsf{\relax 
+key
+} & \textsf{\relax 
+default value
+} & \textsf{\relax 
+meaning
+}\\
+\hline
+sx
+ & 
+5
+ & 
+Initial number of spline parts for the system variables
+\\
 
-\index{su (pytrajectory.trajectory.Trajectory attribute)}
+su
+ & 
+5
+ & 
+Initial number of spline parts for the input variables
+\\
 
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.su}\pysigline{\bfcode{su}\strong{ int}}
-Initial number of spline parts for the input variables (default: 5)
+kx
+ & 
+2
+ & 
+Factor for raising the number of spline parts
+\\
 
-\end{fulllineitems}
+delta
+ & 
+2
+ & 
+Constant for calculation of collocation points
+\\
 
-\index{kx (pytrajectory.trajectory.Trajectory attribute)}
+maxIt
+ & 
+7
+ & 
+Maximum number of iteration steps
+\\
 
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.kx}\pysigline{\bfcode{kx}\strong{ int}}
-Factor for raising the number of spline parts for the system variables (default: 2)
+eps
+ & 
+1e-2
+ & 
+Tolerance for the solution of the initial value problem
+\\
 
-\end{fulllineitems}
+tol
+ & 
+1e-5
+ & 
+Tolerance for the solver of the equation system
+\\
 
-\index{delta (pytrajectory.trajectory.Trajectory attribute)}
+algo
+ & 
+`leven'
+ & 
+The solver algorithm to use
+\\
 
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.delta}\pysigline{\bfcode{delta}\strong{ int}}
-Constant for calculation of collocation points (default: 2)
+use\_chains
+ & 
+True
+ & 
+Whether or not to use integrator chains
+\\
 
-\end{fulllineitems}
+colltype
+ & 
+`equidistant'
+ & 
+The type of the collocation points
+\\
 
-\index{maxIt (pytrajectory.trajectory.Trajectory attribute)}
+use\_sparse
+ & 
+True
+ & 
+Whether or not to use sparse matrices
+\\
+\hline\end{tabulary}
 
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.maxIt}\pysigline{\bfcode{maxIt}\strong{ int}}
-Maximum number of iterations (default: 10)
-
-\end{fulllineitems}
-
-\index{eps (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.eps}\pysigline{\bfcode{eps}\strong{ float}}
-Tolerance for the solution of the initial value problem (default: 1e-2)
-
-\end{fulllineitems}
-
-\index{tol (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.tol}\pysigline{\bfcode{tol}\strong{ float}}
-Tolerance for the solver of the equation system (default: 1e-5)
-
-\end{fulllineitems}
-
-\index{algo (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.algo}\pysigline{\bfcode{algo}\strong{ str}}
-The solver algorithm to use (default: `leven')
-
-\end{fulllineitems}
-
-\index{use\_chains (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.use_chains}\pysigline{\bfcode{use\_chains}\strong{ bool}}
-Whether or not to use integrator chains (default: True)
-
-\end{fulllineitems}
-
-\index{colltype (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.colltype}\pysigline{\bfcode{colltype}\strong{ {[}'equidistant', `chebychev'{]}}}
-The type of the collocation points (default: `equidistant')
-
-\end{fulllineitems}
-
-\index{use\_sparse (pytrajectory.trajectory.Trajectory attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.use_sparse}\pysigline{\bfcode{use\_sparse}\strong{ bool}}
-Whether or not to use sparse matrices (default: True)
 
 \end{fulllineitems}
 
@@ -1470,7 +1481,7 @@ the \code{utilities.plot()} function.
 \index{save() (pytrajectory.trajectory.Trajectory method)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.save}\pysiglinewithargsret{\bfcode{save}}{}{}
+\phantomsection\label{pytrajectory:pytrajectory.trajectory.Trajectory.save}\pysiglinewithargsret{\bfcode{save}}{\emph{fname=None}}{}
 Save system data, callable solution functions and simulation results.
 
 \end{fulllineitems}
@@ -1795,52 +1806,24 @@ For the elements \((x_i)_{i=1,...,n}\) the relation
 \index{elements (pytrajectory.utilities.IntegChain attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.elements}\pysigline{\bfcode{elements}\strong{ = None}}
-IntegChain.elements is a list of all elements that are part of the integrator chain
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.elements}\pysigline{\bfcode{elements}\strong{ tuple}}
+Ordered list of all elements that are part of the integrator chain
 
 \end{fulllineitems}
 
 \index{upper (pytrajectory.utilities.IntegChain attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.upper}\pysigline{\bfcode{upper}\strong{ = None}}
-IntegChain.upper is the upper end of the integrator chain
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.upper}\pysigline{\bfcode{upper}\strong{ sympy.Symbol}}
+Upper end of the integrator chain
 
 \end{fulllineitems}
 
 \index{lower (pytrajectory.utilities.IntegChain attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.lower}\pysigline{\bfcode{lower}\strong{ = None}}
-IntegChain.lower is the lower end of the integrator chain
-
-\end{fulllineitems}
-
-\index{succ() (pytrajectory.utilities.IntegChain method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.succ}\pysiglinewithargsret{\bfcode{succ}}{\emph{elem}}{}
-This method returns the successor of the given element of the
-integrator chains, i.e. it returns \(\frac{d}{dt}[elem]\)
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{elem} (\emph{sympy.Symbol}) -- An element of the integrator chain
-
-\end{description}\end{quote}
-
-\end{fulllineitems}
-
-\index{pred() (pytrajectory.utilities.IntegChain method)}
-
-\begin{fulllineitems}
-\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.pred}\pysiglinewithargsret{\bfcode{pred}}{\emph{elem}}{}
-This method returns the predecessor of the given element of the
-integrator chains, i.e. it returns \(\int [elem]\)
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{elem} (\emph{sympy.Symbol}) -- An element of the integrator chain
-
-\end{description}\end{quote}
+\phantomsection\label{pytrajectory:pytrajectory.utilities.IntegChain.lower}\pysigline{\bfcode{lower}\strong{ sympy.Symbol}}
+Lower end of the integrator chain
 
 \end{fulllineitems}
 
@@ -1999,16 +1982,16 @@ file. In addition a loglevel can be set to suppress some information.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
-\textbf{fname} (\emph{str}) -- The name of the log file to which all information will be written.
+\textbf{fname} (\emph{str}) -- The name of the log file to which all information will be written
 
 \item {} 
-\textbf{mode} (\emph{str}) -- Either ``w'' if an existing file should be overwritten or ``a'' if it should be appended.
+\textbf{mode} (\emph{str}) -- Either `w' if an existing file should be overwritten or `a' if it should be appended
 
 \item {} 
-\textbf{suppress} (\emph{bool}) -- Whether or not to suppress output to the screen.
+\textbf{suppress} (\emph{bool}) -- Whether or not to suppress output to the screen
 
 \item {} 
-\textbf{verbosity} (\emph{int}) -- The level of verbosity that restricts the output.
+\textbf{verbosity} (\emph{int}) -- The level of verbosity that restricts the output
 
 \end{itemize}
 
@@ -2024,7 +2007,7 @@ Writes log information if \code{verblvl} is less or equal to the level of verbos
 \textbf{text} (\emph{str}) -- The information to log.
 
 \item {} 
-\textbf{verblvl} (\emph{int}) -- The ``inportance'' of the information.
+\textbf{verblvl} (\emph{int}) -- The `inportance' of the information.
 
 \end{itemize}
 
@@ -2039,6 +2022,19 @@ Writes log information if \code{verblvl} is less or equal to the level of verbos
 
 \begin{fulllineitems}
 \phantomsection\label{pytrajectory:pytrajectory.log.Timer}\pysiglinewithargsret{\strong{class }\code{pytrajectory.log.}\bfcode{Timer}}{\emph{label='\textasciitilde{}'}, \emph{verbose=True}}{}
+Provides a context manager that takes the time of a code block.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{label} (\emph{str}) -- The `name' of the code block which is timed
+
+\item {} 
+\textbf{verbose} (\emph{bool}) -- Whether or not to output the elapsed time at exit
+
+\end{itemize}
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 \index{set\_file() (in module pytrajectory.log)}

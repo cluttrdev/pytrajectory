@@ -45,16 +45,13 @@ xb = [  0.0,
         0.0]
 
 # boundary values for the inputs
-bvin = [0.0, 0.0]
+uab = [0.0, 0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, g=bvin)
+T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, g=uab)
 
 # alter some method parameters to increase performance
 T.setParam('su', 10)
 
 # run iteration
 T.startIteration()
-
-# show results
-T.plot()

@@ -16,21 +16,21 @@ class Logger():
     ----------
     
     fname : str
-        The name of the log file to which all information will be written.
+        The name of the log file to which all information will be written
     
     mode : str
-        Either "w" if an existing file should be overwritten or "a" if it should be appended.
+        Either 'w' if an existing file should be overwritten or 'a' if it should be appended
     
     suppress : bool
-        Whether or not to suppress output to the screen.
+        Whether or not to suppress output to the screen
     
     verbosity : int
-        The level of verbosity that restricts the output.
+        The level of verbosity that restricts the output
     '''
     
     def __init__(self, fname=None, mode="w", suppress=False, verbosity=0):
         if not fname:
-            fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log"
+            fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S') + ".log"
         self.logfile = open(fname, mode)
         self.stdout = sys.stdout
         self.suppressed = suppress
@@ -50,7 +50,7 @@ class Logger():
             The information to log.
         
         verblvl : int
-            The "inportance" of the information.
+            The 'inportance' of the information.
         '''
         if verblvl <= self.verbosity:
             self.logfile.write(text)
@@ -63,6 +63,18 @@ class Logger():
 
 
 class Timer():
+    '''
+    Provides a context manager that takes the time of a code block.
+    
+    Parameters
+    ----------
+    
+    label : str
+        The 'name' of the code block which is timed
+    
+    verbose : bool
+        Whether or not to output the elapsed time at exit
+    '''
     def __init__(self, label="~", verbose=True):
         self.label = label
         self.verbose = verbose

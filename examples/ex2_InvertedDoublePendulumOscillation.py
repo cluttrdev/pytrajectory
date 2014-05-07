@@ -43,6 +43,3 @@ T.setParam('eps', 8e-2)
 
 # run iteration
 T.startIteration()
-
-# show results
-T.plot()

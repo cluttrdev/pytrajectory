@@ -14,7 +14,7 @@ from numpy import pi
 # partiell linearisiertes inverses Pendel [6.1.3]
 
 calc = True
-animate = False
+animate = 1
 
 def f(x,u):
     x1, x2, x3, x4 = x
@@ -40,16 +40,12 @@ xb = [  0.0,
 if calc:
     a = 0.0
     b = 2.0
-    sx = 5
-    su = 5
     kx = 5
-    maxIt  = 5
     _g = [0,0]
-    eps = 0.05
+    eps = 0.01
     use_chains = False
 
-    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
-                    maxIt=maxIt, g=_g, eps=eps, use_chains=use_chains)
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, kx=kx, g=_g, eps=eps, use_chains=use_chains)
 
     with log.Timer("startIteration"):
         T.startIteration()
@@ -95,10 +91,9 @@ if animate:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
-                    plotsys=[[0, 'x'], [2, 'phi']], plotinputs=[[0, 'F']])
+    A = Animation(drawfnc=draw, simdata=T.sim)
     A.set_limits(xlim=(-1.2,0.3), ylim=(-0.6,0.6))
     
     A.animate()
-    A.save('ex1.mp4')
+    A.save('ex1.gif')
 

@@ -100,6 +100,10 @@ class Solver:
             Fx = self.F(x)
             DFx = self.DF(x)
             
+            # NEW -experimental
+            #if res >= 1:
+            #    DFx = self.DF(x)
+            
             # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
             
@@ -130,7 +134,7 @@ class Solver:
             
             # NEW - experimental
             #if res<1.0:
-            #    reltol = 1e-2
+            #    reltol = 1e-3
 
         self.sol = x
     

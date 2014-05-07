@@ -65,21 +65,21 @@
 <span class="sd">    ----------</span>
 <span class="sd">    </span>
 <span class="sd">    fname : str</span>
-<span class="sd">        The name of the log file to which all information will be written.</span>
+<span class="sd">        The name of the log file to which all information will be written</span>
 <span class="sd">    </span>
 <span class="sd">    mode : str</span>
-<span class="sd">        Either &quot;w&quot; if an existing file should be overwritten or &quot;a&quot; if it should be appended.</span>
+<span class="sd">        Either &#39;w&#39; if an existing file should be overwritten or &#39;a&#39; if it should be appended</span>
 <span class="sd">    </span>
 <span class="sd">    suppress : bool</span>
-<span class="sd">        Whether or not to suppress output to the screen.</span>
+<span class="sd">        Whether or not to suppress output to the screen</span>
 <span class="sd">    </span>
 <span class="sd">    verbosity : int</span>
-<span class="sd">        The level of verbosity that restricts the output.</span>
+<span class="sd">        The level of verbosity that restricts the output</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%y%m</span><span class="si">%d</span><span class="s">-%H%M%S&#39;</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.log&quot;</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%y%m</span><span class="si">%d</span><span class="s">-%H%M%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.log&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span> <span class="o">=</span> <span class="n">suppress</span>
@@ -99,7 +99,7 @@
 <span class="sd">            The information to log.</span>
 <span class="sd">        </span>
 <span class="sd">        verblvl : int</span>
-<span class="sd">            The &quot;inportance&quot; of the information.</span>
+<span class="sd">            The &#39;inportance&#39; of the information.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">verblvl</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -112,6 +112,18 @@
 
 </div>
 <div class="viewcode-block" id="Timer"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Timer">[docs]</a><span class="k">class</span> <span class="nc">Timer</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Provides a context manager that takes the time of a code block.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    label : str</span>
+<span class="sd">        The &#39;name&#39; of the code block which is timed</span>
+<span class="sd">    </span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Whether or not to output the elapsed time at exit</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;~&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>

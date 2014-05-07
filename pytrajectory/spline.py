@@ -363,5 +363,10 @@ class CubicSpline():
             c_num = [np.dot(c,c_sol)+ca for c,ca in zip(self.prov_S[i],self.prov_S_abs[i])]
             self.S[i] = np.poly1d(c_num)
         
-        # now we hae numerical values for the coefficients so we can set this to False
+        # now we have numerical values for the coefficients so we can set this to False
         self.prov_flag = False
+
+
+if __name__=='__main__':
+    S = CubicSpline(n=1215)
+    IPS()

@@ -412,8 +412,13 @@
             <span class="n">c_num</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c_sol</span><span class="p">)</span><span class="o">+</span><span class="n">ca</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">ca</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prov_S</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">prov_S_abs</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
         
-        <span class="c"># now we hae numerical values for the coefficients so we can set this to False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span> <span class="o">=</span> <span class="bp">False</span></div></div>
+        <span class="c"># now we have numerical values for the coefficients so we can set this to False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prov_flag</span> <span class="o">=</span> <span class="bp">False</span>
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1215</span><span class="p">)</span>
+    <span class="n">IPS</span><span class="p">()</span>
 </pre></div>
 
           </div>
