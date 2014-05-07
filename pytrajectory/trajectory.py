@@ -20,9 +20,7 @@ import log
 #####
 
 # DEBUG
-from IPython import embed as IPS
-
-import gc
+#from IPython import embed as IPS
 
 
 class Trajectory():
@@ -416,7 +414,6 @@ class Trajectory():
 
         As a last, the initial value problem is simulated.
         '''
-        gc.collect()
         self.nIt += 1
 
         # initialise splines
@@ -1170,5 +1167,5 @@ if __name__ == '__main__':
         with log.Timer("Iteration"):
             T.startIteration()
 
-        IPS()
+        #IPS()
 

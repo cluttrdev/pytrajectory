@@ -3,7 +3,6 @@ import sympy as sp
 import scipy as scp
 
 from sympy.core.symbol import Symbol
-from IPython import embed as IPS
 
 from numpy import sin,cos
 

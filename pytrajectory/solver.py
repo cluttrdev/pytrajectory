@@ -3,8 +3,6 @@ from numpy.linalg import solve, norm
 import scipy as scp
 
 import log
-#from log import IPS
-from IPython import embed as IPS
 from time import time
 
 

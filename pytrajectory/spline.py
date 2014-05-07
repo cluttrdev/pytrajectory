@@ -5,7 +5,7 @@ from scipy.sparse.linalg import spsolve
 
 import log
 #from log import IPS
-from IPython import embed as IPS
+#from IPython import embed as IPS
 
 
 def fdiff(func):
@@ -325,7 +325,7 @@ class CubicSpline():
                 #tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
                 tmp2 = spsolve(B,-A)
             
-            IPS()
+            #IPS()
             
             tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
             tmp_coeffs_abs = np.zeros((self.n,4))
@@ -379,4 +379,4 @@ class CubicSpline():
 
 if __name__=='__main__':
     S = CubicSpline(n=1215)
-    IPS()
+    #IPS()
