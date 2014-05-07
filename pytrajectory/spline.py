@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.linalg import solve
 import sympy as sp
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
@@ -126,6 +125,7 @@ class CubicSpline():
         
         x : real
             The point to evaluate the spline at
+        
         d : int
             The derivation order
         '''
@@ -259,7 +259,7 @@ class CubicSpline():
 
         M = np.zeros((N1,N2))
         r = np.zeros(N1)
-
+        
         # build block band matrix for smoothness in every joining point
         #   derivatives from order 0 to 2
         repmat = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
@@ -294,47 +294,57 @@ class CubicSpline():
         #
         # we need B^(-1)*r [absolute part -> tmp1] and B^(-1)*A [coefficients of a -> tmp2]
 
-        a_mat = np.zeros((N2,N2-N1))
-        b_mat = np.zeros((N2,N1))
-        
-        for i,aa in enumerate(a):
-            tmp = aa.name.split('_')[-2:]
-            j = int(tmp[0])
-            k = int(tmp[1])
-            a_mat[4*j+k,i] = 1
+        with log.Timer('solve eqs'):
+            a_mat = np.zeros((N2,N2-N1))
+            b_mat = np.zeros((N2,N1))
+            
+            for i,aa in enumerate(a):
+                tmp = aa.name.split('_')[-2:]
+                j = int(tmp[0])
+                k = int(tmp[1])
+                a_mat[4*j+k,i] = 1
 
-        for i,bb in enumerate(b):
-            tmp = bb.name.split('_')[-2:]
-            j = int(tmp[0])
-            k = int(tmp[1])
-            b_mat[4*j+k,i] = 1
+            for i,bb in enumerate(b):
+                tmp = bb.name.split('_')[-2:]
+                j = int(tmp[0])
+                k = int(tmp[1])
+                b_mat[4*j+k,i] = 1
+            
+            M = sparse.csr_matrix(M)
+            A = M.dot(a_mat)
+            B = M.dot(b_mat)
+            
+            #NEW
+            A = sparse.csr_matrix(A)
+            B = sparse.csr_matrix(B)
+            
+            # do the inversion
+            #tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
+            tmp1 = spsolve(B,r.T)
+            with log.Timer('tmp2'):
+                #tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
+                tmp2 = spsolve(B,-A)
+            
+            IPS()
+            
+            tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
+            tmp_coeffs_abs = np.zeros((self.n,4))
 
-        M = sparse.csr_matrix(M)
-        A = M.dot(a_mat)
-        B = M.dot(b_mat)
+            for i,bb in enumerate(b):
+                tmp = bb.name.split('_')[-2:]
+                j = int(tmp[0])
+                k = int(tmp[1])
 
-        # do the inversion
-        tmp1 = np.array(solve(B,r.T),dtype=np.float)
-        tmp2 = np.array(solve(B,-A),dtype=np.float)
+                tmp_coeffs[(j,k)] = tmp2[i]
+                tmp_coeffs_abs[(j,k)] = tmp1[i]
 
-        tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
-        tmp_coeffs_abs = np.zeros((self.n,4))
+            tmp3 = np.eye(len(a))
+            for i,aa in enumerate(a):
+                tmp = aa.name.split('_')[-2:]
+                j = int(tmp[0])
+                k = int(tmp[1])
 
-        for i,bb in enumerate(b):
-            tmp = bb.name.split('_')[-2:]
-            j = int(tmp[0])
-            k = int(tmp[1])
-
-            tmp_coeffs[(j,k)] = tmp2[i]
-            tmp_coeffs_abs[(j,k)] = tmp1[i]
-
-        tmp3 = np.eye(len(a))
-        for i,aa in enumerate(a):
-            tmp = aa.name.split('_')[-2:]
-            j = int(tmp[0])
-            k = int(tmp[1])
-
-            tmp_coeffs[(j,k)] = tmp3[i]
+                tmp_coeffs[(j,k)] = tmp3[i]
 
         self.prov_S = tmp_coeffs
         self.prov_S_abs = tmp_coeffs_abs
