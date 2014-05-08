@@ -51,26 +51,16 @@
 <span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sp</span>
 <span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">scp</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse.csr</span> <span class="kn">import</span> <span class="n">csr_matrix</span>
-
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 
 <span class="kn">from</span> <span class="nn">spline</span> <span class="kn">import</span> <span class="n">CubicSpline</span><span class="p">,</span> <span class="n">fdiff</span>
 <span class="kn">from</span> <span class="nn">solver</span> <span class="kn">import</span> <span class="n">Solver</span>
 <span class="kn">from</span> <span class="nn">simulation</span> <span class="kn">import</span> <span class="n">Simulation</span>
-<span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="n">IntegChain</span>
-<span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">plotsim</span>
+<span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="n">IntegChain</span><span class="p">,</span> <span class="n">plotsim</span>
 <span class="kn">import</span> <span class="nn">log</span>
 
-<span class="c">#####</span>
-<span class="c">#NEW</span>
-<span class="c">#from utilities import blockdiag as bdiag</span>
-<span class="c">#####</span>
-
 <span class="c"># DEBUG</span>
-<span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
-
-<span class="kn">import</span> <span class="nn">gc</span>
+<span class="c">#from IPython import embed as IPS</span>
 
 
 <span class="k">class</span> <span class="nc">Trajectory</span><span class="p">():</span>
@@ -430,7 +420,7 @@
     <span class="k">def</span> <span class="nf">setParam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></div>
 <div class="viewcode-block" id="Trajectory.setParam"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.setParam">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Method to assign value :attr:`val` to method parameter :attr:`param`.</span>
-
+<span class="sd">        (mainly for didactic purpose)</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -464,7 +454,6 @@
 
 <span class="sd">        As a last, the initial value problem is simulated.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nIt</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c"># initialise splines</span>
@@ -1027,8 +1016,8 @@
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="s">&quot;-&quot;</span><span class="p">)</span>
         
-        <span class="c">##############</span>
-        <span class="c"># NEW</span>
+        <span class="c">#########################</span>
+        <span class="c"># NEW - experimental</span>
         <span class="c">########</span>
         <span class="c"># calculate the error functions H_i(t)</span>
         <span class="c">#H = dict()</span>
@@ -1114,7 +1103,7 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span><span class="p">:</span>
             <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
 
-        <span class="c"># call utilities.plot() [ imported as plotsim() ]</span>
+        <span class="c"># call utilities.plotsim()</span>
         <span class="n">plotsim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
 
 
@@ -1148,7 +1137,7 @@
         <span class="n">save</span><span class="p">[</span><span class="s">&#39;sim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;.pkl&#39;</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">__file__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;.pkl&#39;</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.pkl&#39;</span><span class="p">):</span>
             <span class="n">fname</span> <span class="o">+=</span> <span class="s">&#39;.pkl&#39;</span>
         
@@ -1218,7 +1207,7 @@
         <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;Iteration&quot;</span><span class="p">):</span>
             <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
 
-        <span class="n">IPS</span><span class="p">()</span>
+        <span class="c">#IPS()</span>
 </pre></div>
 
           </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>About PyTrajectory &mdash; pytrajectory 0.3.3 documentation</title>
+    <title>Notes on implementation &mdash; pytrajectory 0.3.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pytrajectory 0.3.3 documentation" href="../index.html" />
     <link rel="up" title="PyTrajectory User’s Guide" href="index.html" />
-    <link rel="next" title="Getting Started" href="start.html" />
-    <link rel="prev" title="PyTrajectory User’s Guide" href="index.html" /> 
+    <link rel="next" title="PyTrajectory Modules Reference" href="../pytrajectory.html" />
+    <link rel="prev" title="Acrobot" href="examples/acrobot.html" /> 
   </head>
   <body>
     <div class="related">
@@ -39,10 +39,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="start.html" title="Getting Started"
+          <a href="../pytrajectory.html" title="PyTrajectory Modules Reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="PyTrajectory User’s Guide"
+          <a href="examples/acrobot.html" title="Acrobot"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
@@ -54,17 +54,24 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="about-pytrajectory">
-<h1>About PyTrajectory<a class="headerlink" href="#about-pytrajectory" title="Permalink to this headline">¶</a></h1>
-<p>PyTrajectory is being developed at Dresden University of Technology at the
-<a class="reference external" href="http://www.et.tu-dresden.de/rst/">Institute for Control Theory</a>.</p>
-<p>Based on the project thesis of Oliver Schnabel under the supervision of Carsten Knoll in February 2013
-it has been further developed by Andreas Kunze to increase its numeric performance.</p>
-<p>If you face any problems using PyTrajectory, feel free to contact us.</p>
-<ul class="simple">
-<li>andreas.kunze &lt;at&gt; mailbox.tu-dresden.de</li>
-<li>carsten.knoll &lt;at&gt; tu-dresden.de</li>
-</ul>
+  <div class="section" id="notes-on-implementation">
+<span id="notes"></span><h1>Notes on implementation<a class="headerlink" href="#notes-on-implementation" title="Permalink to this headline">¶</a></h1>
+<p>This section contains some explanations on the code which don&#8217;t fit in
+the docstrings or the background section.</p>
+<div class="section" id="evaluation-of-the-equation-system-and-its-jacobian">
+<span id="eval-g-dg"></span><h2>Evaluation of the equation system and its jacobian<a class="headerlink" href="#evaluation-of-the-equation-system-and-its-jacobian" title="Permalink to this headline">¶</a></h2>
+<p>Both the equation system and its jacobian consist of linear and
+nonlinear parts. Therefor their evaluation is divided into these two
+steps.</p>
+<p>In the following we denote by <img class="math" src="../_images/math/1aa677cc3cddb4162a38d8c988d4381c3ffcbd64.png" alt="x_i,\  u_i"/> the spline object we
+created for the <img class="math" src="../_images/math/a581f053bbfa5115f42c13094857cdd12a37ec49.png" alt="i"/>-th system or input variable and the first
+derivatives of the system variables by <img class="math" src="../_images/math/0514f1c84980ed310ab4a841efdba3aa6bf71f23.png" alt="d x_i"/>.</p>
+<p>... to be continued!</p>
+</div>
+<div class="section" id="smoothness-and-boundary-conditions-for-the-splines">
+<span id="makesteady"></span><h2>Smoothness and boundary conditions for the splines<a class="headerlink" href="#smoothness-and-boundary-conditions-for-the-splines" title="Permalink to this headline">¶</a></h2>
+<p>... to be continued!</p>
+</div>
 </div>
 
 
@@ -73,15 +80,24 @@ it has been further developed by Andreas Kunze to increase its numeric performan
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Notes on implementation</a><ul>
+<li><a class="reference internal" href="#evaluation-of-the-equation-system-and-its-jacobian">Evaluation of the equation system and its jacobian</a></li>
+<li><a class="reference internal" href="#smoothness-and-boundary-conditions-for-the-splines">Smoothness and boundary conditions for the splines</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">PyTrajectory User&#8217;s Guide</a></p>
+  <p class="topless"><a href="examples/acrobot.html"
+                        title="previous chapter">Acrobot</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="start.html"
-                        title="next chapter">Getting Started</a></p>
+  <p class="topless"><a href="../pytrajectory.html"
+                        title="next chapter">PyTrajectory Modules Reference</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/guide/about.txt"
+    <li><a href="../_sources/guide/notes.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -111,10 +127,10 @@ it has been further developed by Andreas Kunze to increase its numeric performan
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="start.html" title="Getting Started"
+          <a href="../pytrajectory.html" title="PyTrajectory Modules Reference"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="PyTrajectory User’s Guide"
+          <a href="examples/acrobot.html" title="Acrobot"
              >previous</a> |</li>
         <li><a href="../index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li>
           <li><a href="index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li> 

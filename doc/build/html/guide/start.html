@@ -69,6 +69,7 @@ For a more detailed view please have a look at the <a class="reference internal"
 </ul>
 </li>
 <li><a class="reference internal" href="#usage" id="id6">Usage</a></li>
+<li><a class="reference internal" href="#visualisation" id="id7">Visualisation</a></li>
 </ul>
 </div>
 <div class="section" id="what-is-pytrajectory">
@@ -232,6 +233,98 @@ To do so, just type:</p>
 </pre></div>
 </div>
 <p>Please have a look at the <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a> for more information.</p>
+</div>
+<div class="section" id="visualisation">
+<h2><a class="toc-backref" href="#id7">Visualisation</a><a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h2>
+<p>Beyond the simple <tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt> method (see: <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a>)
+PyTrajectory offers basic capabilities to animate the given system.
+This is done via the <tt class="xref py py-class docutils literal"><span class="pre">Animation</span></tt> class from the <tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt>
+module. To explain this feature we take a look at the example above.</p>
+<p>When instanciated, the <tt class="xref py py-class docutils literal"><span class="pre">Animation</span></tt> requires the calculated
+simulation results <cite>T.sim</cite> and a callable function that draws an image
+of the system according to given simulation data.</p>
+<p>First we import what we need by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytrajectory.utilities</span> <span class="kn">import</span> <span class="n">Animation</span>
+</pre></div>
+</div>
+<p>Then we define our function that takes simulation data <cite>x</cite>  of a
+specific time and an instance <cite>image</cite> of <cite>Animation.Image</cite> which is just
+a container for the image. In the considered example <cite>xt</cite> is of the form</p>
+<div class="math">
+<p><img src="../_images/math/856f63b13ff9fe0aff52c702bc739df5eeaeab3b.png" alt="\begin{equation*}
+   xt = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]
+\end{equation*}"/></p>
+</div><p>and <cite>image</cite> is just a container for the drawn image.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+    <span class="c"># to draw the image we just need the translation `x` of the</span>
+    <span class="c"># cart and the deflection angle `phi` of the pendulum.</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">xt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    
+    <span class="c"># next we set some parameters</span>
+    <span class="n">car_width</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">car_heigth</span> <span class="o">=</span> <span class="mf">0.02</span>
+    
+    <span class="n">rod_length</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">pendulum_size</span> <span class="o">=</span> <span class="mf">0.015</span>
+    
+    <span class="c"># then we determine the current state of the system</span>
+    <span class="c"># according to the given simulation data</span>
+    <span class="n">x_car</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">y_car</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="n">x_pendulum</span> <span class="o">=</span> <span class="o">-</span><span class="n">rod_length</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">+</span> <span class="n">x_car</span>
+    <span class="n">y_pendulum</span> <span class="o">=</span> <span class="n">rod_length</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    
+    <span class="c"># now we can build the image</span>
+    
+    <span class="c"># the pendulum will be represented by a black circle with</span>
+    <span class="c"># center: (x_pendulum, y_pendulum) and radius `pendulum_size</span>
+    <span class="n">pendulum</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">(</span><span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">x_pendulum</span><span class="p">,</span> <span class="n">y_pendulum</span><span class="p">),</span> <span class="n">radius</span><span class="o">=</span><span class="n">pendulum_size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+    
+    <span class="c"># the cart will be represented by a grey rectangle with</span>
+    <span class="c"># lower left: (x_car - 0.5 * car_width, y_car - car_heigth)</span>
+    <span class="c"># width: car_width</span>
+    <span class="c"># height: car_height</span>
+    <span class="n">car</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x_car</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">car_width</span><span class="p">,</span> <span class="n">y_car</span><span class="o">-</span><span class="n">car_heigth</span><span class="p">),</span> <span class="n">car_width</span><span class="p">,</span> <span class="n">car_heigth</span><span class="p">,</span>
+                                <span class="n">fill</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+    
+    <span class="c"># the joint will also be a black circle with</span>
+    <span class="c"># center: (x_car, 0)</span>
+    <span class="c"># radius: 0.005</span>
+    <span class="n">joint</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">((</span><span class="n">x_car</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="mf">0.005</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+    
+    <span class="c"># and the pendulum rod will just by a line connecting the cart and the pendulum</span>
+    <span class="n">rod</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([</span><span class="n">x_car</span><span class="p">,</span><span class="n">x_pendulum</span><span class="p">],</span> <span class="p">[</span><span class="n">y_car</span><span class="p">,</span><span class="n">y_pendulum</span><span class="p">],</span>
+                            <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+    
+    <span class="c"># finally we add the patches and line to the image</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pendulum</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rod</span><span class="p">)</span>
+    
+    <span class="c"># and return the image</span>
+    <span class="k">return</span> <span class="n">image</span>
+
+
+<span class="c"># now we can create an instance of the `Animation` class </span>
+<span class="c"># with our draw function and the simulation results</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">Animation</span><span class="p">(</span><span class="n">drawfnc</span><span class="o">=</span><span class="n">draw</span><span class="p">,</span> <span class="n">simdata</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+
+<span class="c"># as for now we have to explicitly set the limits of the figure</span>
+<span class="c"># (may involves some trial and error)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">set_limits</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+
+<span class="c"># if everything is set, we can start the animation</span>
+<span class="c"># (might take some while)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">animate</span><span class="p">()</span>
+
+<span class="c"># then we can save the animation as a `mp4` video file or as an animated `gif` file</span>
+<span class="n">A</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;simple_example.mp4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="../_images/inv_pendulum_osc.gif" src="../_images/inv_pendulum_osc.gif" />
 </div>
 </div>
@@ -253,6 +346,7 @@ To do so, just type:</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#visualisation">Visualisation</a></li>
 </ul>
 </li>
 </ul>

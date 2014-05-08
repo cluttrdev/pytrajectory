@@ -185,6 +185,40 @@ To do so, just type::
 
 Please have a look at the :ref:`reference` for more information.
 
+
+Visualisation
+=============
+
+Beyond the simple :meth:`plot` method (see: :ref:`reference`) 
+PyTrajectory offers basic capabilities to animate the given system.
+This is done via the :class:`Animation` class from the :mod:`utilities` 
+module. To explain this feature we take a look at the example above.
+
+When instanciated, the :class:`Animation` requires the calculated 
+simulation results `T.sim` and a callable function that draws an image 
+of the system according to given simulation data.
+
+First we import what we need by::
+
+   >>> import matplotlib as mpl
+   >>> from pytrajectory.utilities import Animation
+
+Then we define our function that takes simulation data `x`  of a 
+specific time and an instance `image` of `Animation.Image` which is just 
+a container for the image. In the considered example `xt` is of the form
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      xt = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]
+   \end{equation*}
+
+and `image` is just a container for the drawn image.
+
+.. literalinclude:: /../../animations/simple_example.py
+   :lines: 56-122
+
 .. only:: html
 
    .. image:: /../pic/inv_pendulum_osc.gif

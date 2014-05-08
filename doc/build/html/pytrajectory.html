@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pytrajectory 0.3.3 documentation" href="index.html" />
-    <link rel="prev" title="Acrobot" href="guide/examples/acrobot.html" /> 
+    <link rel="prev" title="Notes on implementation" href="guide/notes.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,7 +37,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="guide/examples/acrobot.html" title="Acrobot"
+          <a href="guide/notes.html" title="Notes on implementation"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li> 
       </ul>
@@ -182,7 +182,8 @@ and searches for integrator chains.</p>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.setParam">
 <tt class="descname">setParam</tt><big>(</big><em>param=''</em>, <em>val=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.setParam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.setParam" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to assign value <tt class="xref py py-attr docutils literal"><span class="pre">val</span></tt> to method parameter <tt class="xref py py-attr docutils literal"><span class="pre">param</span></tt>.</p>
+<dd><p>Method to assign value <tt class="xref py py-attr docutils literal"><span class="pre">val</span></tt> to method parameter <tt class="xref py py-attr docutils literal"><span class="pre">param</span></tt>.
+(mainly for didactic purpose)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -654,43 +655,8 @@ this class provides a method to created an animated representation of the system
 </dd></dl>
 
 <dl class="function">
-<dt id="pytrajectory.utilities.blockdiag">
-<tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">blockdiag</tt><big>(</big><em>M</em>, <em>bshape=None</em>, <em>sparse=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#blockdiag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.blockdiag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes blocks of shape <tt class="xref py py-attr docutils literal"><span class="pre">bshape</span></tt>  from matrix <tt class="xref py py-attr docutils literal"><span class="pre">M</span></tt> and creates
-block diagonal matrix out of them.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>M</strong> (<em>numpy.ndarray</em>) &#8211; Matrix to take blocks from</li>
-<li><strong>bshape</strong> (<em>tuple</em>) &#8211; Shape of one block</li>
-<li><strong>sparse</strong> (<em>bool</em>) &#8211; Whether or not to return created matrix as sparse matrix</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">A</span>
-<span class="go">[[ 1.  1.]</span>
-<span class="go"> [ 1.  1.]</span>
-<span class="go"> [ 1.  1.]</span>
-<span class="go"> [ 1.  1.]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">blockdiag</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">B</span>
-<span class="go">[[ 1.  1.  0.  0.]</span>
-<span class="go"> [ 1.  1.  0.  0.]</span>
-<span class="go"> [ 0.  0.  1.  1.]</span>
-<span class="go"> [ 0.  0.  1.  1.]]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytrajectory.utilities.plot">
-<tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">plot</tt><big>(</big><em>sim</em>, <em>H</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.plot" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.utilities.plotsim">
+<tt class="descclassname">pytrajectory.utilities.</tt><tt class="descname">plotsim</tt><big>(</big><em>sim</em>, <em>H</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/utilities.html#plotsim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.utilities.plotsim" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method provides graphics for each system variable, manipulated
 variable and error function and plots the solution of the simulation.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -714,7 +680,7 @@ variable and error function and plots the solution of the simulation.</p>
 <dl class="class">
 <dt id="pytrajectory.log.Logger">
 <em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Logger</tt><big>(</big><em>fname=None</em>, <em>mode='w'</em>, <em>suppress=False</em>, <em>verbosity=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class the output of the log data.</p>
+<dd><p>This class handles the output of the log data.</p>
 <p>It can simultaneously write to a specified file and the standard output as well as just the
 file. In addition a loglevel can be set to suppress some information.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -823,8 +789,8 @@ file. In addition a loglevel can be set to suppress some information.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="guide/examples/acrobot.html"
-                        title="previous chapter">Acrobot</a></p>
+  <p class="topless"><a href="guide/notes.html"
+                        title="previous chapter">Notes on implementation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/pytrajectory.txt"
@@ -857,7 +823,7 @@ file. In addition a loglevel can be set to suppress some information.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="guide/examples/acrobot.html" title="Acrobot"
+          <a href="guide/notes.html" title="Notes on implementation"
              >previous</a> |</li>
         <li><a href="index.html">pytrajectory 0.3.3 documentation</a> &raquo;</li> 
       </ul>

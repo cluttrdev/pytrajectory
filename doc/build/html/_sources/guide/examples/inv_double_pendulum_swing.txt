@@ -1,7 +1,7 @@
 .. _ex_inv_dbl_pend:
 
-Oscillation of the inverted double pendulum
--------------------------------------------
+Swing up of the inverted double pendulum
+----------------------------------------
 
 In this example we add another pendulum to the cart in the system.
 
