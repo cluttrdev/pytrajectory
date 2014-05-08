@@ -20,7 +20,7 @@ import log
 #####
 
 # DEBUG
-#from IPython import embed as IPS
+from IPython import embed as IPS
 
 
 class Trajectory():
@@ -380,7 +380,7 @@ class Trajectory():
     def setParam(self, param='', val=None):
         '''
         Method to assign value :attr:`val` to method parameter :attr:`param`.
-
+        (mainly for didactic purpose)
 
         Parameters
         ----------
@@ -1167,5 +1167,5 @@ if __name__ == '__main__':
         with log.Timer("Iteration"):
             T.startIteration()
 
-        #IPS()
+        IPS()
 

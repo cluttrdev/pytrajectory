@@ -256,7 +256,9 @@ class CubicSpline():
         # get matrix dimensions --> (3.21) & (3.22)
         N2 = 4*self.n
         N1 = 3*(self.n-1) + 2*(mu+1)
-
+        
+        # the following may cause MemoryError
+        # TODO: (optionally) introduce sparse matrix already here
         M = np.zeros((N1,N2))
         r = np.zeros(N1)
         
@@ -315,15 +317,15 @@ class CubicSpline():
             B = M.dot(b_mat)
             
             #NEW
-            A = sparse.csr_matrix(A)
-            B = sparse.csr_matrix(B)
+            #A = sparse.csr_matrix(A)
+            #B = sparse.csr_matrix(B)
             
             # do the inversion
-            #tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
-            tmp1 = spsolve(B,r.T)
+            tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
+            #tmp1 = spsolve(B,r.T)
             with log.Timer('tmp2'):
-                #tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
-                tmp2 = spsolve(B,-A)
+                tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
+                #tmp2 = spsolve(B,-A)
             
             #IPS()
             
