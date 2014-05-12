@@ -48,7 +48,8 @@ Source
 ------
 
 To install PyTrajectory from the source files please download the latest release from
-here (insert link!). After the download is complete open the archive and change directory
+`here <https://bitbucket.org/akunze3/pytrajectory/downloads>`_. 
+After the download is complete open the archive and change directory
 into the extracted folder. Then all you have to do is run the following command ::
 
    $ python setup.py install
