@@ -114,7 +114,8 @@ dependencies installed on your system.</p>
 <div class="section" id="source">
 <h3><a class="toc-backref" href="#id4">Source</a><a class="headerlink" href="#source" title="Permalink to this headline">¶</a></h3>
 <p>To install PyTrajectory from the source files please download the latest release from
-here (insert link!). After the download is complete open the archive and change directory
+<a class="reference external" href="https://bitbucket.org/akunze3/pytrajectory/downloads">here</a>.
+After the download is complete open the archive and change directory
 into the extracted folder. Then all you have to do is run the following command</p>
 <div class="highlight-python"><div class="highlight"><pre>$ python setup.py install
 </pre></div>
@@ -210,12 +211,14 @@ and end states within <img class="math" src="../_images/math/48ac522661f248b225e
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="p">,</span> <span class="n">uab</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>All we have to do now, to solve our problem is</p>
+<p>All we have to do now to solve our problem is</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>After the 7th iteration step with 320 spline parts, this would yield a solution which satisfies
-the default tolerance for the boundary values of <img class="math" src="../_images/math/e58ca820bd5ddd2060a7dee4295df732246172de.png" alt="10^{-02}"/>. But PyTrajectory enables
+<p>After the iteration has finished we have acces to callable functions for the system variables
+<cite>T.x(t)</cite> and input variables <cite>T.u(t)</cite> where <cite>t</cite> has to be in <cite>(a,b)</cite>.</p>
+<p>In this example we get a solution that satisfies the default tolerance for the boundary values
+of <img class="math" src="../_images/math/e58ca820bd5ddd2060a7dee4295df732246172de.png" alt="10^{-02}"/> after the 7th iteration step with 320 spline parts. But PyTrajectory enables
 you to improve its performance by altering some of its method parameters.</p>
 <p>For example if we increase the factor for raising the spline parts (default: 2)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;kx&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>

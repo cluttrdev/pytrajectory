@@ -48,7 +48,8 @@ Source
 ------
 
 To install PyTrajectory from the source files please download the latest release from
-here (insert link!). After the download is complete open the archive and change directory
+`here <https://bitbucket.org/akunze3/pytrajectory/downloads>`_. 
+After the download is complete open the archive and change directory
 into the extracted folder. Then all you have to do is run the following command ::
 
    $ python setup.py install
@@ -159,12 +160,15 @@ and pass our parameters. ::
 
    >>> T = Trajectory(f, a, b, xa, xb, uab)
 
-All we have to do now, to solve our problem is ::
+All we have to do now to solve our problem is ::
 
    >>> T.startIteration()
 
-After the 7th iteration step with 320 spline parts, this would yield a solution which satisfies 
-the default tolerance for the boundary values of :math:`10^{-02}`. But PyTrajectory enables 
+After the iteration has finished we have acces to callable functions for the system variables
+`T.x(t)` and input variables `T.u(t)` where `t` has to be in `(a,b)`.
+
+In this example we get a solution that satisfies the default tolerance for the boundary values 
+of :math:`10^{-02}` after the 7th iteration step with 320 spline parts. But PyTrajectory enables 
 you to improve its performance by altering some of its method parameters.
 
 For example if we increase the factor for raising the spline parts (default: 2) ::
