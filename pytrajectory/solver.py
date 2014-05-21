@@ -98,8 +98,8 @@ class Solver:
             DFx = self.DF(x)
             
             # NEW -experimental
-            #if res >= 1:
-            #    DFx = self.DF(x)
+            if res >= 1:
+                DFx = self.DF(x)
             
             # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
@@ -130,8 +130,8 @@ class Solver:
             log.info("nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            #if res<1.0:
-            #    reltol = 1e-3
+            if res<1.0:
+                reltol = 1e-3
 
         self.sol = x
     

@@ -46,7 +46,7 @@ class Simulation:
         self.solver = ode(self.rhs)
         self.solver.set_initial_value(start)
         self.solver.set_integrator('vode', method='adams', rtol=1e-6)
-
+    
 
     def rhs(self, t, x):
         '''

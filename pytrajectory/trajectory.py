@@ -12,7 +12,7 @@ from utilities import IntegChain, plotsim
 import log
 
 # DEBUG
-#from IPython import embed as IPS
+from IPython import embed as IPS
 
 
 class Trajectory():
@@ -183,6 +183,16 @@ class Trajectory():
         After that, the accuracy of the found solution is checked.
         If it is within the tolerance range the iteration will stop.
         Else, the number of spline parts is raised and another step starts.
+        
+        
+        Returns
+        -------
+        
+        x : callable
+            Callable function for the system state.
+        
+        u : callable
+            Callable function for the input variables.
         '''
 
         log.info( 40*"#")
@@ -244,6 +254,8 @@ class Trajectory():
 
         # clear workspace
         self.clear()
+        
+        return self.x, self.u
 
 
     def analyseSystem(self):
@@ -653,6 +665,7 @@ class Trajectory():
         indic = dict()
         i = 0
         j = 0
+        
         # iterate over spline quantities
         for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
@@ -668,7 +681,7 @@ class Trajectory():
 
         # as promised: here comes the explanation
         #
-        # now, the dictionary indic looks something like follows
+        # now, the dictionary 'indic' looks something like follows
         #
         # indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}
         #
@@ -737,12 +750,6 @@ class Trajectory():
             DXU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
 
         self.DXU = DXU
-
-        ##########
-        # NEW - experimental
-        #DXU2 = np.vstack(np.array(DXU))
-        #self.DXU2 = csr_matrix(DXU2)
-        ##########
 
         if self.mparam['use_sparse']:
             self.Mx = csr_matrix(self.Mx)
@@ -836,9 +843,6 @@ class Trajectory():
         # because the system/input variables depend on the free parameters we have to multiply each
         # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
         # --> see buildEQS()
-        ###############################################
-        # OLD - working
-        ###############################################
         DF = []
         for i in xrange(len(DF_blocks)):
             res = np.dot(DF_blocks[i], self.DXU[i])
@@ -849,18 +853,6 @@ class Trajectory():
         # 1st index : collocation point
         # 2nd index : equations that have to be solved --> end of an integrator chain
         # 3rd index : component of c
-
-        ###############################################
-        # NEW - experimental
-        ###############################################
-        #block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)
-        #DXU = self.DXU2
-        #DF2 = block_DF.dot(DXU)
-        ##DF2.reshape((-1,x_len,len(c))) # --> to many reshape dimensions for sparse matrix
-        #DF2 = DF2.toarray().reshape((-1,x_len,len(c)))
-        #DF = DF2[:,eqind,:]
-        ###############################################
-
 
         # now compute jacobian of x_dot w.r.t. to indep coeffs
         # --> see buildEQS()
@@ -968,60 +960,99 @@ class Trajectory():
 
         log.info(40*"-")
         
-        #########################
-        # NEW - experimental
-        ########
-        # calculate the error functions H_i(t)
-        #H = dict()
-        #
-        #error = []
-        #for t in self.sim[0]:
-        #    xe = self.x(t)
-        #    ue = self.u(t)
-        #
-        #    ffe = self.ff(xe, ue)
-        #    dxe = self.dx(t)
-        #
-        #    error.append(ffe - dxe)
-        #error = np.array(error)
-        #
-        #for i in self.eqind:
-        #    H[i] = error[:,i]
-        #
-        #maxH = 0
-        #for arr in H.values():
-        #    maxH = max(maxH, max(abs(arr)))
-        #
-        #self.reached_accuracy = maxH < self.mparam['eps']
-        #log.info('maxH = %f'%maxH)
-        ##############################################
+        if 1:
+            # check if tolerance is satisfied
+            self.reached_accuracy = max(err) < self.mparam['eps']
+        else:
+            #########################
+            # NEW - experimental
+            ########
+            # calculate the error functions H_i(t)
+            H = dict()
+            
+            error = []
+            for t in self.sim[0]:
+                xe = self.x(t)
+                ue = self.u(t)
+            
+                ffe = self.ff(xe, ue)
+                dxe = self.dx(t)
+            
+                error.append(ffe - dxe)
+            error = np.array(error)
+            
+            for i in self.eqind:
+                H[i] = error[:,i]
+            
+            maxH = 0
+            for arr in H.values():
+                maxH = max(maxH, max(abs(arr)))
+            
+            self.reached_accuracy = maxH < self.mparam['eps']
+            log.info('maxH = %f'%maxH)
+            ##############################################
         
-        # check if tolerance is satisfied
-        self.reached_accuracy = max(err) < self.mparam['eps']
-
         log.info("--> reached desired accuracy: "+str(self.reached_accuracy))
 
 
     def x(self, t):
         '''
-        Returns the system state at a given (time-) point :attr:`t`.
+        Returns the current system state.
+        
+        Parameter
+        ---------
+        
+        t : float
+            The time point in (a,b) to evaluate the system at.
         '''
-        return np.array([self.x_fnc[xx](t) for xx in self.x_sym])
+        
+        if not self.a <= t <= self.b+0.05:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.x_fnc[xx](t) for xx in self.x_sym])
+        
+        return arr
 
 
     def u(self, t):
         '''
-        Returns the state of the inputs at a given (time-) point :attr:`t`.
+        Returns the state of the input variables.
+        
+        Parameter
+        ---------
+        
+        t : float
+            The time point in (a,b) to evaluate the input variables at.
         '''
-        return np.array([self.u_fnc[uu](t) for uu in self.u_sym])
+        
+        if not self.a <= t <= self.b+0.05:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.u_fnc[uu](t) for uu in self.u_sym])
+        
+        return arr
 
 
     def dx(self, t):
         '''
-        Returns the state of the 1st derivatives of the system variables
-        at :attr:`t`.
+        Returns the state of the 1st derivatives of the system variables.
+        
+        Parameter
+        ---------
+        
+        t : float
+            The time point in (a,b) to evaluate the 1st derivatives at.
         '''
-        return np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
+        
+        if not self.a <= t <= self.b+0.05:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
+        
+        return arr
 
 
     def plot(self):
@@ -1119,8 +1150,6 @@ if __name__ == '__main__':
 
     # partiell linearisiertes inverses Pendel [6.1.3]
 
-    calc = True
-
     def f(x,u):
         x1,x2,x3,x4 = x
         u1, = u
@@ -1142,22 +1171,21 @@ if __name__ == '__main__':
             0.0,
             0.0]
 
-    if(calc):
-        a = 0.0
-        b = 2.0
-        sx = 5
-        su = 5
-        kx = 5
-        maxIt  = 5
-        g = [0,0]
-        eps = 0.05
-        use_chains = False
+    a = 0.0
+    b = 2.0
+    sx = 5
+    su = 5
+    kx = 5
+    maxIt  = 5
+    g = [0,0]
+    eps = 0.05
+    use_chains = False
 
-        T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
-                        maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
+                    maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
 
-        with log.Timer("Iteration"):
-            T.startIteration()
+    with log.Timer("Iteration"):
+        T.startIteration()
 
-        #IPS()
+    IPS()
 
