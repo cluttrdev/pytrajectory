@@ -52,14 +52,19 @@ class Solver:
         '''
         
         if (self.algo == 'newton'):
-            log.info( "Run Newton solver")
-            self.newton()
+            #log.info( "Run Newton solver")
+            #self.newton()
+            log.warn('Not yet implemented. Please use "leven"-algorithm!')
+            self.leven()
         elif (self.algo == 'gauss'):
-            log.info( "Run Gauss solver")
-            self.gauss()
+            #log.info( "Run Gauss solver")
+            #self.gauss()
+            log.warn('Not yet implemented. Please use "leven"-algorithm!')
+            self.leven()
         elif (self.algo == 'leven'):
             log.info( "Run Levenberg-Marquardt method")
             self.leven()
+            
         
         if (self.sol == None):
             log.warn("Wrong solver, returning initial value.")

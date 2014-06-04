@@ -101,14 +101,19 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;newton&#39;</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Newton solver&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">newton</span><span class="p">()</span>
+            <span class="c">#log.info( &quot;Run Newton solver&quot;)</span>
+            <span class="c">#self.newton()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Not yet implemented. Please use &quot;leven&quot;-algorithm!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;gauss&#39;</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Gauss solver&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gauss</span><span class="p">()</span>
+            <span class="c">#log.info( &quot;Run Gauss solver&quot;)</span>
+            <span class="c">#self.gauss()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Not yet implemented. Please use &quot;leven&quot;-algorithm!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;leven&#39;</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Levenberg-Marquardt method&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
+            
         
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">==</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Wrong solver, returning initial value.&quot;</span><span class="p">)</span>
@@ -147,8 +152,8 @@
             <span class="n">DFx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             
             <span class="c"># NEW -experimental</span>
-            <span class="c">#if res &gt;= 1:</span>
-            <span class="c">#    DFx = self.DF(x)</span>
+            <span class="k">if</span> <span class="n">res</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">DFx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             
             <span class="c"># SPARSE</span>
             <span class="n">DFx</span> <span class="o">=</span> <span class="n">scp</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">DFx</span><span class="p">)</span>
@@ -179,8 +184,8 @@
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;nIt= </span><span class="si">%d</span><span class="s">    res= </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">res</span><span class="p">))</span>
             
             <span class="c"># NEW - experimental</span>
-            <span class="c">#if res&lt;1.0:</span>
-            <span class="c">#    reltol = 1e-3</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">&lt;</span><span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">reltol</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sol</span> <span class="o">=</span> <span class="n">x</span>
     

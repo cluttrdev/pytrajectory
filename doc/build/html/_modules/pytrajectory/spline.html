@@ -54,6 +54,8 @@
 
 <span class="kn">import</span> <span class="nn">log</span>
 
+<span class="c"># DEBUG</span>
+<span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
 
 <div class="viewcode-block" id="fdiff"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.spline.fdiff">[docs]</a><span class="k">def</span> <span class="nf">fdiff</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -306,18 +308,20 @@
         
         <span class="c"># the following may cause MemoryError</span>
         <span class="c"># TODO: (optionally) introduce sparse matrix already here</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N1</span><span class="p">,</span><span class="n">N2</span><span class="p">))</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N1</span><span class="p">)</span>
+        <span class="c">#M = np.zeros((N1,N2))</span>
+        <span class="c">#r = np.zeros(N1)</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">N1</span><span class="p">,</span><span class="n">N2</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">N1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
         
         <span class="c"># build block band matrix for smoothness in every joining point</span>
         <span class="c">#   derivatives from order 0 to 2</span>
         <span class="n">block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>   <span class="n">h</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>  <span class="n">h</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span>
                            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
                            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>    <span class="mi">6</span><span class="o">*</span><span class="n">h</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
-
+        
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="mi">4</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">4</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">block</span>
-
+        
         <span class="c"># add equations for boundary conditions</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">M</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">h</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="n">h</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
@@ -343,8 +347,10 @@
         <span class="c">#</span>
         <span class="c"># we need B^(-1)*r [absolute part -&gt; tmp1] and B^(-1)*A [coefficients of a -&gt; tmp2]</span>
 
-        <span class="n">a_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N2</span><span class="o">-</span><span class="n">N1</span><span class="p">))</span>
-        <span class="n">b_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N1</span><span class="p">))</span>
+        <span class="c">#a_mat = np.zeros((N2,N2-N1))</span>
+        <span class="c">#b_mat = np.zeros((N2,N1))</span>
+        <span class="n">a_mat</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N2</span><span class="o">-</span><span class="n">N1</span><span class="p">))</span>
+        <span class="n">b_mat</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">N2</span><span class="p">,</span><span class="n">N1</span><span class="p">))</span>
         
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">aa</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">aa</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
@@ -359,13 +365,22 @@
             <span class="n">b_mat</span><span class="p">[</span><span class="mi">4</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         
         <span class="n">M</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">a_mat</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">a_mat</span><span class="p">)</span>
+        <span class="n">b_mat</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">b_mat</span><span class="p">)</span>
+        
         <span class="n">A</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a_mat</span><span class="p">)</span>
         <span class="n">B</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_mat</span><span class="p">)</span>
         
         <span class="c"># do the inversion</span>
-        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="c">#tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)</span>
+        <span class="c">#tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">spsolve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">spsolve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">)</span>
         
+        <span class="k">if</span> <span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">tmp1</span><span class="p">):</span>
+            <span class="n">tmp1</span> <span class="o">=</span> <span class="n">tmp1</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">tmp2</span><span class="p">):</span>
+            <span class="n">tmp2</span> <span class="o">=</span> <span class="n">tmp2</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
         
         <span class="n">tmp_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
         <span class="n">tmp_coeffs_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
@@ -385,7 +400,7 @@
             <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
             <span class="n">tmp_coeffs</span><span class="p">[(</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">tmp3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">prov_S</span> <span class="o">=</span> <span class="n">tmp_coeffs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prov_S_abs</span> <span class="o">=</span> <span class="n">tmp_coeffs_abs</span>
 

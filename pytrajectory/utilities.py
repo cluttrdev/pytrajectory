@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
 
+# for import of PyMbs motion equations
+from sympy import *
 
 class IntegChain():
     '''
@@ -362,3 +364,164 @@ def plotsim(sim, H, fname=None):
             plt.savefig(fname+'.png')
         else:
             plt.savefig(fname)
+
+def sympymbs(eqns_mo, parameters, controller):
+    '''
+    Returns a callable function to be used with PyTrajectory out of exported motion equations
+    from PyMbs.
+    
+    
+    Parameters
+    ----------
+    
+    eqns_mo : list
+        PyMbs symbolics.CAssignments that represent the motion equations
+    
+    parameters : dict
+        Dictionary with names and values of additional system parameters
+    
+    controller : dict
+        Dictionary with names and shapes of the inputs
+    
+    
+    Returns
+    -------
+    
+    Callable function for the vectorfield of the multibody system.
+    '''
+    
+    # the given motion equations, which are basically symbolics.CAssignments from PyMbs
+    # should represent equations that look something like this:
+    #
+    # der_q = qd
+    # matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q
+    # cosq_joint_3_Ry = cos(q_joint_3_Ry)
+    # sinq_joint_3_Ry = sin(q_joint_3_Ry)
+    # T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],
+    #                   [0,1,0],
+	#                   [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])
+    # ...
+    # M_ = ...
+    # ...
+    # matrix([[qd_joint_1_Tx],[qd_joint_3_Ry]]) = qd
+    # ...
+    # C_ = ...
+    # qdd = matrix(linalg.solve(M_,(-C_)))
+    # der_qd = qdd
+    
+    # so there are different kinds of equations that require different handling
+    
+    # first, those containing information about the final vectorfield
+    # in the example above: 'der_q = qd' and 'der_qd = qdd'
+    # they will be stored in
+    ff = []
+    
+    # then, those containing information about the system state variables (dimension) 
+    # and how to unpack them
+    # in the above example: 'matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q'
+    #                   and 'matrix([[qd_joint_1_Tx],[qd_joint_3_Ry]]) = qd'
+    x_eqns = []
+    
+    # and last but not least, those defining the variables/parameters used in the various equations
+    # like:  'cosq_joint_3_Ry = cos(q_joint_3_Ry)'
+    #     or 'T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],
+    #                         [0,1,0],
+	#                         [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])'
+    par_eqns = []
+    
+    for eqn in eqns_mo:
+        lhs = str(eqn.lhs)
+        rhs = str(eqn.rhs).replace('\n', '')
+        
+        if lhs.startswith('der'):
+            ff.append(rhs)
+        elif rhs.startswith('q') and not lhs.startswith('der'):
+            x_eqns.append([lhs, rhs])
+        else:
+            par_eqns.append([lhs, rhs])
+    
+    
+    # handle state variables
+    # --> leads to x_str and q_str
+    x_str = ''
+    q_str = ''
+    for s in x_eqns:
+        if s[0].startswith('matrix'):
+            Ml = S(s[0], locals={"matrix":Matrix})
+            
+            for x in Ml:
+                x_str += '%s, '%str(x)
+        else:
+            x_str += '%s, '%str(s[0])
+        
+        q_str += '%s = %s; '%(s[1], s[0].replace('matrix', 'Matrix'))
+        
+    x_str = x_str[:-2] + ' = x' # x_str now looks like:     'x1, x2, ... , xn = x'
+    q_str = q_str[:-2]          # q_str is a concatenation of reversed x_eqns
+    
+    # handle input variables
+    # --> leads to u_str and control_str
+    u_str = ''
+    control_str = ''
+    j = 0 # used for indexing
+    for k, v in controller.items():
+        control_str += str(k) + ' = Matrix(['
+        for i in xrange(v[0]*v[1]):
+            u_str += 'u%d, '%(j+i)
+            control_str += 'u%d, '%(j+i)
+        
+        # remember number of inputs so far
+        j += i+1
+        
+        control_str = control_str[:-2] + ']).reshape(%d, %d).T; '%(v[1], v[0])
+    
+    u_str = u_str[:-2] + ' = u' # x_str now looks like:     'u1, u2, ... , um = u'
+    
+    # handle system parameters
+    # --> leads to par_str
+    par_str = ''
+    for k,v in parameters.items():
+        par_str += '%s = %s; '%(str(k), str(v))
+    
+    for pe in par_eqns:
+        if pe[1].startswith('matrix(linalg.solve('):
+            tmp = pe[1][20:-2]
+            tmp1, tmp2 = tmp.split(',')
+            par_str += '%s = %s.solve(%s); '%(pe[0], tmp1, tmp2)
+        else:
+            par_str += '%s = %s; '%(pe[0], pe[1].replace('matrix', 'Matrix'))
+    
+    par_str = par_str[:-2]
+    
+    # create vectorfield
+    # --> leads to ff_str
+    ff_str = 'ff = np.vstack(('
+    
+    for w in ff:
+        ff_str += w + ', '
+    
+    ff_str = ff_str[:-2] + '))'
+    
+    # hier wird ein puffer fuer die zu erstellende Funktion angelegt
+    fnc_str_buffer ='''
+def f(x, u):
+    import sympy as sp
+    
+    %s  # wird durch 'x1,...,xn = x' ersetzt
+    %s  # wird durch 'q = ...; qd = ...; ...'  ersetzt
+    %s  # wird durch 'u1,...,un = u' ersetzt
+    %s  # wird durch str fuer controller ersetzt
+    
+    # Parameters
+    %s  # wird durch (mehrzeiligen) str '<par> = <val>' ersetzt der Parameter und Wert enthaelt
+    
+    # Vectorfield
+    %s  # wird durch Vektorfeld-str ersetzt
+    
+    return ff
+'''
+    
+    fnc_str = fnc_str_buffer%(x_str, q_str, u_str, control_str, par_str, ff_str)
+    exec(fnc_str)
+    
+    return f

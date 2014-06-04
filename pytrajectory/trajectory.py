@@ -12,7 +12,7 @@ from utilities import IntegChain, plotsim
 import log
 
 # DEBUG
-from IPython import embed as IPS
+#from IPython import embed as IPS
 
 
 class Trajectory():
@@ -166,9 +166,9 @@ class Trajectory():
         #log.set_file()
 
         # just for me
-        print np.__version__
-        print sp.__version__
-        print scp.__version__
+        #print np.__version__
+        #print sp.__version__
+        #print scp.__version__
 
 
     def startIteration(self):
@@ -232,7 +232,7 @@ class Trajectory():
         self.checkAccuracy()
 
         # this was the first iteration
-        # now we are getting into the loop, see fig [8]
+        # now we are getting into the loop
         while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
             log.info( 40*"#")
             log.info("       ---- Next Iteration ----")
@@ -397,7 +397,7 @@ class Trajectory():
         '''
         
         # check if current and new value have the same type
-        # --> should they?
+        # --> should they always?
         assert type(val) == type(self.mparam[param])
         
         self.mparam[param] = val
@@ -960,7 +960,7 @@ class Trajectory():
 
         log.info(40*"-")
         
-        if 1:
+        if 0:
             # check if tolerance is satisfied
             self.reached_accuracy = max(err) < self.mparam['eps']
         else:
@@ -999,14 +999,14 @@ class Trajectory():
         '''
         Returns the current system state.
         
-        Parameter
-        ---------
+        Parameters
+        ----------
         
         t : float
             The time point in (a,b) to evaluate the system at.
         '''
         
-        if not self.a <= t <= self.b+0.05:
+        if not self.a <= t <= self.b:
             log.warn("Time point 't' has to be in (a,b)")
             arr = None
         else:
@@ -1019,8 +1019,8 @@ class Trajectory():
         '''
         Returns the state of the input variables.
         
-        Parameter
-        ---------
+        Parameters
+        ----------
         
         t : float
             The time point in (a,b) to evaluate the input variables at.
@@ -1039,8 +1039,8 @@ class Trajectory():
         '''
         Returns the state of the 1st derivatives of the system variables.
         
-        Parameter
-        ---------
+        Parameters
+        ----------
         
         t : float
             The time point in (a,b) to evaluate the 1st derivatives at.
@@ -1148,7 +1148,7 @@ if __name__ == '__main__':
     from sympy import cos, sin
     from numpy import pi
 
-    # partiell linearisiertes inverses Pendel [6.1.3]
+    # partially linearised inverted pendulum
 
     def f(x,u):
         x1,x2,x3,x4 = x
@@ -1161,15 +1161,8 @@ if __name__ == '__main__':
                         (1/l)*(g*sin(x3)+u1*cos(x3))])
         return ff
 
-    xa = [  0.0,
-            0.0,
-            pi,
-            0.0]
-
-    xb = [  0.0,
-            0.0,
-            0.0,
-            0.0]
+    xa = [0.0, 0.0, pi, 0.0]
+    xb = [0.0, 0.0, 0.0, 0.0]
 
     a = 0.0
     b = 2.0
@@ -1186,6 +1179,3 @@ if __name__ == '__main__':
 
     with log.Timer("Iteration"):
         T.startIteration()
-
-    IPS()
-

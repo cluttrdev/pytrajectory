@@ -79,8 +79,7 @@ class Simulation:
         Returns
         -------
 
-        List of numpy arrays with time steps and simulation data of system and
-        input variables.
+        List of numpy arrays with time steps and simulation data of system and input variables.
         '''
         t = 0
         while t <= self.T:

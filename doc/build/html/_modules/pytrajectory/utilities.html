@@ -55,6 +55,8 @@
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">animation</span>
 <span class="kn">from</span> <span class="nn">matplotlib.gridspec</span> <span class="kn">import</span> <span class="n">GridSpec</span>
 
+<span class="c"># for import of PyMbs motion equations</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="o">*</span>
 
 <div class="viewcode-block" id="IntegChain"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.IntegChain">[docs]</a><span class="k">class</span> <span class="nc">IntegChain</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -410,7 +412,168 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.png&#39;</span><span class="p">):</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="o">+</span><span class="s">&#39;.png&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="sympymbs"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.sympymbs">[docs]</a><span class="k">def</span> <span class="nf">sympymbs</span><span class="p">(</span><span class="n">eqns_mo</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">controller</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns a callable function to be used with PyTrajectory out of exported motion equations</span>
+<span class="sd">    from PyMbs.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    eqns_mo : list</span>
+<span class="sd">        PyMbs symbolics.CAssignments that represent the motion equations</span>
+<span class="sd">    </span>
+<span class="sd">    parameters : dict</span>
+<span class="sd">        Dictionary with names and values of additional system parameters</span>
+<span class="sd">    </span>
+<span class="sd">    controller : dict</span>
+<span class="sd">        Dictionary with names and shapes of the inputs</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    Callable function for the vectorfield of the multibody system.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c"># the given motion equations, which are basically symbolics.CAssignments from PyMbs</span>
+    <span class="c"># should represent equations that look something like this:</span>
+    <span class="c">#</span>
+    <span class="c"># der_q = qd</span>
+    <span class="c"># matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q</span>
+    <span class="c"># cosq_joint_3_Ry = cos(q_joint_3_Ry)</span>
+    <span class="c"># sinq_joint_3_Ry = sin(q_joint_3_Ry)</span>
+    <span class="c"># T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],</span>
+    <span class="c">#                   [0,1,0],</span>
+	<span class="c">#                   [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])</span>
+    <span class="c"># ...</span>
+    <span class="c"># M_ = ...</span>
+    <span class="c"># ...</span>
+    <span class="c"># matrix([[qd_joint_1_Tx],[qd_joint_3_Ry]]) = qd</span>
+    <span class="c"># ...</span>
+    <span class="c"># C_ = ...</span>
+    <span class="c"># qdd = matrix(linalg.solve(M_,(-C_)))</span>
+    <span class="c"># der_qd = qdd</span>
+    
+    <span class="c"># so there are different kinds of equations that require different handling</span>
+    
+    <span class="c"># first, those containing information about the final vectorfield</span>
+    <span class="c"># in the example above: &#39;der_q = qd&#39; and &#39;der_qd = qdd&#39;</span>
+    <span class="c"># they will be stored in</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c"># then, those containing information about the system state variables (dimension) </span>
+    <span class="c"># and how to unpack them</span>
+    <span class="c"># in the above example: &#39;matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q&#39;</span>
+    <span class="c">#                   and &#39;matrix([[qd_joint_1_Tx],[qd_joint_3_Ry]]) = qd&#39;</span>
+    <span class="n">x_eqns</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c"># and last but not least, those defining the variables/parameters used in the various equations</span>
+    <span class="c"># like:  &#39;cosq_joint_3_Ry = cos(q_joint_3_Ry)&#39;</span>
+    <span class="c">#     or &#39;T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],</span>
+    <span class="c">#                         [0,1,0],</span>
+	<span class="c">#                         [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])&#39;</span>
+    <span class="n">par_eqns</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">eqn</span> <span class="ow">in</span> <span class="n">eqns_mo</span><span class="p">:</span>
+        <span class="n">lhs</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">eqn</span><span class="o">.</span><span class="n">lhs</span><span class="p">)</span>
+        <span class="n">rhs</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">eqn</span><span class="o">.</span><span class="n">rhs</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">lhs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;der&#39;</span><span class="p">):</span>
+            <span class="n">ff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rhs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;q&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">lhs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;der&#39;</span><span class="p">):</span>
+            <span class="n">x_eqns</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">par_eqns</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">])</span>
+    
+    
+    <span class="c"># handle state variables</span>
+    <span class="c"># --&gt; leads to x_str and q_str</span>
+    <span class="n">x_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">q_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">x_eqns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;matrix&#39;</span><span class="p">):</span>
+            <span class="n">Ml</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">locals</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;matrix&quot;</span><span class="p">:</span><span class="n">Matrix</span><span class="p">})</span>
+            
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Ml</span><span class="p">:</span>
+                <span class="n">x_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">, &#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">, &#39;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="n">q_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">; &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;matrix&#39;</span><span class="p">,</span> <span class="s">&#39;Matrix&#39;</span><span class="p">))</span>
+        
+    <span class="n">x_str</span> <span class="o">=</span> <span class="n">x_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; = x&#39;</span> <span class="c"># x_str now looks like:     &#39;x1, x2, ... , xn = x&#39;</span>
+    <span class="n">q_str</span> <span class="o">=</span> <span class="n">q_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>          <span class="c"># q_str is a concatenation of reversed x_eqns</span>
+    
+    <span class="c"># handle input variables</span>
+    <span class="c"># --&gt; leads to u_str and control_str</span>
+    <span class="n">u_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">control_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="c"># used for indexing</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">controller</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">control_str</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; = Matrix([&#39;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">u_str</span> <span class="o">+=</span> <span class="s">&#39;u</span><span class="si">%d</span><span class="s">, &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">control_str</span> <span class="o">+=</span> <span class="s">&#39;u</span><span class="si">%d</span><span class="s">, &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="n">i</span><span class="p">)</span>
+        
+        <span class="c"># remember number of inputs so far</span>
+        <span class="n">j</span> <span class="o">+=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+        
+        <span class="n">control_str</span> <span class="o">=</span> <span class="n">control_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;]).reshape(</span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">).T; &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="n">u_str</span> <span class="o">=</span> <span class="n">u_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; = u&#39;</span> <span class="c"># x_str now looks like:     &#39;u1, u2, ... , um = u&#39;</span>
+    
+    <span class="c"># handle system parameters</span>
+    <span class="c"># --&gt; leads to par_str</span>
+    <span class="n">par_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">par_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">; &#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+    
+    <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span> <span class="n">par_eqns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pe</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;matrix(linalg.solve(&#39;</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">pe</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">20</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">par_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">.solve(</span><span class="si">%s</span><span class="s">); &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">pe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">par_str</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">; &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">pe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pe</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;matrix&#39;</span><span class="p">,</span> <span class="s">&#39;Matrix&#39;</span><span class="p">))</span>
+    
+    <span class="n">par_str</span> <span class="o">=</span> <span class="n">par_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    
+    <span class="c"># create vectorfield</span>
+    <span class="c"># --&gt; leads to ff_str</span>
+    <span class="n">ff_str</span> <span class="o">=</span> <span class="s">&#39;ff = np.vstack((&#39;</span>
+    
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">ff</span><span class="p">:</span>
+        <span class="n">ff_str</span> <span class="o">+=</span> <span class="n">w</span> <span class="o">+</span> <span class="s">&#39;, &#39;</span>
+    
+    <span class="n">ff_str</span> <span class="o">=</span> <span class="n">ff_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39;))&#39;</span>
+    
+    <span class="c"># hier wird ein puffer fuer die zu erstellende Funktion angelegt</span>
+    <span class="n">fnc_str_buffer</span> <span class="o">=</span><span class="s">&#39;&#39;&#39;</span>
+<span class="s">def f(x, u):</span>
+<span class="s">    import sympy as sp</span>
+<span class="s">    </span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch &#39;x1,...,xn = x&#39; ersetzt</span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch &#39;q = ...; qd = ...; ...&#39;  ersetzt</span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch &#39;u1,...,un = u&#39; ersetzt</span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch str fuer controller ersetzt</span>
+<span class="s">    </span>
+<span class="s">    # Parameters</span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch (mehrzeiligen) str &#39;&lt;par&gt; = &lt;val&gt;&#39; ersetzt der Parameter und Wert enthaelt</span>
+<span class="s">    </span>
+<span class="s">    # Vectorfield</span>
+<span class="s">    </span><span class="si">%s</span><span class="s">  # wird durch Vektorfeld-str ersetzt</span>
+<span class="s">    </span>
+<span class="s">    return ff</span>
+<span class="s">&#39;&#39;&#39;</span>
+    
+    <span class="n">fnc_str</span> <span class="o">=</span> <span class="n">fnc_str_buffer</span><span class="o">%</span><span class="p">(</span><span class="n">x_str</span><span class="p">,</span> <span class="n">q_str</span><span class="p">,</span> <span class="n">u_str</span><span class="p">,</span> <span class="n">control_str</span><span class="p">,</span> <span class="n">par_str</span><span class="p">,</span> <span class="n">ff_str</span><span class="p">)</span>
+    <span class="k">exec</span><span class="p">(</span><span class="n">fnc_str</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">f</span></div>
 </pre></div>
 
           </div>

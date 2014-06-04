@@ -214,9 +214,9 @@
         <span class="c">#log.set_file()</span>
 
         <span class="c"># just for me</span>
-        <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">__version__</span>
-        <span class="k">print</span> <span class="n">sp</span><span class="o">.</span><span class="n">__version__</span>
-        <span class="k">print</span> <span class="n">scp</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="c">#print np.__version__</span>
+        <span class="c">#print sp.__version__</span>
+        <span class="c">#print scp.__version__</span>
 
 
     <span class="k">def</span> <span class="nf">startIteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -231,6 +231,16 @@
 <span class="sd">        After that, the accuracy of the found solution is checked.</span>
 <span class="sd">        If it is within the tolerance range the iteration will stop.</span>
 <span class="sd">        Else, the number of spline parts is raised and another step starts.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">        x : callable</span>
+<span class="sd">            Callable function for the system state.</span>
+<span class="sd">        </span>
+<span class="sd">        u : callable</span>
+<span class="sd">            Callable function for the input variables.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
@@ -270,7 +280,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">checkAccuracy</span><span class="p">()</span>
 
         <span class="c"># this was the first iteration</span>
-        <span class="c"># now we are getting into the loop, see fig [8]</span>
+        <span class="c"># now we are getting into the loop</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nIt</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="s">&#39;maxIt&#39;</span><span class="p">]:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="mi">40</span><span class="o">*</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;       ---- Next Iteration ----&quot;</span><span class="p">)</span>
@@ -292,6 +302,8 @@
 
         <span class="c"># clear workspace</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span>
 
 
     <span class="k">def</span> <span class="nf">analyseSystem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
@@ -433,7 +445,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="c"># check if current and new value have the same type</span>
-        <span class="c"># --&gt; should they?</span>
+        <span class="c"># --&gt; should they always?</span>
         <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="n">param</span><span class="p">])</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
@@ -701,6 +713,7 @@
         <span class="n">indic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        
         <span class="c"># iterate over spline quantities</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indep_coeffs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span> <span class="n">k</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
             <span class="c"># increase j by the number of indep coeffs on which it depends</span>
@@ -716,7 +729,7 @@
 
         <span class="c"># as promised: here comes the explanation</span>
         <span class="c">#</span>
-        <span class="c"># now, the dictionary indic looks something like follows</span>
+        <span class="c"># now, the dictionary &#39;indic&#39; looks something like follows</span>
         <span class="c">#</span>
         <span class="c"># indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}</span>
         <span class="c">#</span>
@@ -785,12 +798,6 @@
             <span class="n">DXU</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">[</span><span class="n">x_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">x_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mu</span><span class="p">[</span><span class="n">u_len</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="n">u_len</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">DXU</span> <span class="o">=</span> <span class="n">DXU</span>
-
-        <span class="c">##########</span>
-        <span class="c"># NEW - experimental</span>
-        <span class="c">#DXU2 = np.vstack(np.array(DXU))</span>
-        <span class="c">#self.DXU2 = csr_matrix(DXU2)</span>
-        <span class="c">##########</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="s">&#39;use_sparse&#39;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Mx</span> <span class="o">=</span> <span class="n">csr_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mx</span><span class="p">)</span>
@@ -884,9 +891,6 @@
         <span class="c"># because the system/input variables depend on the free parameters we have to multiply each</span>
         <span class="c"># jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters</span>
         <span class="c"># --&gt; see buildEQS()</span>
-        <span class="c">###############################################</span>
-        <span class="c"># OLD - working</span>
-        <span class="c">###############################################</span>
         <span class="n">DF</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">)):</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DF_blocks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">DXU</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -897,18 +901,6 @@
         <span class="c"># 1st index : collocation point</span>
         <span class="c"># 2nd index : equations that have to be solved --&gt; end of an integrator chain</span>
         <span class="c"># 3rd index : component of c</span>
-
-        <span class="c">###############################################</span>
-        <span class="c"># NEW - experimental</span>
-        <span class="c">###############################################</span>
-        <span class="c">#block_DF = bdiag(np.vstack(np.array(DF_blocks)), (x_len, x_len+u_len),True)</span>
-        <span class="c">#DXU = self.DXU2</span>
-        <span class="c">#DF2 = block_DF.dot(DXU)</span>
-        <span class="c">##DF2.reshape((-1,x_len,len(c))) # --&gt; to many reshape dimensions for sparse matrix</span>
-        <span class="c">#DF2 = DF2.toarray().reshape((-1,x_len,len(c)))</span>
-        <span class="c">#DF = DF2[:,eqind,:]</span>
-        <span class="c">###############################################</span>
-
 
         <span class="c"># now compute jacobian of x_dot w.r.t. to indep coeffs</span>
         <span class="c"># --&gt; see buildEQS()</span>
@@ -1016,60 +1008,99 @@
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="s">&quot;-&quot;</span><span class="p">)</span>
         
-        <span class="c">#########################</span>
-        <span class="c"># NEW - experimental</span>
-        <span class="c">########</span>
-        <span class="c"># calculate the error functions H_i(t)</span>
-        <span class="c">#H = dict()</span>
-        <span class="c">#</span>
-        <span class="c">#error = []</span>
-        <span class="c">#for t in self.sim[0]:</span>
-        <span class="c">#    xe = self.x(t)</span>
-        <span class="c">#    ue = self.u(t)</span>
-        <span class="c">#</span>
-        <span class="c">#    ffe = self.ff(xe, ue)</span>
-        <span class="c">#    dxe = self.dx(t)</span>
-        <span class="c">#</span>
-        <span class="c">#    error.append(ffe - dxe)</span>
-        <span class="c">#error = np.array(error)</span>
-        <span class="c">#</span>
-        <span class="c">#for i in self.eqind:</span>
-        <span class="c">#    H[i] = error[:,i]</span>
-        <span class="c">#</span>
-        <span class="c">#maxH = 0</span>
-        <span class="c">#for arr in H.values():</span>
-        <span class="c">#    maxH = max(maxH, max(abs(arr)))</span>
-        <span class="c">#</span>
-        <span class="c">#self.reached_accuracy = maxH &lt; self.mparam[&#39;eps&#39;]</span>
-        <span class="c">#log.info(&#39;maxH = %f&#39;%maxH)</span>
-        <span class="c">##############################################</span>
+        <span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># check if tolerance is satisfied</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="s">&#39;eps&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#########################</span>
+            <span class="c"># NEW - experimental</span>
+            <span class="c">########</span>
+            <span class="c"># calculate the error functions H_i(t)</span>
+            <span class="n">H</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            
+            <span class="n">error</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">xe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                <span class="n">ue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            
+                <span class="n">ffe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">(</span><span class="n">xe</span><span class="p">,</span> <span class="n">ue</span><span class="p">)</span>
+                <span class="n">dxe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            
+                <span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ffe</span> <span class="o">-</span> <span class="n">dxe</span><span class="p">)</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqind</span><span class="p">:</span>
+                <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
+            
+            <span class="n">maxH</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">H</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">maxH</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">maxH</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">)))</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="o">=</span> <span class="n">maxH</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="s">&#39;eps&#39;</span><span class="p">]</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;maxH = </span><span class="si">%f</span><span class="s">&#39;</span><span class="o">%</span><span class="n">maxH</span><span class="p">)</span>
+            <span class="c">##############################################</span>
         
-        <span class="c"># check if tolerance is satisfied</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mparam</span><span class="p">[</span><span class="s">&#39;eps&#39;</span><span class="p">]</span>
-
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;--&gt; reached desired accuracy: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reached_accuracy</span><span class="p">))</span>
 
 
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
 <div class="viewcode-block" id="Trajectory.x"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.x">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the system state at a given (time-) point :attr:`t`.</span>
+<span class="sd">        Returns the current system state.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        t : float</span>
+<span class="sd">            The time point in (a,b) to evaluate the system at.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Time point &#39;t&#39; has to be in (a,b)&quot;</span><span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="n">arr</span>
 
 
     <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
 <div class="viewcode-block" id="Trajectory.u"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.u">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the state of the inputs at a given (time-) point :attr:`t`.</span>
+<span class="sd">        Returns the state of the input variables.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        t : float</span>
+<span class="sd">            The time point in (a,b) to evaluate the input variables at.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">u_fnc</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">+</span><span class="mf">0.05</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Time point &#39;t&#39; has to be in (a,b)&quot;</span><span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">u_fnc</span><span class="p">[</span><span class="n">uu</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_sym</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="n">arr</span>
 
 
     <span class="k">def</span> <span class="nf">dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span></div>
 <div class="viewcode-block" id="Trajectory.dx"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.trajectory.Trajectory.dx">[docs]</a>        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Returns the state of the 1st derivatives of the system variables</span>
-<span class="sd">        at :attr:`t`.</span>
+<span class="sd">        Returns the state of the 1st derivatives of the system variables.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        t : float</span>
+<span class="sd">            The time point in (a,b) to evaluate the 1st derivatives at.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dx_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">&lt;=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">+</span><span class="mf">0.05</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Time point &#39;t&#39; has to be in (a,b)&quot;</span><span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dx_fnc</span><span class="p">[</span><span class="n">xx</span><span class="p">](</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">xx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_sym</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="n">arr</span>
 
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
@@ -1165,9 +1196,7 @@
     <span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
     <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
 
-    <span class="c"># partiell linearisiertes inverses Pendel [6.1.3]</span>
-
-    <span class="n">calc</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="c"># partially linearised inverted pendulum</span>
 
     <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
         <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">x3</span><span class="p">,</span><span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>
@@ -1180,34 +1209,24 @@
                         <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">l</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">g</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span><span class="o">+</span><span class="n">u1</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">))])</span>
         <span class="k">return</span> <span class="n">ff</span>
 
-    <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
-            <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">pi</span><span class="p">,</span>
-            <span class="mf">0.0</span><span class="p">]</span>
+    <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+    <span class="n">xb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 
-    <span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
-            <span class="mf">0.0</span><span class="p">,</span>
-            <span class="mf">0.0</span><span class="p">,</span>
-            <span class="mf">0.0</span><span class="p">]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span>
+    <span class="n">sx</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">su</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">kx</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">maxIt</span>  <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">use_chains</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="k">if</span><span class="p">(</span><span class="n">calc</span><span class="p">):</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span>
-        <span class="n">sx</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">su</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">kx</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">maxIt</span>  <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">g</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.05</span>
-        <span class="n">use_chains</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">sx</span><span class="o">=</span><span class="n">sx</span><span class="p">,</span> <span class="n">su</span><span class="o">=</span><span class="n">su</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="n">kx</span><span class="p">,</span>
+                    <span class="n">maxIt</span><span class="o">=</span><span class="n">maxIt</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">use_chains</span><span class="o">=</span><span class="n">use_chains</span><span class="p">)</span>
 
-        <span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">sx</span><span class="o">=</span><span class="n">sx</span><span class="p">,</span> <span class="n">su</span><span class="o">=</span><span class="n">su</span><span class="p">,</span> <span class="n">kx</span><span class="o">=</span><span class="n">kx</span><span class="p">,</span>
-                        <span class="n">maxIt</span><span class="o">=</span><span class="n">maxIt</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">use_chains</span><span class="o">=</span><span class="n">use_chains</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;Iteration&quot;</span><span class="p">):</span>
-            <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
-
-        <span class="c">#IPS()</span>
+    <span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="s">&quot;Iteration&quot;</span><span class="p">):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
 </pre></div>
 
           </div>

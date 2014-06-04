@@ -1,0 +1,53 @@
+									der_q  	:=  qd
+matrix([[q_joint_1_Tx],[q_joint_3_Ry]])  	:=  q
+						   cosq_joint_3_Ry 	:=  cos(q_joint_3_Ry)
+						   sinq_joint_3_Ry 	:=  sin(q_joint_3_Ry)
+									T_Last  :=  matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],
+												        [0,1,0],
+												        [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])
+							  int_I_body_3 	:=  (T_Last * matrix([[2.28,0,0],
+														        [0,2.28,0],
+														        [0,0,0.15]]) * T_Last.T)
+							  int_l_body_3 	:=  (T_Last * matrix([[0],
+																  [0],
+																[(-1.28)]]))
+					    int_l_tilde_body_3  :=  matrix([[0,-int_l_body_3[2,0], int_l_body_3[1,0]], 
+														[int_l_body_3[2,0], 0, -int_l_body_3[0,0]], 
+														[-int_l_body_3[1,0], int_l_body_3[0,0], 0]])
+					 int_G_M_body_3_body_3  :=  (matrix([[0,0,1],
+												        [0,0,0],
+												        [(-1),0,0]]) * int_l_body_3 * m3)
+					 int_G_M_body_3_body_1  :=  matrix([[m3],
+														[0],
+														[0]])
+							  int_m_body_1  :=  (m1 + m2)
+					 int_G_M_body_1_body_1  :=  matrix([[int_m_body_1],
+															[0],
+															[0]])
+					 int_L_M_body_3_body_1  :=  (int_l_tilde_body_3 * int_G_M_body_3_body_1)
+								 int_M_1_0  :=  (matrix([[0,1,0]]) * int_L_M_body_3_body_1)[0,0]
+										M_  :=  matrix([[(matrix([[1,0,0]]) * (int_G_M_body_1_body_1 + int_G_M_body_3_body_1))[0,0],int_M_1_0],
+												        [int_M_1_0,(matrix([[0,1,0]]) * ((int_I_body_3 * matrix([[0],[1],[0]])) + (int_l_tilde_body_3 * int_G_M_body_3_body_3)))[0,0]]])
+						 int_alpha_C_world  :=  matrix([[0],
+														[0],
+														[g]])
+ matrix([[qd_joint_1_Tx],[qd_joint_3_Ry]])  :=  qd
+						  int_omega_body_3  :=  matrix([[0],
+														[qd_joint_3_Ry],
+														[0]])
+					int_omega_tilde_body_3  :=  matrix([[0,-int_omega_body_3[2,0], int_omega_body_3[1,0]], 
+														[int_omega_body_3[2,0], 0, -int_omega_body_3[0,0]], 
+														[-int_omega_body_3[1,0], int_omega_body_3[0,0], 0]])
+					   int_omegad_C_body_3  :=  (int_omega_tilde_body_3 * matrix([[0],
+																				[qd_joint_3_Ry],
+																				[0]]))
+						    int_G_C_body_3  :=  ((int_alpha_C_world + (((int_omega_tilde_body_3**2) + matrix([[0,-int_omegad_C_body_3[2,0], int_omegad_C_body_3[1,0]], 
+																											[int_omegad_C_body_3[2,0], 0, -int_omegad_C_body_3[0,0]], 
+																											[-int_omegad_C_body_3[1,0], int_omegad_C_body_3[0,0], 0]])) * int_l_body_3)) * m3)
+							int_L_C_body_3  :=  ((int_I_body_3 * int_omegad_C_body_3) + (int_l_tilde_body_3 * int_G_C_body_3) + (int_omega_tilde_body_3 * int_I_body_3 * int_omega_body_3))
+							int_G_C_body_1  :=  (int_alpha_C_world * int_m_body_1)
+										C_  :=  matrix([[(matrix([[1,0,0]]) * (int_G_C_body_1 + int_G_C_body_3))[0,0]],
+														[(matrix([[0,1,0]]) * int_L_C_body_3)[0,0]]])
+									   qdd  :=  matrix(linalg.solve(M_,(-C_)))
+									der_qd  :=  qdd
+
