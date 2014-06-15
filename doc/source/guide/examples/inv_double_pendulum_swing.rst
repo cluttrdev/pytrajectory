@@ -45,6 +45,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py
+   :lines: 1-46
 
 .. only:: html
 

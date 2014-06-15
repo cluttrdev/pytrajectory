@@ -211,7 +211,7 @@ class CubicSpline():
         Please see the documentation for more details: :ref:`candidate_functions`
         '''
         
-        log.info("makesteady: "+self.tag)
+        log.info("    makesteady: "+self.tag, verb=2)
         
         # This should be untouched yet
         assert self.steady_flag == False
@@ -325,6 +325,9 @@ class CubicSpline():
         # do the inversion
         #tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
         #tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
+        A = sparse.csc_matrix(A)
+        B = sparse.csc_matrix(B)
+        r = sparse.csc_matrix(r)
         tmp1 = spsolve(B,r)
         tmp2 = spsolve(B,-A)
         

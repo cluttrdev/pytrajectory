@@ -64,6 +64,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex4_UnderactuatedManipulator.py
+   :lines: 1-50
 
 .. only:: html
 

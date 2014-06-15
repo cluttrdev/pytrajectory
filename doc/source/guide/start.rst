@@ -185,6 +185,7 @@ To do so, just type::
 
 Please have a look at the :ref:`reference` for more information.
 
+.. _visualisation:
 
 Visualisation
 =============

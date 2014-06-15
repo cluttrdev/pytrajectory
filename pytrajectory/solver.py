@@ -62,7 +62,7 @@ class Solver:
             log.warn('Not yet implemented. Please use "leven"-algorithm!')
             self.leven()
         elif (self.algo == 'leven'):
-            log.info( "Run Levenberg-Marquardt method")
+            log.info("    Run Levenberg-Marquardt method")
             self.leven()
             
         
@@ -132,7 +132,7 @@ class Solver:
             x = x + np.array(s).flatten()
             res_alt = res
             res = normFx
-            log.info("nIt= %d    res= %f"%(i,res))
+            log.info("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
             if res<1.0:

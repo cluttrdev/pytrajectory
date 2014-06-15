@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
 
+from IPython import embed as IPS
+
 # for import of PyMbs motion equations
 from sympy import *
 
@@ -448,7 +450,6 @@ def sympymbs(eqns_mo, parameters, controller):
     for s in x_eqns:
         if s[0].startswith('matrix'):
             Ml = S(s[0], locals={"matrix":Matrix})
-            
             for x in Ml:
                 x_str += '%s, '%str(x)
         else:
@@ -487,6 +488,9 @@ def sympymbs(eqns_mo, parameters, controller):
         if pe[1].startswith('matrix(linalg.solve('):
             tmp = pe[1][20:-2]
             tmp1, tmp2 = tmp.split(',')
+            #IPS()
+            #exec('M = %s.solve(%s)'%(tmp1, tmp2))
+            #par_str += '%s = %s'%(pe[0], str(M))
             par_str += '%s = %s.solve(%s); '%(pe[0], tmp1, tmp2)
         else:
             par_str += '%s = %s; '%(pe[0], pe[1].replace('matrix', 'Matrix'))

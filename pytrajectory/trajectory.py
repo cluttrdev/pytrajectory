@@ -11,8 +11,11 @@ from simulation import Simulation
 from utilities import IntegChain, plotsim
 import log
 
-# DEBUG
-#from IPython import embed as IPS
+# DEBUGGING
+DEBUG = False
+
+if DEBUG:
+    from IPython import embed as IPS
 
 
 class Trajectory():
@@ -74,6 +77,9 @@ class Trajectory():
     '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, **kwargs):
+        # Enable logging
+        if not DEBUG:
+            log.log_on(verbosity=3)
         
         # Save the symbolic vectorfield
         self.ff_sym = ff
@@ -162,9 +168,6 @@ class Trajectory():
         # and likewise this should not be existent yet
         self.sol = None
 
-        # Set logfile
-        #log.set_file()
-
         # just for me
         #print np.__version__
         #print sp.__version__
@@ -195,11 +198,12 @@ class Trajectory():
             Callable function for the input variables.
         '''
 
-        log.info( 40*"#")
-        log.info("       ---- First Iteration ----")
-        log.info( 40*"#")
-        log.info("# spline parts: %d"%self.mparam['sx'])
-
+        #log.info(40*"#", verb=3)
+        #log.info("       ---- First Iteration ----")
+        #log.info(40*"#", verb=3)
+        #log.info("# spline parts: %d"%self.mparam['sx'])
+        log.info("1st Iteration: %d spline parts"%self.mparam['sx'], verb=1)
+        
         # resetting integrator chains according to value of self.use_chains
         if not self.mparam['use_chains']:
             self.chains = dict()
@@ -234,14 +238,19 @@ class Trajectory():
         # this was the first iteration
         # now we are getting into the loop
         while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
-            log.info( 40*"#")
-            log.info("       ---- Next Iteration ----")
-            log.info( 40*"#")
-
             # raise the number of spline parts
             self.mparam['sx'] = round(self.mparam['kx']*self.mparam['sx'])
-
-            log.info("# spline parts: %d"%self.mparam['sx'])
+            
+            #log.info( 40*"#", verb=3)
+            #log.info("       ---- Next Iteration ----")
+            #log.info( 40*"#", verb=3)
+            #log.info("# spline parts: %d"%self.mparam['sx'])
+            if self.nIt == 1:
+                log.info("2nd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
+            elif self.nIt == 2:
+                log.info("3rd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
+            elif self.nIt >= 3:
+                log.info("%dth Iteration: %d spline parts"%(self.nIt, self.mparam['sx']), verb=1)
 
             # store the old spline to calculate the guess later
             self.old_splines = self.splines
@@ -260,19 +269,20 @@ class Trajectory():
 
     def analyseSystem(self):
         '''
-        Analyses the systems structure and sets values for some of the method
+        Analyse the system structure and set values for some of the method
         parameters.
 
-        By now, this method determines the number of state and input variables
+        By now, this method just determines the number of state and input variables
         and searches for integrator chains.
         '''
 
-        log.info( 40*"#")
-        log.info("####   Analysing System Strucutre   ####")
-        log.info( 40*"#")
-
+        #log.info( 40*"#", verb=3)
+        #log.info("####   Analysing System Strucutre   ####")
+        #log.info( 40*"#", verb=3)
+        log.info("  Analysing System Structure", verb=2)
+        
         # first, determine system dimensions
-        log.info("Determine system/input dimensions")
+        log.info("    Determine system/input dimensions", verb=3)
         i = -1
         found_nm = False
 
@@ -310,11 +320,11 @@ class Trajectory():
         self.n = n
         self.m = m
 
-        log.info("---> system: %d"%n)
-        log.info("---> input : %d"%m)
+        log.info("      --> system: %d"%n, verb=3)
+        log.info("      --> input : %d"%m, verb=3)
 
         # next, we look for integrator chains
-        log.info("Look for integrator chains")
+        log.info("    Looking for integrator chains", verb=3)
 
         # create symbolic variables to find integrator chains
         x_sym = ([sp.symbols('x%d' % k, type=float) for k in xrange(1,n+1)])
@@ -368,7 +378,7 @@ class Trajectory():
         for lst in tmpchains:
             ic = IntegChain(lst)
             chains.append(ic)
-            log.info("---> found: " + str(ic))
+            log.info("      --> found: " + str(ic), verb=3)
 
         self.chains = chains
 
@@ -480,7 +490,7 @@ class Trajectory():
                 self.c_list = np.hstack((self.c_list, self.indep_coeffs[k]))
 
                 if (new_splines[k].type == 'x'):
-                    log.info("get new guess for spline %s"%k.name)
+                    log.info("    Get new guess for spline %s"%k.name, verb=3)
 
                     # how many unknown coefficients does the new spline have
                     nn = len(self.indep_coeffs[k])
@@ -520,10 +530,11 @@ class Trajectory():
         '''
         This method is used to initialise the provisionally splines.
         '''
-        log.info( 40*"#")
-        log.info( "#########  Initialise Splines  #########")
-        log.info( 40*"#")
-
+        #log.info( 40*"#", verb=3)
+        #log.info( "#########  Initialise Splines  #########")
+        #log.info( 40*"#", verb=3)
+        log.info("  Initialise Splines", verb=2)
+        
         # dictionaries for splines and callable solution function for x,u and dx
         splines = dict()
         x_fnc = dict()
@@ -609,10 +620,11 @@ class Trajectory():
         Builds the collocation equation system.
         '''
 
-        log.info( 40*"#")
-        log.info("####  Building the equation system  ####")
-        log.info( 40*"#")
-
+        #log.info( 40*"#", verb=3)
+        #log.info("####  Building the equation system  ####")
+        #log.info( 40*"#", verb=3)
+        log.info("  Building Equation System", verb=2)
+        
         # make functions local
         x_fnc = self.x_fnc
         dx_fnc = self.dx_fnc
@@ -767,10 +779,11 @@ class Trajectory():
         This method is used to solve the collocation equation system.
         '''
 
-        log.info( 40*"#")
-        log.info("#####  Solving the equation system  ####")
-        log.info( 40*"#")
-
+        #log.info( 40*"#", verb=3)
+        #log.info("#####  Solving the equation system  ####")
+        #log.info( 40*"#", verb=3)
+        log.info("  Solving Equation System", verb=2)
+        
         # create our solver
         solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
                         maxx= 20, algo=self.mparam['algo'])
@@ -875,7 +888,7 @@ class Trajectory():
         every created spline.
         '''
 
-        log.info("Set spline coefficients")
+        log.info("    Set spline coefficients", verb=2)
 
         sol = self.sol
         subs = dict()
@@ -914,16 +927,17 @@ class Trajectory():
         This method is used to solve the initial value problem.
         '''
 
-        log.info( 40*"#")
-        log.info("##  Solving the initial value problem ##")
-        log.info( 40*"#")
-
+        #log.info( 40*"#", verb=3)
+        #log.info("##  Solving the initial value problem ##")
+        #log.info( 40*"#", verb=3)
+        log.info("  Solving Initial Value Problem", verb=2)
+        
         # get list as start value
         start = []
         for xx in self.x_sym:
             start.append(self.xa[xx])
 
-        log.info("start: %s"%str(start))
+        log.info("    start: %s"%str(start), verb=2)
 
         # calulate simulation time
         T = self.b - self.a
@@ -950,18 +964,18 @@ class Trajectory():
         xt = self.sim[1]
 
         # what is the error
-        log.info(40*"-")
-        log.info("Ending up with:   Should Be:  Difference:")
+        log.info(40*"-", verb=3)
+        log.info("Ending up with:   Should Be:  Difference:", verb=3)
 
         err = np.empty(self.n)
         for i, xx in enumerate(self.x_sym):
             err[i] = abs(self.xb[xx] - xt[-1:][0][i])
-            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]))
+            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
 
-        log.info(40*"-")
+        log.info(40*"-", verb=3)
         
-        if 0:
-            # check if tolerance is satisfied
+        if 1:
+            # check if tolerance for the boundary values is satisfied
             self.reached_accuracy = max(err) < self.mparam['eps']
         else:
             #########################
@@ -992,7 +1006,7 @@ class Trajectory():
             log.info('maxH = %f'%maxH)
             ##############################################
         
-        log.info("--> reached desired accuracy: "+str(self.reached_accuracy))
+        log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
 
 
     def x(self, t):
@@ -1108,10 +1122,7 @@ class Trajectory():
         save['xb'] = self.xb
         save['uab'] = self.uab
 
-        # solution functions
-        save['x_fnc'] = self.x_fnc
-        save['u_fnc'] = self.u_fnc
-        save['dx_fnc'] = self.dx_fnc        
+        # solution functions       
         save['x'] = self.x
         save['u'] = self.u
         save['dx'] = self.dx
@@ -1177,5 +1188,8 @@ if __name__ == '__main__':
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
 
-    with log.Timer("Iteration"):
+    with log.Timer("Iteration", verb=0):
         T.startIteration()
+    
+    if DEBUG:
+        IPS()

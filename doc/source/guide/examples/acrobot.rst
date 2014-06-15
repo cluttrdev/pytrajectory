@@ -68,6 +68,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex5_Acrobot.py
+   :lines: 1-58
 
 .. only:: html
 

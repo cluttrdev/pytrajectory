@@ -114,17 +114,17 @@ The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7a
 <span class="c"># boundary values at the start (a = 0.0 [s])</span>
 <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values at the end (b = 1.0 [s])</span>
-<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.5</span><span class="p">,</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># create trajectory object</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">)</span>
 
 <span class="c"># change method parameter to increase performance</span>
 <span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;use_chains&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>

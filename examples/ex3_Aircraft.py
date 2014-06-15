@@ -56,3 +56,40 @@ T.setParam('kx', 5)
 
 # run iteration
 T.startIteration()
+
+# the following code provides an animation of the system above
+# for a more detailed explanation have a look at the 'Visualisation' section in the documentation
+do_animation = False
+
+if do_animation:
+    import matplotlib as mpl
+    from pytrajectory.utilities import Animation
+    
+    def draw(xti, image):
+        x, y, theta = xti[0], xti[2], xti[4]
+        
+        S = np.array( [   [0,     0.3],
+                          [-0.1,  0.1],
+                          [-0.7,  0],
+                          [-0.1,  -0.05],
+                          [ 0,    -0.1],
+                          [0.1,   -0.05],
+                          [ 0.7,  0],
+                          [ 0.1,  0.1]])
+    
+        xx = S[:,0].copy()
+        yy = S[:,1].copy()
+    
+        S[:,0] = xx*cos(theta)-yy*sin(theta)+x
+        S[:,1] = yy*cos(theta)+xx*sin(theta)+y
+    
+        aircraft = mpl.patches.Polygon(S, closed=True, facecolor='0.75')
+        image.patches.append(aircraft)
+        
+        return image
+    
+    A = Animation(drawfnc=draw, simdata=T.sim)
+    A.set_limits(xlim=(-1,11), ylim=(-1,7))
+    
+    A.animate()
+    A.save('ex3_Aircraft.mp4')
