@@ -488,10 +488,13 @@ def sympymbs(eqns_mo, parameters, controller):
         if pe[1].startswith('matrix(linalg.solve('):
             tmp = pe[1][20:-2]
             tmp1, tmp2 = tmp.split(',')
-            #IPS()
-            #exec('M = %s.solve(%s)'%(tmp1, tmp2))
-            #par_str += '%s = %s'%(pe[0], str(M))
-            par_str += '%s = %s.solve(%s); '%(pe[0], tmp1, tmp2)
+            exec(x_str.split('=')[0] + '= symbols("%s")'%x_str.split('=')[0])
+            exec(q_str)
+            for c,s in controller.items():
+                exec(c + ' = MatrixSymbol("%s",%d,%d)'%(c, s[0], s[1]))
+            exec(par_str)
+            exec('TMP = %s.solve(%s)'%(tmp1, tmp2))
+            par_str += '%s = %s; '%(pe[0], str(TMP))
         else:
             par_str += '%s = %s; '%(pe[0], pe[1].replace('matrix', 'Matrix'))
     

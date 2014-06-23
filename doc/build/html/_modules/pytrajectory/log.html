@@ -55,12 +55,15 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class handles the output of the log data.</span>
 <span class="sd">    </span>
-<span class="sd">    It can simultaneously write to a specified file and the standard output as well as just the</span>
-<span class="sd">    file. In addition a loglevel can be set to suppress some information.</span>
+<span class="sd">    It can simultaneously write to a specified file and the standard output as well as just one</span>
+<span class="sd">    of both. In addition a loglevel can be set to suppress unnecessary information.</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    log2file : bool</span>
+<span class="sd">        Whether or not to write information to a logfile</span>
 <span class="sd">    </span>
 <span class="sd">    fname : str</span>
 <span class="sd">        The name of the log file to which all information will be written</span>
@@ -75,19 +78,21 @@
 <span class="sd">        The level of verbosity that restricts the output</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%y%m</span><span class="si">%d</span><span class="s">-%H%M%S&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.log&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log2file</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log2file</span> <span class="o">=</span> <span class="n">log2file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log2file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span> <span class="o">=</span> <span class="n">suppress</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span>
 
 
-<div class="viewcode-block" id="Logger.write"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Logger.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verblvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Logger.write"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Logger.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        Writes log information if :attr:`verblvl` is less or equal to the level of verbosity.</span>
+<span class="sd">        Writes log information if :attr:`verb` is less or equal to the level of verbosity.</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -96,17 +101,18 @@
 <span class="sd">        text : str</span>
 <span class="sd">            The information to log.</span>
 <span class="sd">        </span>
-<span class="sd">        verblvl : int</span>
+<span class="sd">        verb : int</span>
 <span class="sd">            The &#39;inportance&#39; of the information.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="n">verblvl</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log2file</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verb</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppressed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 </div>
     <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 </div>
 <div class="viewcode-block" id="Timer"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.Timer">[docs]</a><span class="k">class</span> <span class="nc">Timer</span><span class="p">():</span>
@@ -119,50 +125,49 @@
 <span class="sd">    label : str</span>
 <span class="sd">        The &#39;name&#39; of the code block which is timed</span>
 <span class="sd">    </span>
-<span class="sd">    verbose : bool</span>
-<span class="sd">        Whether or not to output the elapsed time at exit</span>
+<span class="sd">    verb : int</span>
+<span class="sd">        Level of verbosity</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;~&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;~&quot;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verb</span> <span class="o">=</span> <span class="n">verb</span>
 
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logtime</span><span class="p">(</span><span class="s">&quot;---&gt; [</span><span class="si">%s</span><span class="s"> elapsed </span><span class="si">%f</span><span class="s"> s]&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">))</span>
+        <span class="n">logtime</span><span class="p">(</span><span class="s">&quot;---&gt; [</span><span class="si">%s</span><span class="s"> elapsed </span><span class="si">%f</span><span class="s"> s]&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">),</span> <span class="n">verb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verb</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="set_file"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.set_file">[docs]</a><span class="k">def</span> <span class="nf">set_file</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="log_on"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.log_on">[docs]</a><span class="k">def</span> <span class="nf">log_on</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">log2file</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Sets a file to which all log information are written.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">fname</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">log2file</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">fname</span><span class="p">:</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%y%m</span><span class="si">%d</span><span class="s">-%H%M%S&#39;</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;.log&quot;</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">log2file</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suppress</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="msg"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.msg">[docs]</a><span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="msg"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.msg">[docs]</a><span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">Logger</span><span class="p">):</span>
         <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">verb</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c">#sys.stdout.write(time.strftime(&#39;%d-%m-%Y_%H:%M:%S&#39;)+&quot;\t&quot;+label+&quot;\t&quot;+text+&quot;\n&quot;)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">label</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">+</span><span class="n">text</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;INFO:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
+<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;INFO:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="logtime"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.logtime">[docs]</a><span class="k">def</span> <span class="nf">logtime</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;TIME:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
+<div class="viewcode-block" id="logtime"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.logtime">[docs]</a><span class="k">def</span> <span class="nf">logtime</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;TIME:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="warn"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.warn">[docs]</a><span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;WARN:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span>
+<div class="viewcode-block" id="warn"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.warn">[docs]</a><span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;WARN:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="error"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;ERROR:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">lvl</span><span class="p">)</span></div>
+<div class="viewcode-block" id="error"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.log.error">[docs]</a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">msg</span><span class="p">(</span><span class="s">&quot;ERROR:&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">verb</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

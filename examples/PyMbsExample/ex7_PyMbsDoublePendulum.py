@@ -29,8 +29,8 @@ m4 = world.addParam('m4', 38 )
 # Koerper definieren
 crab = world.addBody(mass=m1, cg=[0.24,0.02,0.21], inertia=diag([2.11,5.87,5.61]))
 hook = world.addBody(mass=m2, cg=[0,0,0.08], inertia=diag([0.01,0.01,0.1]))
-load1 = world.addBody(mass=m3, cg=[0,0,-0.78], inertia=diag([2.28,2.28,0.15]))
-load2 = world.addBody(mass=m4, cg=[0,0,-0.58], inertia=diag([2.28,2.28,0.15]))
+load1 = world.addBody(mass=m3, cg=[0,0,-0.78], inertia=diag([0.0,0.0,0.0]))
+load2 = world.addBody(mass=m4, cg=[0,0,-0.58], inertia=diag([0.0,0.0,0.0]))
 
 # Koerper mit Gelenken verbinden
 world.addJoint(world, crab, 'Tx', startVals=1)
@@ -79,7 +79,8 @@ f = sympymbs(eqns_mo, parameters, controller)
 a, b = 0.0, 2.0
 
 xa = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-xb = [0.0, np.pi, np.pi, 0.0, 0.0 ,0.0]
+#xb = [0.0, np.pi, np.pi, 0.0, 0.0 ,0.0]
+xb = [1.0, 0.0, 0.0, 0.0, 0.0 ,0.0]
 
 uab = [0.0, 0.0]
 
@@ -89,7 +90,8 @@ T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, g=uab)
 # alter some method parameters to increase performance
 #T.setParam('kx', 5)
 T.setParam('su', 10)
-T.setParam('eps', 8e-2)
+T.setParam('eps', 8e-3)
+#T.setParam('use_chains', False)
 
 # run iteration
 xt, ut = T.startIteration()

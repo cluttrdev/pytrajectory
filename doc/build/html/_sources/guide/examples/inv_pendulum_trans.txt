@@ -40,6 +40,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex1_InvertedPendulumTranslation.py
+   :lines: 1-48
 
 .. only:: html
 

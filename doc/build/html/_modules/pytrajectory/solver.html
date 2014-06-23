@@ -111,7 +111,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Not yet implemented. Please use &quot;leven&quot;-algorithm!&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
         <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">==</span> <span class="s">&#39;leven&#39;</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;Run Levenberg-Marquardt method&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    Run Levenberg-Marquardt method&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leven</span><span class="p">()</span>
             
         
@@ -181,7 +181,7 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
             <span class="n">res_alt</span> <span class="o">=</span> <span class="n">res</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">normFx</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;nIt= </span><span class="si">%d</span><span class="s">    res= </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">res</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;      nIt= </span><span class="si">%d</span><span class="s">    res= </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">res</span><span class="p">))</span>
             
             <span class="c"># NEW - experimental</span>
             <span class="k">if</span> <span class="n">res</span><span class="o">&lt;</span><span class="mf">1.0</span><span class="p">:</span>

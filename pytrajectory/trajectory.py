@@ -68,8 +68,7 @@ class Trajectory():
         delta       2               Constant for calculation of collocation points
         maxIt       7               Maximum number of iteration steps
         eps         1e-2            Tolerance for the solution of the initial value problem
-        ierr        None            Tolerance for error on whole interval
-                                    If None, this error will not be considered
+        ierr        0.0             Tolerance for the error on the whole interval
         tol         1e-5            Tolerance for the solver of the equation system
         algo        'leven'         The solver algorithm to use
         use_chains  True            Whether or not to use integrator chains
@@ -81,7 +80,7 @@ class Trajectory():
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, **kwargs):
         # Enable logging
         if not DEBUG:
-            log.log_on(verbosity=3)
+            log.log_on(verbosity=1)
         
         # Save the symbolic vectorfield
         self.ff_sym = ff
@@ -100,7 +99,7 @@ class Trajectory():
                         'delta' : 2,
                         'maxIt' : 7,
                         'eps' : 1e-2,
-                        'ierr' : None,
+                        'ierr' : 0.0,
                         'tol' : 1e-5,
                         'algo' : 'leven',
                         'use_chains' : True,
@@ -253,7 +252,7 @@ class Trajectory():
             elif self.nIt == 2:
                 log.info("3rd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
             elif self.nIt >= 3:
-                log.info("%dth Iteration: %d spline parts"%(self.nIt, self.mparam['sx']), verb=1)
+                log.info("%dth Iteration: %d spline parts"%(self.nIt+1, self.mparam['sx']), verb=1)
 
             # store the old spline to calculate the guess later
             self.old_splines = self.splines
@@ -411,7 +410,7 @@ class Trajectory():
         
         # check if current and new value have the same type
         # --> should they always?
-        #assert type(val) == type(self.mparam[param])
+        assert type(val) == type(self.mparam[param])
         
         self.mparam[param] = val
 
@@ -718,8 +717,6 @@ class Trajectory():
                 i,j= indic[xx]
 
                 mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
-<<<<<<< Local Changes
-       =======
                 mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
 
                 Mx[eqx] = mx
@@ -845,10 +842,352 @@ class Trajectory():
         # with the current numerical values of the free parameters
         X = self.Mx.dot(c) + self.Mx_abs
         X = np.array(X).reshape((-1,x_len)) # one column for every state component
-<<<<<<< Local Changes
-<<<<<<< Local Changes
-        U = sel>>>>>>> External Changes
-=======
-        U = sel>>>>>>> External Changes
-=======
-        U = sel>>>>>>> External Changes
+        U = self.Mu.dot(c) + self.Mu_abs
+        U = np.array(U).reshape((-1,u_len)) # one column for every input component
+
+        # now we compute blocks of the jacobian matrix of the vectorfield with those values
+        DF_blocks = []
+        for x,u in zip(X,U):
+            # get one row of X and U respectively
+            tmp_xu = np.hstack((x,u))
+
+            # evaluate the jacobian of the vectorfield at current collocation point represented by
+            # the row of X and U
+            DF_blocks.append(Df(*tmp_xu))
+
+        # because the system/input variables depend on the free parameters we have to multiply each
+        # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
+        # --> see buildEQS()
+        DF = []
+        for i in xrange(len(DF_blocks)):
+            res = np.dot(DF_blocks[i], self.DXU[i])
+            assert res.shape == (x_len,len(self.c_list))
+            DF.append(res)
+
+        DF = np.array(DF)[:,eqind,:]
+        # 1st index : collocation point
+        # 2nd index : equations that have to be solved --> end of an integrator chain
+        # 3rd index : component of c
+
+        # now compute jacobian of x_dot w.r.t. to indep coeffs
+        # --> see buildEQS()
+        #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+        DdX = self.DdX
+
+        # stack matrices in vertical direction
+        #DG = np.vstack(DF) - np.vstack(DdX)
+        DG = np.vstack(DF) - DdX
+
+        return DG
+
+
+    def setCoeff(self):
+        '''
+        Set found numerical values for the independent parameters of each spline.
+
+        This method is used to get the actual splines by using the numerical
+        solutions to set up the coefficients of the polynomial spline parts of
+        every created spline.
+        '''
+
+        log.info("    Set spline coefficients", verb=2)
+
+        sol = self.sol
+        subs = dict()
+
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
+            i = len(v)
+            subs[k] = sol[:i]
+            sol = sol[i:]
+
+        for var in self.x_sym + self.u_sym:
+            for ic in self.chains:
+                if var in ic:
+                    subs[var] = subs[ic.upper]
+
+        # set numerical coefficients for each spline
+        for cc in self.splines:
+            self.splines[cc].set_coeffs(subs[cc])
+
+        # yet another dictionary for solution and coeffs
+        coeffs_sol = dict()
+
+        # used for indexing
+        i = 0
+        j = 0
+
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
+            j += len(v)
+            coeffs_sol[k] = self.sol[i:j]
+            i = j
+
+        self.coeffs_sol = coeffs_sol
+
+
+    def simulateIVP(self):
+        '''
+        This method is used to solve the initial value problem.
+        '''
+
+        #log.info( 40*"#", verb=3)
+        #log.info("##  Solving the initial value problem ##")
+        #log.info( 40*"#", verb=3)
+        log.info("  Solving Initial Value Problem", verb=2)
+        
+        # get list as start value
+        start = []
+        for xx in self.x_sym:
+            start.append(self.xa[xx])
+
+        log.info("    start: %s"%str(start), verb=2)
+
+        # calulate simulation time
+        T = self.b - self.a
+
+        # create simulation object
+        S = Simulation(self.ff, T, start, self.u)
+
+        # start forward simulation
+        self.sim = S.simulate()
+
+
+
+
+    def checkAccuracy(self):
+        '''
+        Checks whether the desired accuracy for the boundary values was reached.
+
+        It calculates the difference between the solution of the simulation
+        and the given boundary values at the right border and compares its
+        maximum against the tolerance set by self.eps
+        '''
+
+        # this is the solution of the simulation
+        xt = self.sim[1]
+
+        # what is the error
+        log.info(40*"-", verb=3)
+        log.info("Ending up with:   Should Be:  Difference:", verb=3)
+
+        err = np.empty(self.n)
+        for i, xx in enumerate(self.x_sym):
+            err[i] = abs(self.xb[xx] - xt[-1:][0][i])
+            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
+
+        log.info(40*"-", verb=3)
+        
+        if self.mparam['ierr']:
+            # calculate the error functions H_i(t)
+            H = dict()
+            
+            error = []
+            for t in self.sim[0]:
+                xe = self.x(t)
+                ue = self.u(t)
+            
+                ffe = self.ff(xe, ue)
+                dxe = self.dx(t)
+                
+                error.append(ffe - dxe)
+            error = np.array(error)
+            
+            for i in self.eqind:
+                H[i] = error[:,i]
+            
+            maxH = 0
+            for arr in H.values():
+                maxH = max(maxH, max(abs(arr)))
+            
+            self.reached_accuracy = maxH < self.mparam['ierr']
+            log.info('maxH = %f'%maxH)
+        else:
+            # just check if tolerance for the boundary values is satisfied
+            self.reached_accuracy = max(err) < self.mparam['eps']
+        
+        log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
+
+
+    def x(self, t):
+        '''
+        Returns the current system state.
+        
+        Parameters
+        ----------
+        
+        t : float
+            The time point in (a,b) to evaluate the system at.
+        '''
+        
+        if not self.a <= t <= self.b:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.x_fnc[xx](t) for xx in self.x_sym])
+        
+        return arr
+
+
+    def u(self, t):
+        '''
+        Returns the state of the input variables.
+        
+        Parameters
+        ----------
+        
+        t : float
+            The time point in (a,b) to evaluate the input variables at.
+        '''
+        
+        if not self.a <= t <= self.b+0.05:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.u_fnc[uu](t) for uu in self.u_sym])
+        
+        return arr
+
+
+    def dx(self, t):
+        '''
+        Returns the state of the 1st derivatives of the system variables.
+        
+        Parameters
+        ----------
+        
+        t : float
+            The time point in (a,b) to evaluate the 1st derivatives at.
+        '''
+        
+        if not self.a <= t <= self.b+0.05:
+            log.warn("Time point 't' has to be in (a,b)")
+            arr = None
+        else:
+            arr = np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
+        
+        return arr
+
+
+    def plot(self):
+        '''
+        Plot the calculated trajectories and error functions.
+
+        This method calculates the error functions and then calls
+        the :func:`utilities.plot` function.
+        '''
+
+        try:
+            import matplotlib
+        except ImportError:
+            log.error('Matplotlib is not available for plotting.')
+            return
+
+        # calculate the error functions H_i(t)
+        H = dict()
+
+        error = []
+        for t in self.sim[0]:
+            xe = self.x(t)
+            ue = self.u(t)
+
+            ffe = self.ff(xe, ue)
+            dxe = self.dx(t)
+
+            error.append(ffe - dxe)
+        error = np.array(error)
+
+        for i in self.eqind:
+            H[i] = error[:,i]
+
+        # call utilities.plotsim()
+        plotsim(self.sim, H)
+
+
+    def save(self, fname=None):
+        '''
+        Save system data, callable solution functions and simulation results.
+        '''
+
+        save = dict()
+
+        # system data
+        save['ff_sym'] = self.ff_sym
+        save['ff_num'] = self.ff
+        save['a'] = self.a
+        save['b'] = self.b
+
+        # boundary values
+        save['xa'] = self.xa
+        save['xb'] = self.xb
+        save['uab'] = self.uab
+
+        # solution functions       
+        save['x'] = self.x
+        save['u'] = self.u
+        save['dx'] = self.dx
+
+        # simulation resutls
+        save['sim'] = self.sim
+        
+        if not fname:
+            fname = __file__.split('.')[0] + '.pkl'
+        elif not fname.endswith('.pkl'):
+            fname += '.pkl'
+        
+        with open(fname, 'wb') as dumpfile:
+            pickle.dump(save, dumpfile)
+
+
+    def clear(self):
+        '''
+        This method is intended to delete some attributes of the object that
+        are no longer neccessary after the iteration has finished.
+
+        TODO: implement this ;-P
+        '''
+
+        del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
+        del self.Df, self.DXU, self.DdX
+        del self.c_list
+
+        return
+
+
+
+if __name__ == '__main__':
+    from sympy import cos, sin
+    from numpy import pi
+
+    # partially linearised inverted pendulum
+
+    def f(x,u):
+        x1,x2,x3,x4 = x
+        u1, = u
+        l = 0.5
+        g = 9.81
+        ff = np.array([     x2,
+                            u1,
+                            x4,
+                        (1/l)*(g*sin(x3)+u1*cos(x3))])
+        return ff
+
+    xa = [0.0, 0.0, pi, 0.0]
+    xb = [0.0, 0.0, 0.0, 0.0]
+
+    a = 0.0
+    b = 2.0
+    sx = 5
+    su = 5
+    kx = 5
+    maxIt  = 5
+    g = [0,0]
+    eps = 0.05
+    use_chains = False
+
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
+                    maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
+
+    with log.Timer("Iteration", verb=0):
+        T.startIteration()
+    
+    if DEBUG:
+        IPS()

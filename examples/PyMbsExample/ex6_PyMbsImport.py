@@ -85,6 +85,8 @@ eps = 0.05
 # create trajectory object
 T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, kx=kx, g=uab, eps=eps, use_chains=use_chains)
 
+T.setParam('ierr', 5e-2)
+
 # run iteration
 xt, ut = T.startIteration()
 

@@ -260,7 +260,7 @@
 <span class="sd">        Please see the documentation for more details: :ref:`candidate_functions`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;makesteady: &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    makesteady: &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         
         <span class="c"># This should be untouched yet</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">steady_flag</span> <span class="o">==</span> <span class="bp">False</span>
@@ -374,6 +374,9 @@
         <span class="c"># do the inversion</span>
         <span class="c">#tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)</span>
         <span class="c">#tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
         <span class="n">tmp1</span> <span class="o">=</span> <span class="n">spsolve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">r</span><span class="p">)</span>
         <span class="n">tmp2</span> <span class="o">=</span> <span class="n">spsolve</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="o">-</span><span class="n">A</span><span class="p">)</span>
         

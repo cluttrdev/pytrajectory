@@ -134,23 +134,27 @@ visualising the systems dynamic.</p>
 <td>1e-2</td>
 <td>Tolerance for the solution of the initial value problem</td>
 </tr>
-<tr class="row-even"><td>tol</td>
+<tr class="row-even"><td>ierr</td>
+<td>0.0</td>
+<td>Tolerance for the error on the whole interval</td>
+</tr>
+<tr class="row-odd"><td>tol</td>
 <td>1e-5</td>
 <td>Tolerance for the solver of the equation system</td>
 </tr>
-<tr class="row-odd"><td>algo</td>
+<tr class="row-even"><td>algo</td>
 <td>&#8216;leven&#8217;</td>
 <td>The solver algorithm to use</td>
 </tr>
-<tr class="row-even"><td>use_chains</td>
+<tr class="row-odd"><td>use_chains</td>
 <td>True</td>
 <td>Whether or not to use integrator chains</td>
 </tr>
-<tr class="row-odd"><td>colltype</td>
+<tr class="row-even"><td>colltype</td>
 <td>&#8216;equidistant&#8217;</td>
 <td>The type of the collocation points</td>
 </tr>
-<tr class="row-even"><td>use_sparse</td>
+<tr class="row-odd"><td>use_sparse</td>
 <td>True</td>
 <td>Whether or not to use sparse matrices</td>
 </tr>
@@ -187,9 +191,9 @@ Callable function for the input variables.</li>
 <dl class="method">
 <dt id="pytrajectory.trajectory.Trajectory.analyseSystem">
 <tt class="descname">analyseSystem</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pytrajectory/trajectory.html#Trajectory.analyseSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.trajectory.Trajectory.analyseSystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Analyses the systems structure and sets values for some of the method
+<dd><p>Analyse the system structure and set values for some of the method
 parameters.</p>
-<p>By now, this method determines the number of state and input variables
+<p>By now, this method just determines the number of state and input variables
 and searches for integrator chains.</p>
 </dd></dl>
 
@@ -735,15 +739,16 @@ from PyMbs.</p>
 <span id="log-module"></span><h2><a class="toc-backref" href="#id6"><tt class="xref py py-mod docutils literal"><span class="pre">log</span></tt> Module</a><a class="headerlink" href="#module-pytrajectory.log" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytrajectory.log.Logger">
-<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Logger</tt><big>(</big><em>fname=None</em>, <em>mode='w'</em>, <em>suppress=False</em>, <em>verbosity=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Logger</tt><big>(</big><em>log2file=False</em>, <em>fname=None</em>, <em>mode='w'</em>, <em>suppress=False</em>, <em>verbosity=1</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class handles the output of the log data.</p>
-<p>It can simultaneously write to a specified file and the standard output as well as just the
-file. In addition a loglevel can be set to suppress some information.</p>
+<p>It can simultaneously write to a specified file and the standard output as well as just one
+of both. In addition a loglevel can be set to suppress unnecessary information.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>log2file</strong> (<em>bool</em>) &#8211; Whether or not to write information to a logfile</li>
 <li><strong>fname</strong> (<em>str</em>) &#8211; The name of the log file to which all information will be written</li>
 <li><strong>mode</strong> (<em>str</em>) &#8211; Either &#8216;w&#8217; if an existing file should be overwritten or &#8216;a&#8217; if it should be appended</li>
 <li><strong>suppress</strong> (<em>bool</em>) &#8211; Whether or not to suppress output to the screen</li>
@@ -755,15 +760,15 @@ file. In addition a loglevel can be set to suppress some information.</p>
 </table>
 <dl class="method">
 <dt id="pytrajectory.log.Logger.write">
-<tt class="descname">write</tt><big>(</big><em>text</em>, <em>verblvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger.write" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes log information if <tt class="xref py py-attr docutils literal"><span class="pre">verblvl</span></tt> is less or equal to the level of verbosity.</p>
+<tt class="descname">write</tt><big>(</big><em>text</em>, <em>verb=3</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Logger.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Logger.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes log information if <tt class="xref py py-attr docutils literal"><span class="pre">verb</span></tt> is less or equal to the level of verbosity.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>text</strong> (<em>str</em>) &#8211; The information to log.</li>
-<li><strong>verblvl</strong> (<em>int</em>) &#8211; The &#8216;inportance&#8217; of the information.</li>
+<li><strong>verb</strong> (<em>int</em>) &#8211; The &#8216;inportance&#8217; of the information.</li>
 </ul>
 </td>
 </tr>
@@ -775,7 +780,7 @@ file. In addition a loglevel can be set to suppress some information.</p>
 
 <dl class="class">
 <dt id="pytrajectory.log.Timer">
-<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Timer</tt><big>(</big><em>label='~'</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Timer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pytrajectory.log.</tt><tt class="descname">Timer</tt><big>(</big><em>label='~'</em>, <em>verb=4</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#Timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.Timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provides a context manager that takes the time of a code block.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -783,7 +788,7 @@ file. In addition a loglevel can be set to suppress some information.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>label</strong> (<em>str</em>) &#8211; The &#8216;name&#8217; of the code block which is timed</li>
-<li><strong>verbose</strong> (<em>bool</em>) &#8211; Whether or not to output the elapsed time at exit</li>
+<li><strong>verb</strong> (<em>int</em>) &#8211; Level of verbosity</li>
 </ul>
 </td>
 </tr>
@@ -792,34 +797,34 @@ file. In addition a loglevel can be set to suppress some information.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pytrajectory.log.set_file">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">set_file</tt><big>(</big><em>fname=None</em>, <em>suppress=True</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#set_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.set_file" title="Permalink to this definition">¶</a></dt>
+<dt id="pytrajectory.log.log_on">
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">log_on</tt><big>(</big><em>verbosity=1</em>, <em>log2file=False</em>, <em>fname=None</em>, <em>suppress=False</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#log_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.log_on" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a file to which all log information are written.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.msg">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">msg</tt><big>(</big><em>label</em>, <em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.msg" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">msg</tt><big>(</big><em>label</em>, <em>text</em>, <em>verb=3</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.msg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.info">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">info</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.info" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">info</tt><big>(</big><em>text</em>, <em>verb=3</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.info" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.logtime">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">logtime</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#logtime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.logtime" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">logtime</tt><big>(</big><em>text</em>, <em>verb=3</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#logtime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.logtime" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.warn">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">warn</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.warn" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">warn</tt><big>(</big><em>text</em>, <em>verb=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.warn" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="pytrajectory.log.error">
-<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">error</tt><big>(</big><em>text</em>, <em>lvl=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.error" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pytrajectory.log.</tt><tt class="descname">error</tt><big>(</big><em>text</em>, <em>verb=0</em><big>)</big><a class="reference internal" href="_modules/pytrajectory/log.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytrajectory.log.error" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

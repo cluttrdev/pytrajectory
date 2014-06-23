@@ -70,6 +70,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex3_Aircraft.py
+   :lines: 1-59
 
 .. only:: html
 
