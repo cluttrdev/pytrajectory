@@ -12,7 +12,7 @@ from utilities import IntegChain, plotsim
 import log
 
 # DEBUGGING
-DEBUG = False
+DEBUG = True
 
 if DEBUG:
     from IPython import embed as IPS
@@ -236,7 +236,12 @@ class Trajectory():
 
         # check if desired accuracy is already reached
         self.checkAccuracy()
-
+        
+        ##########################################
+        # NEW: cycle process
+        cycle_process = True
+        ##########################################
+        
         # this was the first iteration
         # now we are getting into the loop
         while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
@@ -262,7 +267,16 @@ class Trajectory():
 
             # check if desired accuracy is reached
             self.checkAccuracy()
-
+            
+            ##########################################
+            # NEW: cycle process
+            # HIGHLY EXPERIMENTAL
+            if cycle_process and self.nIt > 4:
+                self.cycle()
+            if self.nIt > 4:
+                cycle_process = not cycle_process
+            ##########################################
+            
         # clear workspace
         self.clear()
         
@@ -455,7 +469,80 @@ class Trajectory():
         # solve the initial value problem
         with log.Timer("simulateIVP()"):
             self.simulateIVP()
+    
+    ##########################################
+    # HIGHLY EXPERIMENTAL
+    ##########################################
+    def cycle(self):
+        old_splines = self.splines
+        
+        self.mparam['sx'] /= self.mparam['kx']
+        self.initSplines()
+        
+        # make splines local
+        new_splines = self.splines
 
+        guess = np.empty(0)
+        self.c_list = np.empty(0)
+        
+        # get new guess for every independent variable
+        for k, v in sorted(new_splines.items(), key = lambda (k, v): k.name):
+            self.c_list = np.hstack((self.c_list, v.c_indep))
+
+            if (new_splines[k].type == 'x'):
+                log.info("    Get new guess for spline %s"%k.name, verb=3)
+
+                # how many unknown coefficients does the new spline have
+                nn = len(v.c_indep)
+
+                # and this will be the points to evaluate the old spline in
+                #   but we don't want to use the borders because they got
+                #   the boundary values already
+                gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+
+                # evaluate the old and new spline at all points in gpts
+                #   they should be equal in these points
+
+                OLD = [None]*len(gpts)
+                NEW = [None]*len(gpts)
+                NEW_abs = [None]*len(gpts)
+
+                for i, p in enumerate(gpts):
+                    OLD[i] = old_splines[k].f(p)
+                    NEW[i], NEW_abs[i] = new_splines[k].f(p)
+
+                OLD = np.array(OLD)
+                NEW = np.array(NEW)
+                NEW_abs = np.array(NEW_abs)
+
+                TT = np.linalg.solve(NEW,OLD-NEW_abs)
+
+                guess = np.hstack((guess,TT))
+            else:
+                # if it is a manipulated variable, just take the old solution
+                guess = np.hstack((guess, self.coeffs_sol[k]))
+
+        # the new guess
+        self.guess = guess
+        
+        # create equation system
+        with log.Timer("buildEQS()"):
+            self.buildEQS()
+
+        # solve it
+        with log.Timer("solveEQS()"):
+            self.solveEQS()
+
+        # write back the coefficients
+        with log.Timer("setCoeff()"):
+            self.setCoeff()
+
+        # solve the initial value problem
+        with log.Timer("simulateIVP()"):
+            self.simulateIVP()
+    ##########################################
+    ##########################################
+    
 
     def getGuess(self):
         '''
@@ -971,9 +1058,9 @@ class Trajectory():
 
         err = np.empty(self.n)
         for i, xx in enumerate(self.x_sym):
-            err[i] = abs(self.xb[xx] - xt[-1:][0][i])
+            err[i] = abs(self.xb[xx] - xt[-1][i])
             log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
-
+        
         log.info(40*"-", verb=3)
         
         if self.mparam['ierr']:
@@ -1180,12 +1267,14 @@ if __name__ == '__main__':
     kx = 5
     maxIt  = 5
     g = [0,0]
-    eps = 0.05
+    eps = 0.01
     use_chains = False
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
-
+    
+    T.setParam('ierr', 1e-2)
+    
     with log.Timer("Iteration", verb=0):
         T.startIteration()
     
