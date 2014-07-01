@@ -432,53 +432,98 @@ def sympymbs(eqns_mo, parameters, controller):
     par_eqns = []
     
     for eqn in eqns_mo:
+        # get left hand site of the motion equation
         lhs = str(eqn.lhs)
+        # and right hand site, removing possible newline character 
+        # that come from the string representation
         rhs = str(eqn.rhs).replace('\n', '')
         
         if lhs.startswith('der'):
+            # equation looks like:  'der_q = qd'
+            # and therefor contains information about vectorfield
             ff.append(rhs)
         elif rhs.startswith('q') and not lhs.startswith('der'):
+            # equation looks like:  'matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q'
+            # and therefor contains information about the system state variables 
+            # such as q, qd and so on
             x_eqns.append([lhs, rhs])
         else:
+            # all other equations that contain information about other parameters and variables
             par_eqns.append([lhs, rhs])
     
-    
-    # handle state variables
-    # --> leads to x_str and q_str
+    #################################
+    # handle system state variables #
+    #################################
+    # --> leads to x_str which shows how to unpack the state variables
+    #     and q_str which is just a vice versa string of the equations in x_eqns
+    #     (necessary for par_eqns)
     x_str = ''
     q_str = ''
     for s in x_eqns:
+        # s[0] is the left hand site of the equation
+        # and s[1] its right hand site
         if s[0].startswith('matrix'):
+            # if the left hand site starts with 'matrix' the state variable on rhs 
+            # has a dimension > 1 and the equation looks something like:
+            # matrix([[q_joint_1_Tx],[q_joint_3_Ry]]) = q
+            # 
+            # to append the variables on lhs (here: q_joint_1_Tx and q_joint_3_Ry)
+            # we create a sympy matrix of symbols and than iterate through its elements
+            # and append their string representations to x_str
             Ml = S(s[0], locals={"matrix":Matrix})
             for x in Ml:
                 x_str += '%s, '%str(x)
         else:
+            # if left hand site is a scalar, we can just append its string representation
             x_str += '%s, '%str(s[0])
         
+        # here we reverse the equation and append it to q_str
+        # we have to replace 'matrix' with 'Matrix' because this is the
+        # name of the sympy matrix class
         q_str += '%s = %s; '%(s[1], s[0].replace('matrix', 'Matrix'))
         
-    x_str = x_str[:-2] + ' = x' # x_str now looks like:     'x1, x2, ... , xn = x'
-    q_str = q_str[:-2]          # q_str is a concatenation of reversed x_eqns
+    x_str = x_str[:-2] + ' = x' # x_str now should look like:   'q_joint_1_Tx, q_joint_3_Ry, ... = x'
+    q_str = q_str[:-2]          # q_str is just a concatenation of reversed x_eqns
     
-    # handle input variables
+    ##########################
+    # handle input variables #
+    ##########################
     # --> leads to u_str and control_str
+    
+    # u_str will show how to unpack the inputs of the control system
     u_str = ''
+    # control_str will show how to create a matrix for every input
+    # depending on its dimension which is necessary for the later evaluation
+    # of the par_eqns
     control_str = ''
     j = 0 # used for indexing
     for k, v in controller.items():
+        # 'k' is the name or string representation of the input
+        # 'v' is its dimension tuple (e.g. v = (3,1) )
         control_str += str(k) + ' = Matrix(['
         for i in xrange(v[0]*v[1]):
+            # add an 'u_i' to u_str
+            # --> they will be the unpacked inputs in the later evaluation
+            #     of the function returned by this method (that means sympymbs)
             u_str += 'u%d, '%(j+i)
+            # and append this 'u_i' as an element of the current input 'k'
             control_str += 'u%d, '%(j+i)
         
-        # remember number of inputs so far
+        # remember number of inputs so far so that u_str will 
+        # not look like: 'u1, u2, u3, u1, u2, u3 = u'
+        # but like:      'u1, u2, u3, u4, u5, u6 = u'
         j += i+1
         
+        # in case we have on input 'F' of dimension 3 ( 'v = (3,1)' ), then
+        # control_str will look like:
+        # 'F = Matrix([u1, u2, u3]).reshape(1,3).T'
         control_str = control_str[:-2] + ']).reshape(%d, %d).T; '%(v[1], v[0])
     
     u_str = u_str[:-2] + ' = u' # x_str now looks like:     'u1, u2, ... , um = u'
     
-    # handle system parameters
+    ############################
+    # handle system parameters #
+    ############################
     # --> leads to par_str
     par_str = ''
     for k,v in parameters.items():
