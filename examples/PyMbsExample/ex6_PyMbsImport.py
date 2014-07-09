@@ -57,8 +57,8 @@ eqns_mo = world.getMotionEquations()
 
 ###############################################################
 # by now the following dictionaries have to be set explicitly #
-parameters = {'m1' : 54, 'm2' : 2.65, 'm3' : 38, 'g' : 9.81}  #
-controller = {'F' : (3,1)}                                    #
+#parameters = {'m1' : 54, 'm2' : 2.65, 'm3' : 38, 'g' : 9.81}  #
+#controller = {'F' : (3,1)}                                    #
 ###############################################################
 
 
@@ -67,7 +67,8 @@ controller = {'F' : (3,1)}                                    #
 ######################################################################
 
 # define function that returns vectorfield
-f = sympymbs(eqns_mo, parameters, controller)
+#f = sympymbs(eqns_mo, parameters, controller)
+f = sympymbs(world)
 
 # boundary values
 a, b = 0.0, 2.0
