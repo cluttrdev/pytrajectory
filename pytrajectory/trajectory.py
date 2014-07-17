@@ -233,7 +233,10 @@ class Trajectory():
 
         # start first iteration
         self.iterate()
-
+        
+        #NEW TEMP
+#        self.maxerr = []
+        
         # check if desired accuracy is already reached
         self.checkAccuracy()
         
@@ -271,10 +274,9 @@ class Trajectory():
             ##########################################
             # NEW: cycle process
             # HIGHLY EXPERIMENTAL
-            if cycle_process and self.nIt > 4:
+            if cycle_process and self.nIt > 3:
                 self.cycle()
-            if self.nIt > 4:
-                cycle_process = not cycle_process
+#                IPS()
             ##########################################
             
         # clear workspace
@@ -477,6 +479,9 @@ class Trajectory():
         old_splines = self.splines
         
         self.mparam['sx'] /= self.mparam['kx']
+        
+        log.info("CYCLING back to: %d spline parts"%(self.mparam['sx']), verb=1)
+                
         self.initSplines()
         
         # make splines local
@@ -540,6 +545,10 @@ class Trajectory():
         # solve the initial value problem
         with log.Timer("simulateIVP()"):
             self.simulateIVP()
+        
+        with log.Timer("checkAccuracy()"):
+            self.checkAccuracy()
+        
     ##########################################
     ##########################################
     
@@ -1090,6 +1099,8 @@ class Trajectory():
         else:
             # just check if tolerance for the boundary values is satisfied
             self.reached_accuracy = max(err) < self.mparam['eps']
+        
+        #self.maxerr.append((self.mparam['sx'], max(err)))
         
         log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
 

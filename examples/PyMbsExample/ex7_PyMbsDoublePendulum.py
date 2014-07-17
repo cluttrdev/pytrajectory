@@ -58,22 +58,13 @@ world.genEquations.Recursive()
 # Get system motion equations
 eqns_mo = world.getMotionEquations()
 
-#for eqn in eqns_mo:
-#    print str(eqn.lhs) + " = " + str(eqn.rhs)
-
-###############################################################
-# by now the following dictionaries have to be set explicitly #
-parameters = {'m1' : 54, 'm2' : 2.65, 'm3' : 38, 'm4' : 38, 'g' : 9.81}  #
-controller = {'F' : (3,1)}                                    #
-###############################################################
-
 
 ######################################################################
 # PyTrajectory 
 ######################################################################
 
-# define function that returns vectorfield
-f = sympymbs(eqns_mo, parameters, controller)
+# get a callable function for the vectorfield of the system
+f = sympymbs(world)
 
 # boundary values
 a, b = 0.0, 2.0

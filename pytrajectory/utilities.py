@@ -10,6 +10,7 @@ from IPython import embed as IPS
 
 # for import of PyMbs motion equations
 from sympy import *
+import os
 
 class IntegChain():
     '''
@@ -314,7 +315,7 @@ def plotsim(sim, H, fname=None):
     plt.rcParams['font.size']=16
 
     plt.rcParams['legend.fontsize']=16
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
 
 
     plt.rcParams['xtick.labelsize']=16
@@ -358,7 +359,7 @@ def plotsim(sim, H, fname=None):
         plt.title(r'$H_'+str(hh+1)+'(t)$')
 
     plt.tight_layout()
-
+    
     plt.show()
     
     if fname:
@@ -367,7 +368,8 @@ def plotsim(sim, H, fname=None):
         else:
             plt.savefig(fname)
 
-def sympymbs(eqns_mo, parameters, controller):
+
+def sympymbs(world):
     '''
     Returns a callable function to be used with PyTrajectory out of exported motion equations
     from PyMbs.
@@ -376,14 +378,8 @@ def sympymbs(eqns_mo, parameters, controller):
     Parameters
     ----------
     
-    eqns_mo : list
-        PyMbs symbolics.CAssignments that represent the motion equations
-    
-    parameters : dict
-        Dictionary with names and values of additional system parameters
-    
-    controller : dict
-        Dictionary with names and shapes of the inputs
+    world : PyMbs.Input.MbsSystem.MbsSystem
+        Reference to a MbsSystem object
     
     
     Returns
@@ -393,7 +389,7 @@ def sympymbs(eqns_mo, parameters, controller):
     '''
     
     # check type
-    assert( isinstance(world, MbsSystem) )
+    #assert( isinstance(world, PyMbs.Input.MbsSystem.MbsSystem) )
     
     # get motion equations, parameters and controllers
     eqns_mo = world.getMotionEquations()
@@ -430,7 +426,7 @@ def f(x, u):
     #   sinq_joint_3_Ry = sin(q_joint_3_Ry)
     #   T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],
     #                    [0,1,0],
-	#                    [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])
+    #                    [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])
     # ...
     #   M_ = ...
     # ...
@@ -457,7 +453,7 @@ def f(x, u):
     # like:  'cosq_joint_3_Ry = cos(q_joint_3_Ry)'
     #     or 'T_Last = matrix([[cosq_joint_3_Ry,0,sinq_joint_3_Ry],
     #                         [0,1,0],
-	#                         [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])'
+    #                         [(-sinq_joint_3_Ry),0,cosq_joint_3_Ry]])'
     par_eqns = []
     
     for eqn in eqns_mo:
@@ -465,7 +461,7 @@ def f(x, u):
         lhs = str(eqn.lhs)
         # and right hand site, removing possible newline character 
         # that come from the string representation
-        rhs = str(eqn.rhs).replace('\n', '')
+        rhs = str(eqn.rhs).replace(os.linesep, '')
         
         if lhs.startswith('der'):
             # equation looks like:  'der_q = qd'
@@ -590,7 +586,7 @@ def f(x, u):
             # remember: C_ would be assigned to something like
             # 
             #   C_ = matrix([[(matrix([[1,0,0]]) * (int_G_C_body_1 + int_G_C_body_3))[0,0]],
-			#	             [(matrix([[0,1,0]]) * int_L_C_body_3)[0,0]]])
+            #                [(matrix([[0,1,0]]) * int_L_C_body_3)[0,0]]])
             # 
             # so we would need symbols for 'int_G_C_body_1', 'int_G_C_body_3' and 'int_L_C_body_3'
             #
@@ -627,12 +623,12 @@ def f(x, u):
     # create vectorfield #
     ######################
     # --> leads to ff_str
-    ff_str = 'ff = np.vstack(('
+    ff_str = 'ff = Matrix.vstack('
     
     for w in ff:
         ff_str += w + ', '
     
-    ff_str = ff_str[:-2] + '))'
+    ff_str = ff_str[:-2] + ')'
     
     ############################
     # Create callable function #

@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 from PyMbs.Input import *
 from IPython import embed as IPS
 from dummy_controller import controlForce

@@ -89,7 +89,7 @@ class Solver:
 
         mu = 0.1
 
-        # borders for convergence-control ##!! Ref zu Doku
+        # borders for convergence-control
         b0 = 0.2
         b1 = 0.8
 
@@ -135,8 +135,8 @@ class Solver:
             log.info("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            if res<1.0:
-                reltol = 1e-3
+            #if res<1.0:
+            #    reltol = 1e-3
 
         self.sol = x
     
