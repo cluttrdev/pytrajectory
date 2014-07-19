@@ -12,7 +12,7 @@ from utilities import IntegChain, plotsim
 import log
 
 # DEBUGGING
-DEBUG = True
+DEBUG = False
 
 if DEBUG:
     from IPython import embed as IPS
