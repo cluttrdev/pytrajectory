@@ -106,6 +106,9 @@ class CubicSpline():
         # for the free parameters of the spline
         # --> set_coeffs()
         self.prov_flag = True
+        
+        # calculate joining points of the spline
+        self.jpts = np.linspace(self.a, self.b, self.n+1)
 
         if (steady):
             with log.Timer("makesteady()"):
@@ -135,6 +138,7 @@ class CubicSpline():
         if (i == self.n): i-= 1
         
         x -= (i+1)*self.h
+        #x -= self.jpts[i]
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if (d == 0):
@@ -173,6 +177,7 @@ class CubicSpline():
         p = self.S[i]
 
         return p.deriv(d)(x-(i+1)*self.h)
+        #return p.deriv(d)(x-self.jpts[i])
     
     def f(self, x):
         '''This is just a wrapper to evaluate the spline itself.'''
@@ -290,7 +295,7 @@ class CubicSpline():
             r[3*(self.n-1)+4] = self.bcdd[0]
             r[3*(self.n-1)+5] = self.bcdd[1]
 
-        # get A and B matrix --> docu p. 13
+        # get A and B matrix --> see docu
         #
         #       M*c = r
         # A*a + B*b = r

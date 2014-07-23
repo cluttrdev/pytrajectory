@@ -97,7 +97,7 @@ class Trajectory():
                         'su' : 5,
                         'kx' : 2,
                         'delta' : 2,
-                        'maxIt' : 7,
+                        'maxIt' : 10,
                         'eps' : 1e-2,
                         'ierr' : 0.0,
                         'tol' : 1e-5,
@@ -242,14 +242,14 @@ class Trajectory():
         
         ##########################################
         # NEW: cycle process
-        cycle_process = True
+        cycle_process = False
         ##########################################
         
         # this was the first iteration
         # now we are getting into the loop
         while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
             # raise the number of spline parts
-            self.mparam['sx'] = round(self.mparam['kx']*self.mparam['sx'])
+            self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
             
             #log.info( 40*"#", verb=3)
             #log.info("       ---- Next Iteration ----")
@@ -273,10 +273,14 @@ class Trajectory():
             
             ##########################################
             # NEW: cycle process
-            # HIGHLY EXPERIMENTAL
-            if cycle_process and self.nIt > 3:
+            # CAUTION: EXPERIMENTAL
+            if self.mparam['sx'] > 60:
+                #cycle_process = not cycle_process
+                cycle_process = True
+            
+            if cycle_process:
                 self.cycle()
-#                IPS()
+                #IPS()
             ##########################################
             
         # clear workspace
@@ -473,60 +477,152 @@ class Trajectory():
             self.simulateIVP()
     
     ##########################################
-    # HIGHLY EXPERIMENTAL
+    # NEW: EXPERIMENTAL
     ##########################################
     def cycle(self):
+        if not DEBUG:
+            return
+        
+        from tridiag import thomas
+        from matplotlib import pyplot as plt
+        
+        
+        # save current splines and functions
         old_splines = self.splines
+        old_x_fnc = self.x_fnc
+        old_dx_fnc = self.dx_fnc
+        old_u_fnc = self.u_fnc
         
-        self.mparam['sx'] /= self.mparam['kx']
+        # create new spline with fewer parts
+        N = int(round(self.mparam['sx'] / self.mparam['kx']))
         
-        log.info("CYCLING back to: %d spline parts"%(self.mparam['sx']), verb=1)
-                
+        # determine joining points
+        joinpts = np.linspace(self.a, self.b, N+1)
+        
+        print "RETRYING with %d spline parts"%N
+        
+        # reinitialise current splines
         self.initSplines()
         
-        # make splines local
-        new_splines = self.splines
-
+        # calculate new guess
         guess = np.empty(0)
         self.c_list = np.empty(0)
         
-        # get new guess for every independent variable
-        for k, v in sorted(new_splines.items(), key = lambda (k, v): k.name):
+        for k, v in sorted(self.splines.items(), key = lambda (k, v): k.name):
             self.c_list = np.hstack((self.c_list, v.c_indep))
-
-            if (new_splines[k].type == 'x'):
-                log.info("    Get new guess for spline %s"%k.name, verb=3)
-
+            
+            if v.type == 'x': 
+                # first we interpolate the current solution with fewer spline parts
+            
+                h = (self.b -self.a) / N
+                # if joining points are not equidistant
+                #h = [joinpts[i+1]-joinpts[i] for i in xrange(N)]
+            
+                # evaluate current spline and its 1st derivative at joining points
+                fk = [old_splines[k].f(t) for t in joinpts]
+                dfk = [old_splines[k].df(t) for t in joinpts]
+            
+                l = []
+                m = []
+                r = []
+                for i in xrange(N-1):
+                    #l.append(h[i+1]/(h[i]+h[i+1]))
+                    #m.append(h[i]/(h[i]+h[i+1]))
+                    #r.append( (3*h[i+1] / (h[i]*(h[i]+h[i+1]))) * (fk[i+1]-fk[i]) + (3*h[i] / (h[i]*(h[i]+h[i+1]))) * (fk[i+2]-fk[i+1]))
+                    l.append(h/(h+h))
+                    m.append(h/(h+h))
+                    r.append( (3*h / (h*(h+h))) * (fk[i+1]-fk[i]) + (3*h / (h*(h+h))) * (fk[i+2]-fk[i+1]))
+            
+                # solve tridiagonal eqs with Thomas algorithm
+                a = np.empty(N+1)
+                a[0] = 0.0
+                a[1:-1] = l
+                a[-1] = 0.0
+                b = np.empty(N+1)
+                b[0] = 1.0
+                b[1:-1] = 2.0
+                b[-1] = 1.0
+                c = np.empty(N+1)
+                c[0] = 0.0
+                c[1:-1] = m
+                c[-1] = 0.0
+                d = np.empty(N+1)
+                d[0] = dfk[0]
+                d[1:-1] = r
+                d[-1] = dfk[-1]
+            
+                mk = thomas(a, b, c, d)
+            
+                # calculate coefficients
+                coeffs = []
+                for i in xrange(N):
+                    #coeffs.append([-2.0/h[i]**3 * (fk[i+1]-fk[i]) + 1.0/h[i]**2 * (mk[i]+mk[i+1]),
+                    #                3.0/h[i]**2 * (fk[i+1]-fk[i]) - 1.0/h[i] * (2*mk[i]+mk[i+1]),
+                    #                mk[i],
+                    #                fk[i]])
+                    coeffs.append([-2.0/h**3 * (fk[i+1]-fk[i]) + 1.0/h**2 * (mk[i]+mk[i+1]),
+                                    3.0/h**2 * (fk[i+1]-fk[i]) - 1.0/h * (2*mk[i]+mk[i+1]),
+                                    mk[i],
+                                    fk[i]])
+                
+                # this is the interpolating spline function
+                S = []
+                for i in xrange(N):
+                    S.append(np.poly1d(coeffs[i]))
+            
+                # define new CubicSpline.evalf function
+                # (until necessary code changes are done...!)
+                def interpolated(x):
+                #    #p = 0
+                #    #while not (joinpts[p]<=x<=joinpts[p+1]) :
+                #    #    p += 1
+                    p = int(np.floor(x*N/(self.b)))
+                    if p==N: p-=1
+                
+                    return S[p](x-joinpts[p])
+                   
                 # how many unknown coefficients does the new spline have
                 nn = len(v.c_indep)
-
+                
                 # and this will be the points to evaluate the old spline in
                 #   but we don't want to use the borders because they got
                 #   the boundary values already
                 gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
-
+                
                 # evaluate the old and new spline at all points in gpts
                 #   they should be equal in these points
-
-                OLD = [None]*len(gpts)
+                OLD = np.empty(len(gpts))
                 NEW = [None]*len(gpts)
                 NEW_abs = [None]*len(gpts)
-
-                for i, p in enumerate(gpts):
-                    OLD[i] = old_splines[k].f(p)
-                    NEW[i], NEW_abs[i] = new_splines[k].f(p)
-
-                OLD = np.array(OLD)
+                
+                for j, p in enumerate(gpts):
+                    i = int(np.floor(p*N/(self.b)))
+                    if i == N: i -= 1
+                    
+                    OLD[j] = S[i](p-joinpts[i])
+                    NEW[j], NEW_abs[j] = self.splines[k].f(p)
+                
                 NEW = np.array(NEW)
                 NEW_abs = np.array(NEW_abs)
-
+                    
                 TT = np.linalg.solve(NEW,OLD-NEW_abs)
-
                 guess = np.hstack((guess,TT))
-            else:
+                
+                tt = np.linspace(self.a, self.b, 10000)
+                old = [old_splines[k].f(t) for t in tt]
+                new = [interpolated(t) for t in tt]
+            
+                #print "maxerr = ", max(abs(np.array(new)-np.array(old)))
+                plt.plot(tt, old, tt, new)
+                plt.show()
+            
+            elif v.type == 'u':
                 # if it is a manipulated variable, just take the old solution
                 guess = np.hstack((guess, self.coeffs_sol[k]))
-
+    
+            #self.splines[k].evalf = new_evalf
+            #self.splines[k].prov_flag = False
+        
         # the new guess
         self.guess = guess
         
@@ -546,10 +642,8 @@ class Trajectory():
         with log.Timer("simulateIVP()"):
             self.simulateIVP()
         
-        with log.Timer("checkAccuracy()"):
-            self.checkAccuracy()
-        
-    ##########################################
+        self.checkAccuracy()
+        IPS()
     ##########################################
     
 
