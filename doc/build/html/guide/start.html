@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting Started &mdash; pytrajectory 0.3.4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.3.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../index.html" />
+    <link rel="up" title="PyTrajectory User’s Guide" href="index.html" />
+    <link rel="next" title="Background" href="background.html" />
+    <link rel="prev" title="About PyTrajectory" href="about.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="background.html" title="Background"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About PyTrajectory"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This section provides an overview on what PyTrajectory is and how to use it.
+For a more detailed view please have a look at the <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a>.</p>
+<div class="contents local topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#what-is-pytrajectory" id="id2">What is PyTrajectory?</a></li>
+<li><a class="reference internal" href="#installation" id="id3">Installation</a><ul>
+<li><a class="reference internal" href="#dependencies" id="id4">Dependencies</a></li>
+<li><a class="reference internal" href="#source" id="id5">Source</a></li>
+<li><a class="reference internal" href="#pypi" id="id6">PyPI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage" id="id7">Usage</a></li>
+<li><a class="reference internal" href="#visualisation" id="id8">Visualisation</a></li>
+</ul>
+</div>
+<div class="section" id="what-is-pytrajectory">
+<h2><a class="toc-backref" href="#id2">What is PyTrajectory?</a><a class="headerlink" href="#what-is-pytrajectory" title="Permalink to this headline">¶</a></h2>
+<p>PyTrajectory is a Python library for the determination of the feed forward control
+to achieve a transition between desired states of a nonlinear control system.</p>
+<p>Planning and designing of trajectories represents an important task in
+the control of technological processes. Here the problem is attributed
+on a multi-dimensional boundary value problem with free parameters.
+In general this problem can not be solved analytically. It is therefore
+resorted to the method of collocation in order to obtain a numerical
+approximation.</p>
+<p>PyTrajectory allows a flexible implementation of various tasks and enables an easy
+implementation. It suffices to supply a function <img class="math" src="../_images/math/3926dc5c4479ee33a6c32c6c5697fd3d52fe1698.png" alt="f(x,u)"/> that represents the
+vectorfield of a control system and to specify the desired boundary values.</p>
+</div>
+<div class="section" id="installation">
+<h2><a class="toc-backref" href="#id3">Installation</a><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>PyTrajectory has been developed and tested on Python 2.7</p>
+<div class="section" id="dependencies">
+<h3><a class="toc-backref" href="#id4">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
+<p>Before you install PyTrajectory make sure you have the following
+dependencies installed on your system.</p>
+<ul>
+<li><p class="first">numpy</p>
+</li>
+<li><p class="first">sympy</p>
+</li>
+<li><p class="first">scipy</p>
+</li>
+<li><dl class="first docutils">
+<dt>optional</dt>
+<dd><ul class="first last simple">
+<li>matplotlib [visualisation]</li>
+<li>ipython [debugging]</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="source">
+<h3><a class="toc-backref" href="#id5">Source</a><a class="headerlink" href="#source" title="Permalink to this headline">¶</a></h3>
+<p>To install PyTrajectory from the source files please download the latest release from
+<a class="reference external" href="https://bitbucket.org/akunze3/pytrajectory/downloads">here</a>.
+After the download is complete open the archive and change directory
+into the extracted folder. Then all you have to do is run the following command</p>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py install
+</pre></div>
+</div>
+</div>
+<div class="section" id="pypi">
+<h3><a class="toc-backref" href="#id6">PyPI</a><a class="headerlink" href="#pypi" title="Permalink to this headline">¶</a></h3>
+<p>The easiest way of installing PyTrajectory would be</p>
+<div class="highlight-python"><div class="highlight"><pre>$ pip install pytrajectory
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-python"><div class="highlight"><pre>$ easy_install pytrajectory
+</pre></div>
+</div>
+<p>provided that you have the Python modules <cite>pip</cite> or <cite>setuptools</cite> installed on your system.</p>
+</div>
+</div>
+<div class="section" id="usage">
+<h2><a class="toc-backref" href="#id7">Usage</a><a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>In order to illustrate the usage of PyTrajectory we consider the following simple example.</p>
+<p>A pendulum mass <img class="math" src="../_images/math/a877a305b5188a6f2b60dd1f2591cc601956f0d9.png" alt="m_p"/> is connected by a massless rod of length <img class="math" src="../_images/math/d99efde75c84ef402a92cd4497530d2366fb112f.png" alt="l"/> to a cart <img class="math" src="../_images/math/406f7634fe28d6c2293548b82ef8e8ba71c8c6bd.png" alt="M_w"/>
+on which a force <img class="math" src="../_images/math/183421431fcc0a42e22f825a33dcc3c51607fa6e.png" alt="F"/> acts to accelerate it.</p>
+<img alt="../_images/inv_pendulum.png" src="../_images/inv_pendulum.png" />
+<p>A possible task would be the transfer between two angular positions of the pendulum.
+In this case, the pendulum should hang at first down (<img class="math" src="../_images/math/b5622b0eab64b96220f40bf50203846e5ef87fab.png" alt="\varphi = \pi"/>) and is
+to be turned upwards (<img class="math" src="../_images/math/455f59eb1bb4256dadc224fb7637a62fee3e364e.png" alt="\varphi = 0"/>). At the end of the process, the car should be at
+the same position and both the pendulum and the cart should be at rest.
+The (partial linearised) system is represented by the following differential equations,
+where <img class="math" src="../_images/math/0ee49f05e559cd6e9155c3ff4ca086ad4efd7665.png" alt="[x_1, x_2, x_3, x_4] = [x_w, \dot{x_w}, \varphi, \dot{\varphi}]"/> and
+<img class="math" src="../_images/math/6b1914e67bf535b8905a5a338fb15ef1bb1ad7a8.png" alt="u = \ddot{x}_w"/> is our control variable:</p>
+<div class="math">
+<p><img src="../_images/math/7e82bb6f5257656e9e4475a273fe8c38f27b4ef0.png" alt="\begin{eqnarray*}
+    \dot{x_1} &amp; = &amp; x_2 \\
+    \dot{x_2} &amp; = &amp; u \\
+    \dot{x_3} &amp; = &amp; x_4 \\
+    \dot{x_4} &amp; = &amp; \frac{1}{l}(g\ sin(x_3) + u\ cos(x_3))
+\end{eqnarray*}"/></p>
+</div><p>To solve this problem we first have to define a function that returns the vectorfield of
+the system above. Therefor it is important that you use SymPy functions if necessary, which is
+the case here with <img class="math" src="../_images/math/93b45ffca250b08bf9d43c384fc1642de9497a85.png" alt="sin"/> and <img class="math" src="../_images/math/ba43aae1058695f0d40740e13b2b53745ae40e55.png" alt="cos"/>.</p>
+<p>So in Python this would be</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>  <span class="c"># system variables</span>
+<span class="gp">... </span>    <span class="n">u1</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span>             <span class="c"># input variable</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c"># length of the pendulum</span>
+<span class="gp">... </span>    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>    <span class="c"># gravitational acceleration</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c"># this is the vectorfield</span>
+<span class="gp">... </span>    <span class="n">ff</span> <span class="o">=</span> <span class="p">[</span>          <span class="n">x2</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">u1</span><span class="p">,</span>
+<span class="gp">... </span>                    <span class="n">x4</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">l</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">g</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span><span class="o">+</span><span class="n">u1</span><span class="o">*</span><span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">))]</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">ff</span>
+<span class="gp">...</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Wanted is now the course for <img class="math" src="../_images/math/f80dfa25e7e2a6b804cd72f7dd67174aa2b22e03.png" alt="u(t)"/>, which transforms the system with the following start
+and end states within <img class="math" src="../_images/math/48ac522661f248b225e21d35d8eb668d3cd75a73.png" alt="T = 2 [s]"/>.</p>
+<div class="math">
+<p><img src="../_images/math/34b4c7f114e8b867789a2edcfdfe182c3f4f817a.png" alt="\begin{equation*}
+   x(0) = \begin{bmatrix} 0 \\ 0 \\ \pi \\ 0 \end{bmatrix}
+   \rightarrow
+   x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+\end{equation*}"/></p>
+</div><p>so we have to specify the boundary values at the beginning</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xa</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>and end</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The boundary values for the input variable are</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">uab</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>because we want <img class="math" src="../_images/math/f861eb0dc0f495534a416a007f91d9fcbfc362be.png" alt="u(0) = u(T) = 0"/>.</p>
+<p>Now we import all we need from PyTrajectory</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytrajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+</pre></div>
+</div>
+<p>and pass our parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="p">,</span> <span class="n">uab</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>All we have to do now to solve our problem is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>After the iteration has finished <cite>x(t)</cite> and <cite>u(t)</cite> are returned as callable
+functions for the system and input variables, where t has to be in (a,b).</p>
+<p>In this example we get a solution that satisfies the default tolerance
+for the boundary values of <img class="math" src="../_images/math/10b37c629b673215d5fbcfbd2ab92d849045a8bf.png" alt="10^{-2}"/> after the 7th iteration step
+with 320 spline parts. But PyTrajectory enables you to improve its
+performance by altering some of its method parameters.</p>
+<p>For example if we increase the factor for raising the spline parts (default: 2)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;kx&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and don&#8217;t take advantage of the system structure (integrator chains)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;use_chains&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>we get a solution after 3 steps with 125 spline parts.</p>
+<p>There are more method parameters you can change to speed things up, i.e. the type of
+collocation points to use or the number of spline parts for the input variables.
+To do so, just type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;&lt;param&gt;&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please have a look at the <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a> for more information.</p>
+</div>
+<div class="section" id="visualisation">
+<span id="id1"></span><h2><a class="toc-backref" href="#id8">Visualisation</a><a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h2>
+<p>Beyond the simple <tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt> method (see: <a class="reference internal" href="../pytrajectory.html#reference"><em>PyTrajectory Modules Reference</em></a>)
+PyTrajectory offers basic capabilities to animate the given system.
+This is done via the <tt class="xref py py-class docutils literal"><span class="pre">Animation</span></tt> class from the <tt class="xref py py-mod docutils literal"><span class="pre">utilities</span></tt>
+module. To explain this feature we take a look at the example above.</p>
+<p>When instanciated, the <tt class="xref py py-class docutils literal"><span class="pre">Animation</span></tt> requires the calculated
+simulation results <cite>T.sim</cite> and a callable function that draws an image
+of the system according to given simulation data.</p>
+<p>First we import what we need by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytrajectory.utilities</span> <span class="kn">import</span> <span class="n">Animation</span>
+</pre></div>
+</div>
+<p>Then we define our function that takes simulation data <cite>x</cite>  of a
+specific time and an instance <cite>image</cite> of <cite>Animation.Image</cite> which is just
+a container for the image. In the considered example <cite>xt</cite> is of the form</p>
+<div class="math">
+<p><img src="../_images/math/856f63b13ff9fe0aff52c702bc739df5eeaeab3b.png" alt="\begin{equation*}
+   xt = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]
+\end{equation*}"/></p>
+</div><p>and <cite>image</cite> is just a container for the drawn image.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+    <span class="c"># to draw the image we just need the translation `x` of the</span>
+    <span class="c"># cart and the deflection angle `phi` of the pendulum.</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">xt</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    
+    <span class="c"># next we set some parameters</span>
+    <span class="n">car_width</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">car_heigth</span> <span class="o">=</span> <span class="mf">0.02</span>
+    
+    <span class="n">rod_length</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">pendulum_size</span> <span class="o">=</span> <span class="mf">0.015</span>
+    
+    <span class="c"># then we determine the current state of the system</span>
+    <span class="c"># according to the given simulation data</span>
+    <span class="n">x_car</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">y_car</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="n">x_pendulum</span> <span class="o">=</span> <span class="o">-</span><span class="n">rod_length</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">+</span> <span class="n">x_car</span>
+    <span class="n">y_pendulum</span> <span class="o">=</span> <span class="n">rod_length</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    
+    <span class="c"># now we can build the image</span>
+    
+    <span class="c"># the pendulum will be represented by a black circle with</span>
+    <span class="c"># center: (x_pendulum, y_pendulum) and radius `pendulum_size</span>
+    <span class="n">pendulum</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">(</span><span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">x_pendulum</span><span class="p">,</span> <span class="n">y_pendulum</span><span class="p">),</span> <span class="n">radius</span><span class="o">=</span><span class="n">pendulum_size</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+    
+    <span class="c"># the cart will be represented by a grey rectangle with</span>
+    <span class="c"># lower left: (x_car - 0.5 * car_width, y_car - car_heigth)</span>
+    <span class="c"># width: car_width</span>
+    <span class="c"># height: car_height</span>
+    <span class="n">car</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x_car</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">car_width</span><span class="p">,</span> <span class="n">y_car</span><span class="o">-</span><span class="n">car_heigth</span><span class="p">),</span> <span class="n">car_width</span><span class="p">,</span> <span class="n">car_heigth</span><span class="p">,</span>
+                                <span class="n">fill</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+    
+    <span class="c"># the joint will also be a black circle with</span>
+    <span class="c"># center: (x_car, 0)</span>
+    <span class="c"># radius: 0.005</span>
+    <span class="n">joint</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">((</span><span class="n">x_car</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="mf">0.005</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+    
+    <span class="c"># and the pendulum rod will just by a line connecting the cart and the pendulum</span>
+    <span class="n">rod</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([</span><span class="n">x_car</span><span class="p">,</span><span class="n">x_pendulum</span><span class="p">],</span> <span class="p">[</span><span class="n">y_car</span><span class="p">,</span><span class="n">y_pendulum</span><span class="p">],</span>
+                            <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+    
+    <span class="c"># finally we add the patches and line to the image</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pendulum</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">joint</span><span class="p">)</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rod</span><span class="p">)</span>
+    
+    <span class="c"># and return the image</span>
+    <span class="k">return</span> <span class="n">image</span>
+
+
+<span class="c"># now we can create an instance of the `Animation` class </span>
+<span class="c"># with our draw function and the simulation results</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">Animation</span><span class="p">(</span><span class="n">drawfnc</span><span class="o">=</span><span class="n">draw</span><span class="p">,</span> <span class="n">simdata</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">sim</span><span class="p">)</span>
+
+<span class="c"># as for now we have to explicitly set the limits of the figure</span>
+<span class="c"># (may involves some trial and error)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">set_limits</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="p">))</span>
+
+<span class="c"># if everything is set, we can start the animation</span>
+<span class="c"># (might take some while)</span>
+<span class="n">A</span><span class="o">.</span><span class="n">animate</span><span class="p">()</span>
+
+<span class="c"># then we can save the animation as a `mp4` video file or as an animated `gif` file</span>
+<span class="n">A</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;simple_example.mp4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/inv_pendulum_osc.gif" src="../_images/inv_pendulum_osc.gif" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting Started</a><ul>
+<li><a class="reference internal" href="#what-is-pytrajectory">What is PyTrajectory?</a></li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#source">Source</a></li>
+<li><a class="reference internal" href="#pypi">PyPI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#visualisation">Visualisation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="about.html"
+                        title="previous chapter">About PyTrajectory</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="background.html"
+                        title="next chapter">Background</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/guide/start.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="background.html" title="Background"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About PyTrajectory"
+             >previous</a> |</li>
+        <li><a href="../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+          <li><a href="index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

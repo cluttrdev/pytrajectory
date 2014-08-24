@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Translation of the inverted pendulum &mdash; pytrajectory 0.3.4 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.3.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Swing up of the inverted double pendulum" href="inv_double_pendulum_swing.html" />
+    <link rel="prev" title="Examples" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Examples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="translation-of-the-inverted-pendulum">
+<span id="ex-inv-pend"></span><h1>Translation of the inverted pendulum<a class="headerlink" href="#translation-of-the-inverted-pendulum" title="Permalink to this headline">¶</a></h1>
+<p>An example often used in literature is the inverted pendulum. Here a
+force <img class="math" src="../../_images/math/183421431fcc0a42e22f825a33dcc3c51607fa6e.png" alt="F"/> acts on a cart with mass <img class="math" src="../../_images/math/406f7634fe28d6c2293548b82ef8e8ba71c8c6bd.png" alt="M_w"/>. In addition the
+cart is connected by a massless rod with a pendulum mass <img class="math" src="../../_images/math/a877a305b5188a6f2b60dd1f2591cc601956f0d9.png" alt="m_p"/>.
+The mass of the pendulum is concentrated in <img class="math" src="../../_images/math/6534eb155fcde09dbe8489e513d1925f86997578.png" alt="P_2"/> and that of the
+cart in <img class="math" src="../../_images/math/26a00c0666e9094d8aac94f0ef300011af9b38a5.png" alt="P_1"/>. The state vector of the system can be specified
+using the carts position <img class="math" src="../../_images/math/8f4117f82b4d0bf705d6d7cf4e3b5164e42335e4.png" alt="x_w(t)"/> and the pendulum deflection
+<img class="math" src="../../_images/math/048ae70a27bf19f8d5910fcd4a8be4990e3d9573.png" alt="\varphi(t)"/> and their derivatives.</p>
+<a class="reference internal image-reference" href="../../_images/inv_pendulum.png"><img alt="../../_images/inv_pendulum.png" src="../../_images/inv_pendulum.png" style="width: 230.4px; height: 192.0px;" /></a>
+<p>With the <em>Lagrangian Formalism</em> the model has the following state
+representation where <img class="math" src="../../_images/math/2ae3245358b001429a077ec2599d726781f78262.png" alt="u_1 = F"/> and
+<img class="math" src="../../_images/math/71f6bb0fe3835795a48a76ce4e2f4950a69451d8.png" alt="x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]"/></p>
+<div class="math">
+<p><img src="../../_images/math/2b8ef368fca741f90e9437073893dd85ef755b00.png" alt="\begin{eqnarray*}
+   \dot{x}_1 &amp; = &amp; x_2 \\
+   \dot{x}_2 &amp; = &amp; \frac{m_p \sin(x_3)(-l x_4^2 + g \cos x_3)}{M_w l + m_p \sin^2(x_3)} + \frac{\cos(x_3)}{M_w l + m_p l \sin^2(x_3)} u_1 \\
+   \dot{x}_3 &amp; = &amp; x_4 \\
+   \dot{x}_4 &amp; = &amp; \frac{\sin(x_3)(-m_p l x_4^2 \cos(x_3) + g(M_w + m_p))}{M_w l + m_p \sin^2(x_3)} + \frac{\cos(x_3)}{M_w l + m_p l \sin^2(x_3)} u_1
+\end{eqnarray*}"/></p>
+</div><p>A possibly wanted trajectory is the translation of the cart along the
+x-axis (i.e. by <img class="math" src="../../_images/math/bc2e9723d9e28e9f6af0c3bc12b161960b469332.png" alt="0.5m"/>). In the beginning and end of the process
+the cart and pendulum should remain at rest and the pendulum should be
+aligned vertically upwards (<img class="math" src="../../_images/math/455f59eb1bb4256dadc224fb7637a62fee3e364e.png" alt="\varphi = 0"/>). As a further condition
+<img class="math" src="../../_images/math/6bd6b69e7846992625db6cd37ca4dcec179fdbc3.png" alt="u_1"/> should start and end steadily in the rest position
+(<img class="math" src="../../_images/math/c6f2982ced38c459f7ad4dfbc4a245a4beb559c9.png" alt="u_1(0) = u_1(T) = 0"/>).
+The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7abf068801d8dc7f21dcb2903400e60.png" alt="T = 1 [s]"/>.</p>
+<div class="section" id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># translation of the inverted pendulum</span>
+
+<span class="c"># import trajectory class and necessary dependencies</span>
+<span class="kn">from</span> <span class="nn">pytrajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c"># define the function that returns the vectorfield</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span> <span class="o">=</span> <span class="n">x</span>       <span class="c"># system state variables</span>
+    <span class="n">u1</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span>                  <span class="c"># input variable</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c"># length of the pendulum rod</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="mf">9.81</span>    <span class="c"># gravitational acceleration</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="mf">1.0</span>     <span class="c"># mass of the cart</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">0.1</span>     <span class="c"># mass of the pendulum</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">x3</span><span class="p">)</span>
+
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>                     <span class="n">x2</span><span class="p">,</span>
+                   <span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="o">*</span><span class="n">x4</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">u1</span><span class="p">,</span>
+                                        <span class="n">x4</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">x4</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">c</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="n">m</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">c</span><span class="o">/</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="n">l</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">u1</span>
+                <span class="p">])</span>
+    <span class="k">return</span> <span class="n">ff</span>
+
+<span class="c"># boundary values at the start (a = 0.0 [s])</span>
+<span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># boundary values at the end (b = 1.0 [s])</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">]</span>
+
+<span class="c"># create trajectory object</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">)</span>
+
+<span class="c"># change method parameter to increase performance</span>
+<span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;use_chains&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># run iteration</span>
+<span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../../_images/inv_pendulum.gif" src="../../_images/inv_pendulum.gif" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Translation of the inverted pendulum</a><ul>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="inv_double_pendulum_swing.html"
+                        title="next chapter">Swing up of the inverted double pendulum</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/guide/examples/inv_pendulum_trans.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Examples"
+             >previous</a> |</li>
+        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
+          <li><a href="index.html" >Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andreas Kunze.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

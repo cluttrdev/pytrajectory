@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
 
+from IPython import embed as IPS
+
+# for import of PyMbs motion equations
+from sympy import *
+import os
 
 class IntegChain():
     '''
@@ -310,7 +315,7 @@ def plotsim(sim, H, fname=None):
     plt.rcParams['font.size']=16
 
     plt.rcParams['legend.fontsize']=16
-    plt.rc('text', usetex=True)
+    #plt.rc('text', usetex=True)
 
 
     plt.rcParams['xtick.labelsize']=16
@@ -354,7 +359,7 @@ def plotsim(sim, H, fname=None):
         plt.title(r'$H_'+str(hh+1)+'(t)$')
 
     plt.tight_layout()
-
+    
     plt.show()
     
     if fname:

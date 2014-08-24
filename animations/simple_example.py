@@ -9,7 +9,7 @@ import numpy as np
 from sympy import cos, sin
 from numpy import pi
 
-# the next import are for the visualisatoin of the system
+# the next imports are necessary for the visualisatoin of the system
 import matplotlib as mpl
 from pytrajectory.utilities import Animation
 

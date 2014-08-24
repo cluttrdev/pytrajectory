@@ -52,14 +52,19 @@ class Solver:
         '''
         
         if (self.algo == 'newton'):
-            log.info( "Run Newton solver")
-            self.newton()
-        elif (self.algo == 'gauss'):
-            log.info( "Run Gauss solver")
-            self.gauss()
-        elif (self.algo == 'leven'):
-            log.info( "Run Levenberg-Marquardt method")
+            #log.info( "Run Newton solver")
+            #self.newton()
+            log.warn('Not yet implemented. Please use "leven"-algorithm!')
             self.leven()
+        elif (self.algo == 'gauss'):
+            #log.info( "Run Gauss solver")
+            #self.gauss()
+            log.warn('Not yet implemented. Please use "leven"-algorithm!')
+            self.leven()
+        elif (self.algo == 'leven'):
+            log.info("    Run Levenberg-Marquardt method")
+            self.leven()
+            
         
         if (self.sol == None):
             log.warn("Wrong solver, returning initial value.")
@@ -84,7 +89,7 @@ class Solver:
 
         mu = 0.1
 
-        # borders for convergence-control ##!! Ref zu Doku
+        # borders for convergence-control
         b0 = 0.2
         b1 = 0.8
 
@@ -98,8 +103,8 @@ class Solver:
             DFx = self.DF(x)
             
             # NEW -experimental
-            #if res >= 1:
-            #    DFx = self.DF(x)
+            if res >= 1:
+                DFx = self.DF(x)
             
             # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
@@ -127,7 +132,7 @@ class Solver:
             x = x + np.array(s).flatten()
             res_alt = res
             res = normFx
-            log.info("nIt= %d    res= %f"%(i,res))
+            log.info("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
             #if res<1.0:

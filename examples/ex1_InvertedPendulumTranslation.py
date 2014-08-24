@@ -28,20 +28,71 @@ def f(x,u):
 # boundary values at the start (a = 0.0 [s])
 xa = [  0.0,
         0.0,
-        0.0,
+        np.pi,
         0.0]
 
 # boundary values at the end (b = 1.0 [s])
-xb = [  0.5,
+xb = [  0.0,
         0.0,
         0.0,
         0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=1.0, xa=xa, xb=xb)
+T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb)
 
 # change method parameter to increase performance
 T.setParam('use_chains', False)
 
 # run iteration
 T.startIteration()
+
+
+# the following code provides an animation of the system above
+# for a more detailed explanation have a look at the 'Visualisation' section in the documentation
+do_animation = False
+
+if do_animation:
+    import matplotlib as mpl
+    from pytrajectory.utilities import Animation
+    
+    def draw(xti, image):
+        x = xti[0]
+        phi = xti[2]
+        
+        L = 0.5
+    
+        car_width = 0.05
+        car_heigth = 0.02
+        pendel_size = 0.015
+    
+        x_car = x
+        y_car = 0
+    
+        x_pendel =-L*sin(phi)+x_car
+        y_pendel = L*cos(phi)
+    
+        # rod
+        rod = mpl.lines.Line2D([x_car,x_pendel],[y_car,y_pendel],color='k',zorder=0,linewidth=2.0)
+        
+        # pendulum
+        sphere = mpl.patches.Circle((x_pendel,y_pendel),pendel_size,color='k')
+        
+        # cart
+        cart = mpl.patches.Rectangle((x_car-0.5*car_width,y_car-car_heigth),car_width,car_heigth,
+                                    fill=True,facecolor='0.75',linewidth=2.0)
+        
+        # joint
+        joint = mpl.patches.Circle((x_car,0),0.005,color='k')
+        
+        image.lines.append(rod)
+        image.patches.append(sphere)
+        image.patches.append(cart)
+        image.patches.append(joint)
+        
+        return image
+    
+    A = Animation(drawfnc=draw, simdata=T.sim)
+    A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
+    
+    A.animate()
+    A.save('ex1_InvertedPendulumTranslation.mp4')

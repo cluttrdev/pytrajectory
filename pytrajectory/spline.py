@@ -5,6 +5,8 @@ from scipy.sparse.linalg import spsolve
 
 import log
 
+# DEBUG
+from IPython import embed as IPS
 
 def fdiff(func):
     '''
@@ -104,6 +106,9 @@ class CubicSpline():
         # for the free parameters of the spline
         # --> set_coeffs()
         self.prov_flag = True
+        
+        # calculate joining points of the spline
+        self.jpts = np.linspace(self.a, self.b, self.n+1)
 
         if (steady):
             with log.Timer("makesteady()"):
@@ -133,6 +138,7 @@ class CubicSpline():
         if (i == self.n): i-= 1
         
         x -= (i+1)*self.h
+        #x -= self.jpts[i]
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if (d == 0):
@@ -171,6 +177,7 @@ class CubicSpline():
         p = self.S[i]
 
         return p.deriv(d)(x-(i+1)*self.h)
+        #return p.deriv(d)(x-self.jpts[i])
     
     def f(self, x):
         '''This is just a wrapper to evaluate the spline itself.'''
@@ -209,7 +216,7 @@ class CubicSpline():
         Please see the documentation for more details: :ref:`candidate_functions`
         '''
         
-        log.info("makesteady: "+self.tag)
+        log.info("    makesteady: "+self.tag, verb=2)
         
         # This should be untouched yet
         assert self.steady_flag == False
@@ -257,18 +264,20 @@ class CubicSpline():
         
         # the following may cause MemoryError
         # TODO: (optionally) introduce sparse matrix already here
-        M = np.zeros((N1,N2))
-        r = np.zeros(N1)
+        #M = np.zeros((N1,N2))
+        #r = np.zeros(N1)
+        M = sparse.lil_matrix((N1,N2))
+        r = sparse.lil_matrix((N1,1))
         
         # build block band matrix for smoothness in every joining point
         #   derivatives from order 0 to 2
         block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
                            [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
                            [0.0, 2.0, 0.0, 0.0,    6*h,  -2.0,  0.0, 0.0]])
-
+        
         for i in xrange(self.n-1):
             M[3*i:3*(i+1),4*i:4*(i+2)] = block
-
+        
         # add equations for boundary conditions
         if (self.bc != None):
             M[3*(self.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
@@ -286,7 +295,7 @@ class CubicSpline():
             r[3*(self.n-1)+4] = self.bcdd[0]
             r[3*(self.n-1)+5] = self.bcdd[1]
 
-        # get A and B matrix --> docu p. 13
+        # get A and B matrix --> see docu
         #
         #       M*c = r
         # A*a + B*b = r
@@ -294,8 +303,10 @@ class CubicSpline():
         #
         # we need B^(-1)*r [absolute part -> tmp1] and B^(-1)*A [coefficients of a -> tmp2]
 
-        a_mat = np.zeros((N2,N2-N1))
-        b_mat = np.zeros((N2,N1))
+        #a_mat = np.zeros((N2,N2-N1))
+        #b_mat = np.zeros((N2,N1))
+        a_mat = sparse.lil_matrix((N2,N2-N1))
+        b_mat = sparse.lil_matrix((N2,N1))
         
         for i,aa in enumerate(a):
             tmp = aa.name.split('_')[-2:]
@@ -310,13 +321,25 @@ class CubicSpline():
             b_mat[4*j+k,i] = 1
         
         M = sparse.csr_matrix(M)
+        a_mat = sparse.csr_matrix(a_mat)
+        b_mat = sparse.csr_matrix(b_mat)
+        
         A = M.dot(a_mat)
         B = M.dot(b_mat)
         
         # do the inversion
-        tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
-        tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
+        #tmp1 = np.array(np.linalg.solve(B,r.T),dtype=np.float)
+        #tmp2 = np.array(np.linalg.solve(B,-A),dtype=np.float)
+        A = sparse.csc_matrix(A)
+        B = sparse.csc_matrix(B)
+        r = sparse.csc_matrix(r)
+        tmp1 = spsolve(B,r)
+        tmp2 = spsolve(B,-A)
         
+        if sparse.issparse(tmp1):
+            tmp1 = tmp1.toarray()
+        if sparse.issparse(tmp2):
+            tmp2 = tmp2.toarray()
         
         tmp_coeffs = np.zeros_like(self.coeffs, dtype=None)
         tmp_coeffs_abs = np.zeros((self.n,4))
@@ -336,7 +359,7 @@ class CubicSpline():
             k = int(tmp[1])
 
             tmp_coeffs[(j,k)] = tmp3[i]
-
+        
         self.prov_S = tmp_coeffs
         self.prov_S_abs = tmp_coeffs_abs
 
