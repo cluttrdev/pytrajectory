@@ -159,13 +159,17 @@ and pass our parameters. ::
 
    >>> T = Trajectory(f, a, b, xa, xb, uab)
 
-All we have to do now, to solve our problem is ::
+All we have to do now to solve our problem is ::
 
-   >>> T.startIteration()
+   >>> x, u = T.startIteration()
 
-After the 7th iteration step with 320 spline parts, this would yield a solution which satisfies 
-the default tolerance for the boundary values of :math:`10^{-02}`. But PyTrajectory enables 
-you to improve its performance by altering some of its method parameters.
+After the iteration has finished `x(t)` and `u(t)` are returned as callable 
+functions for the system and input variables, where t has to be in (a,b).
+
+In this example we get a solution that satisfies the default tolerance 
+for the boundary values of :math:`10^{-2}` after the 7th iteration step 
+with 320 spline parts. But PyTrajectory enables you to improve its 
+performance by altering some of its method parameters.
 
 For example if we increase the factor for raising the spline parts (default: 2) ::
 
