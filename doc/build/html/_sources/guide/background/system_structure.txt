@@ -1,6 +1,0 @@
-.. _system_structure:
-
-Use of the system structure
----------------------------
-
-...
