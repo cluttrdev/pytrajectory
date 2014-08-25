@@ -1046,6 +1046,7 @@ class Trajectory():
         if not self.a <= t <= self.b+0.05:
             log.warn("Time point 't' has to be in (a,b)")
             arr = None
+            arr = np.array([self.u_fnc[uu](self.b) for uu in self.u_sym])
         else:
             arr = np.array([self.u_fnc[uu](t) for uu in self.u_sym])
         

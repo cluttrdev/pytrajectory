@@ -96,15 +96,16 @@ class Solver:
         roh = 0.0
 
         reltol = self.reltol
+        
+        Fx = self.F(x)
         while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
-            Fx = self.F(x)
             DFx = self.DF(x)
             
             # NEW -experimental
-            if res >= 1:
-                DFx = self.DF(x)
+            #if res >= 1:
+            #    DFx = self.DF(x)
             
             # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
@@ -128,8 +129,11 @@ class Solver:
                 if (roh>=b1): mu = 0.5*mu
                 #log.info("  roh= %f    mu= %f"%(roh,mu))
 
+            
+            Fx = Fxs
+            x = xs
+            
             roh = 0.0
-            x = x + np.array(s).flatten()
             res_alt = res
             res = normFx
             log.info("      nIt= %d    res= %f"%(i,res))
