@@ -12,7 +12,7 @@ from utilities import IntegChain, plotsim
 import log
 
 # DEBUGGING
-DEBUG = False
+DEBUG = True
 
 if DEBUG:
     from IPython import embed as IPS
@@ -77,7 +77,7 @@ class Trajectory():
         ==========  =============   =======================================================
     '''
     
-    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, **kwargs):
+    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, constraints=None, **kwargs):
         # Enable logging
         if not DEBUG:
             log.log_on(verbosity=1)
@@ -136,7 +136,20 @@ class Trajectory():
         # Create symbolic variables
         self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
         self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
-
+        
+        # Dictionaries for boundary conditions
+        self.xa = dict()
+        self.xb = dict()
+        
+        for i,xx in enumerate(self.x_sym):
+            self.xa[xx] = xa[i]
+            self.xb[xx] = xb[i]
+        
+        # HERE WE HANDLE THE STATE CONSTRAINTS
+        self.constraints = constraints
+        if self.constraints:
+            self.constrain(constraints)
+        
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
 
@@ -156,14 +169,6 @@ class Trajectory():
         # This is now the callable (numerical) vectorfield of the system
         self.ff = ff_num
 
-        # Dictionaries for boundary conditions
-        self.xa = dict()
-        self.xb = dict()
-
-        for i,xx in enumerate(self.x_sym):
-            self.xa[xx] = xa[i]
-            self.xb[xx] = xb[i]
-
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
 
@@ -174,7 +179,45 @@ class Trajectory():
         #print np.__version__
         #print sp.__version__
         #print scp.__version__
-
+    
+    
+    def constrain(self, constraints):
+        ff = self.ff_sym(self.x_sym, self.u_sym)
+        ff = sp.Matrix(ff)
+        
+        xa = self.xa
+        xb = self.xb
+        
+        x_sym = self.x_sym
+        
+        for k, v in constraints.items():
+            m = 4.0/(v[1]-v[0])
+            
+            isp = ( sp.log(x_sym[k] - v[0]) - sp.log(v[1] - x_sym[k]) ) / m
+            ff = ff.replace(x_sym[k], isp)
+            
+            psi = 4.0*sp.exp( m * x_sym[k] ) / (1.0 + sp.exp(m * x_sym[k]))**2
+            ff[k] = ff[k] / psi
+            
+            # determine boundary values
+            print k, x_sym[k]
+            xa[x_sym[k]] = ( np.log(xa[x_sym[k]] - v[0]) - np.log(v[1] - xa[x_sym[k]]) ) / m
+            xb[x_sym[k]] = ( np.log(xb[x_sym[k]] - v[0]) - np.log(v[1] - xb[x_sym[k]]) ) / m
+        
+        _ff_sym = sp.lambdify(self.x_sym+self.u_sym, ff, modules='sympy')
+        
+        def ff_sym(x,u):
+            xu = np.hstack((x,u))
+            return np.array(_ff_sym(*xu)).squeeze()
+        
+        self.xa = xa
+        self.xb = xb
+        self.ff_sym = ff_sym
+    
+    
+    def unconstrain(self):
+        IPS()
+    
 
     def startIteration(self):
         '''
@@ -234,9 +277,6 @@ class Trajectory():
         # start first iteration
         self.iterate()
         
-        #NEW TEMP
-#        self.maxerr = []
-        
         # check if desired accuracy is already reached
         self.checkAccuracy()
         
@@ -268,6 +308,9 @@ class Trajectory():
             
         # clear workspace
         self.clear()
+        
+        # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
+        self.unconstrain()
         
         return self.x, self.u
 
@@ -434,7 +477,7 @@ class Trajectory():
         As a last, the initial value problem is simulated.
         '''
         self.nIt += 1
-
+        
         # initialise splines
         with log.Timer("initSplines()"):
             self.initSplines()
@@ -1188,11 +1231,14 @@ if __name__ == '__main__':
     g = [0,0]
     eps = 0.01
     use_chains = False
+    
+    # NEW
+    constraints = {0:[-1.0, 0.2]}
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
-                    maxIt=maxIt, g=g, eps=eps, use_chains=use_chains)
+                    maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-2)
+    #T.setParam('ierr', 1e-2)
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()
