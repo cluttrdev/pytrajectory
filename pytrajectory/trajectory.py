@@ -194,9 +194,9 @@ class Trajectory():
             m = 4.0/(v[1]-v[0])
             
             isp = ( sp.log(x_sym[k] - v[0]) - sp.log(v[1] - x_sym[k]) ) / m
-            ff = ff.replace(x_sym[k], isp)
-            
             psi = 4.0*sp.exp( m * x_sym[k] ) / (1.0 + sp.exp(m * x_sym[k]))**2
+            
+            ff = ff.replace(x_sym[k], psi)
             ff[k] = ff[k] / psi
             
             # determine boundary values
@@ -215,8 +215,21 @@ class Trajectory():
         self.ff_sym = ff_sym
     
     
-    def unconstrain(self):
-        IPS()
+    def unconstrain(self, constraints):
+        _x = self.x
+        
+        def x(t):
+            arr = _x(t)
+            for i in xrange(arr.size):
+                if constraints.has_key(i):
+                    y_0, y_1 = constraints[i]
+                    m = 4.0/(y_1 - y_0)
+                    arr[i] = y_1 - (y_1 - y_0)/(1.0 + np.exp(m*arr[i]))
+            
+            return arr
+        
+        self.x = x
+        #IPS()
     
 
     def startIteration(self):
@@ -310,7 +323,7 @@ class Trajectory():
         self.clear()
         
         # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
-        self.unconstrain()
+        self.unconstrain(self.constraints)
         
         return self.x, self.u
 
@@ -1233,7 +1246,7 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    constraints = {0:[-1.0, 0.2]}
+    constraints = {0:[-0.5, 0.4]}
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
