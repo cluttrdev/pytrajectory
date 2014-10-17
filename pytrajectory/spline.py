@@ -115,7 +115,7 @@ class CubicSpline():
                 self.makesteady()
     
     
-    def prov_evalf(self, x, d):
+    def prov_evalf(self, t, d):
         '''
         This function yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -126,27 +126,27 @@ class CubicSpline():
         Parameters
         ----------
         
-        x : real
+        t : real
             The point to evaluate the spline at
         
         d : int
             The derivation order
         '''
         
-        # Get the spline part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
+        # Get the spline part where t is in
+        i = int(np.floor(t*self.n/(self.b)))
         if (i == self.n): i-= 1
         
-        x -= (i+1)*self.h
-        #x -= self.jpts[i]
+        t -= (i+1)*self.h
+        #t -= self.jpts[i]
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if (d == 0):
-            p = np.array([x*x*x,x*x,x,1.0])
+            p = np.array([t*t*t,t*t,t,1.0])
         elif (d == 1):
-            p = np.array([3.0*x*x,2.0*x,1.0,0.0])
+            p = np.array([3.0*t*t,2.0*t,1.0,0.0])
         elif (d == 2):
-            p = np.array([6.0*x,2.0,0.0,0.0])
+            p = np.array([6.0*t,2.0,0.0,0.0])
         elif (d == 3):
             p = np.array([6.0,0.0,0.0,0.0])
         
@@ -156,56 +156,59 @@ class CubicSpline():
         return np.dot(p,M0), np.dot(p,m0)
     
     
-    def evalf(self, x, d):
+    def evalf(self, t, d):
         '''
-        Returns the value of the splines :attr:`d`-th derivative at :attr:`x`.
+        Returns the value of the splines :attr:`d`-th derivative at :attr:`t`.
         
         
         Parameters
         ----------
         
-        x : float
+        t : float
             The point to evaluate the spline at
         
         d : int
             The derivation order
         '''
         
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
+        # get polynomial part where t is in
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part
+        # so we use the one before
         if (i == self.n): i-= 1
         p = self.S[i]
 
-        return p.deriv(d)(x-(i+1)*self.h)
-        #return p.deriv(d)(x-self.jpts[i])
+        return p.deriv(d)(t-(i+1)*self.h)
+        #return p.deriv(d)(t-self.jpts[i])
     
-    def f(self, x):
+    def f(self, t):
         '''This is just a wrapper to evaluate the spline itself.'''
         if self.prov_flag:
-            return self.prov_evalf(x,0)
+            return self.prov_evalf(t,0)
         else:
-            return self.evalf(x,0)
+            return self.evalf(t,0)
 
-    def df(self, x):
+    def df(self, t):
         '''This is just a wrapper to evaluate the splines 1st derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,1)
+            return self.prov_evalf(t,1)
         else:
-            return self.evalf(x,1)
+            return self.evalf(t,1)
 
-    def ddf(self, x):
+    def ddf(self, t):
         '''This is just a wrapper to evaluate the splines 2nd derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,2)
+            return self.prov_evalf(t,2)
         else:
-            return self.evalf(x,2)
+            return self.evalf(t,2)
 
-    def dddf(self, x):
+    def dddf(self, t):
         '''This is just a wrapper to evaluate the splines 3rd derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,3)
+            return self.prov_evalf(t,3)
         else:
-            return self.evalf(x,3)
+            return self.evalf(t,3)
     
     
     def makesteady(self):

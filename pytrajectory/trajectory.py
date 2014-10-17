@@ -190,19 +190,46 @@ class Trajectory():
         
         x_sym = self.x_sym
         
+        # backup original state variables and their boundary values
+        x_sym_orig = 1*x_sym
+        xa_orig = xa.copy()
+        xb_orig = xb.copy()
+        
+        ff_sym_orig = self.ff_sym
+        
         for k, v in constraints.items():
-            m = 4.0/(v[1]-v[0])
+            # check if boundary values are within constraints
+            #if not( v[0] <= xa[x_sym[k]] <= v[1] and v[0] <= xb[x_sym[k]] <= v[1] ):
+            #    print "ERROR: boundary value not within constrints"
+            assert( v[0] <= xa[x_sym[k]] <= v[1] )
+            assert( v[0] <= xb[x_sym[k]] <= v[1] )
             
-            isp = ( sp.log(x_sym[k] - v[0]) - sp.log(v[1] - x_sym[k]) ) / m
-            psi = 4.0*sp.exp( m * x_sym[k] ) / (1.0 + sp.exp(m * x_sym[k]))**2
+            # replace constrained state variable with new unconstrained one
+            x_sym[k] = sp.Symbol('y%d'%(k+1))
             
-            ff = ff.replace(x_sym[k], psi)
-            ff[k] = ff[k] / psi
+            # calculate saturation function expression and its derivative
+            yk = x_sym[k]
+            m = 4.0/(v[1] - v[0])
+            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk))
+            dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
             
-            # determine boundary values
-            print k, x_sym[k]
-            xa[x_sym[k]] = ( np.log(xa[x_sym[k]] - v[0]) - np.log(v[1] - xa[x_sym[k]]) ) / m
-            xb[x_sym[k]] = ( np.log(xb[x_sym[k]] - v[0]) - np.log(v[1] - xb[x_sym[k]]) ) / m
+            # replace constrained variables in vectorfield with saturation expression
+            ff = ff.replace(x_sym_orig[k], psi)
+            
+            # update vectorfield to represent differential equation for new
+            # unconstrained state variable
+            ff[k] = ff[k] / dpsi
+            
+            # replace constrained variable in dictionaries for boundary values
+            xk = x_sym_orig[k]
+            xa[yk] = xa.pop(xk)
+            xb[yk] = xb.pop(xk)
+            
+            # update boundary values for new unconstrained variable
+            wa = xa[yk]
+            xa[yk] = (1/m)*np.log( (wa-v[0])/(v[1]-wa) )
+            wb = xb[yk]
+            xb[yk] = (1/m)*np.log( (wb-v[0])/(v[1]-wb) )
         
         _ff_sym = sp.lambdify(self.x_sym+self.u_sym, ff, modules='sympy')
         
@@ -213,23 +240,47 @@ class Trajectory():
         self.xa = xa
         self.xb = xb
         self.ff_sym = ff_sym
-    
+        
+        self.ff_sym_orig = ff_sym_orig
+        self.x_sym_orig = x_sym_orig
+        self.xa_orig = xa_orig
+        self.xb_orig = xb_orig
+        
     
     def unconstrain(self, constraints):
-        _x = self.x
+        x_fnc = self.x_fnc
+        dx_fnc = self.dx_fnc
         
-        def x(t):
-            arr = _x(t)
-            for i in xrange(arr.size):
-                if constraints.has_key(i):
-                    y_0, y_1 = constraints[i]
-                    m = 4.0/(y_1 - y_0)
-                    arr[i] = y_1 - (y_1 - y_0)/(1.0 + np.exp(m*arr[i]))
+        for k, v in self.constraints.items():
+            xk = self.x_sym_orig[k]
+            yk = self.x_sym[k]
+            y0, y1 = v
             
-            return arr
-        
-        self.x = x
-        #IPS()
+            y_fnc = x_fnc[yk]
+            dy_fnc = dx_fnc[yk]
+            m = 4.0/(y1-y0)
+            
+            def psi_y(t):
+                y = y_fnc(t)
+                return y1 - (y1-y0)/(1.0+np.exp(m*y))
+            
+            def dpsi_dy(t):
+                y = y_fnc(t)
+                dy = dy_fnc(t)
+                return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
+            
+            
+            self.x_fnc[xk] = psi_y
+            self.x_fnc.pop(yk)
+            self.dx_fnc[xk] = dpsi_dy
+            self.dx_fnc.pop(yk)
+            
+            self.xa = self.xa_orig
+            self.xb = self.xb_orig
+            self.x_sym = self.x_sym_orig
+            
+            
+            #IPS()
     
 
     def startIteration(self):
@@ -324,6 +375,9 @@ class Trajectory():
         
         # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
         self.unconstrain(self.constraints)
+        
+        # ... and rerun simulation?
+        self.simulateIVP()
         
         return self.x, self.u
 
@@ -847,7 +901,7 @@ class Trajectory():
         
         # create our solver
         solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
-                        maxx= 20, algo=self.mparam['algo'])
+                        algo=self.mparam['algo'])
 
         # solve the equation system
         self.sol = solver.solve()
@@ -1172,20 +1226,20 @@ class Trajectory():
         save = dict()
 
         # system data
-        save['ff_sym'] = self.ff_sym
-        save['ff_num'] = self.ff
-        save['a'] = self.a
-        save['b'] = self.b
+        #save['ff_sym'] = self.ff_sym
+        #save['ff'] = self.ff
+        #save['a'] = self.a
+        #save['b'] = self.b
 
         # boundary values
-        save['xa'] = self.xa
-        save['xb'] = self.xb
-        save['uab'] = self.uab
+        #save['xa'] = self.xa
+        #save['xb'] = self.xb
+        #save['uab'] = self.uab
 
         # solution functions       
-        save['x'] = self.x
-        save['u'] = self.u
-        save['dx'] = self.dx
+        #save['x'] = self.x
+        #save['u'] = self.u
+        #save['dx'] = self.dx
 
         # simulation resutls
         save['sim'] = self.sim
@@ -1239,14 +1293,16 @@ if __name__ == '__main__':
     b = 2.0
     sx = 5
     su = 5
-    kx = 5
+    kx = 3
     maxIt  = 5
     g = [0,0]
     eps = 0.01
     use_chains = False
     
     # NEW
-    constraints = {0:[-0.5, 0.4]}
+    #constraints = {0:[-0.9, 0.2]}
+    constraints = {1:[-1.0, 2.0]}
+    #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)

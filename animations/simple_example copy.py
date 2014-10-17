@@ -39,7 +39,7 @@ xb = [0.0, 0.0, 0.0, 0.0]
 
 uab = [0.0, 0.0]
 
-c = {0:[-1.2, 0.4]}
+c = {0:[-0.8, 0.4]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
 T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=False, constraints=c)
@@ -119,7 +119,10 @@ A.set_limits(xlim=(-0.4,1.2), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation
 # (might take some while)
-A.animate()
+#A.animate()
 
 # then we can save the animation as a `mp4` video file or as an animated `gif` file
-A.save('simple_example.mp4')
+#A.save('simple_example_copy.mp4')
+
+from IPython import embed as IPS
+IPS()

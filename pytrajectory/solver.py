@@ -32,12 +32,12 @@ class Solver:
         The solver to use
     '''
     
-    def __init__(self, F, DF, x0, tol=1e-2, maxx=10, algo='leven'):
+    def __init__(self, F, DF, x0, tol=1e-2, maxx=100, algo='leven'):
         self.F = F
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = tol
+        self.reltol = 1e-6
         #self.reltol = 1e-2
         self.maxx = maxx
         self.algo = algo
@@ -128,7 +128,14 @@ class Solver:
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
                 #log.info("  roh= %f    mu= %f"%(roh,mu))
-
+                
+                # NEW:
+                if (roh < 0.0):
+                    #log.warn("Parameter roh in LM-method became negative")
+                    log.error("Parameter roh in LM-method became negative")
+                    #break
+                    #from IPython import embed as IPS
+                    #IPS()
             
             Fx = Fxs
             x = xs
