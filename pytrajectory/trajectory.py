@@ -182,6 +182,10 @@ class Trajectory():
     
     
     def constrain(self, constraints):
+        '''
+        This method is used to enable compliance with the desired box constraints
+        by employing appropriate saturation functions for the state variables.
+        '''
         ff = self.ff_sym(self.x_sym, self.u_sym)
         ff = sp.Matrix(ff)
         
@@ -269,7 +273,6 @@ class Trajectory():
                 dy = dy_fnc(t)
                 return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
             
-            
             self.x_fnc[xk] = psi_y
             self.x_fnc.pop(yk)
             self.dx_fnc[xk] = dpsi_dy
@@ -278,9 +281,29 @@ class Trajectory():
             self.xa = self.xa_orig
             self.xb = self.xb_orig
             self.x_sym = self.x_sym_orig
+        
+        ##########################
+        # Now we transform the symbolic function of the vectorfield to
+        # a numeric one for faster evaluation
+
+        # Create sympy matrix of the vectorfield
+        F = sp.Matrix(self.ff_sym_orig(self.x_sym,self.u_sym))
+
+        # Use lambdify to replace sympy functions in the vectorfield with
+        # numpy equivalents
+        _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
+
+        # Create a wrapper as the actual function because of the behaviour
+        # of lambdify()
+        def ff_num(x, u):
+            xu = np.hstack((x, u))
+            return np.array(_ff_num(*xu)).squeeze()
+
+        # This is now the callable (numerical) vectorfield of the system
+        self.ff = ff_num
+        ##########################
             
-            
-            #IPS()
+        #IPS()
     
 
     def startIteration(self):
@@ -378,6 +401,7 @@ class Trajectory():
         
         # ... and rerun simulation?
         self.simulateIVP()
+        self.checkAccuracy()
         
         return self.x, self.u
 
@@ -1066,8 +1090,6 @@ class Trajectory():
         self.sim = S.simulate()
 
 
-
-
     def checkAccuracy(self):
         '''
         Checks whether the desired accuracy for the boundary values was reached.
@@ -1217,7 +1239,11 @@ class Trajectory():
             H[i] = error[:,i]
 
         # call utilities.plotsim()
-        plotsim(self.sim, H)
+        #plotsim(self.sim, H)
+        t = self.sim[0]
+        xt = np.array([self.x(tt) for tt in t])
+        ut = self.sim[2]
+        plotsim([t,xt,ut], H)
 
 
     def save(self, fname=None):
@@ -1302,9 +1328,9 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    #constraints = {0:[-0.9, 0.2]}
+    constraints = {0:[-0.9, 0.2]}
     #constraints = {1:[-1.0, 2.0]}
-    constraints = dict()
+    #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)

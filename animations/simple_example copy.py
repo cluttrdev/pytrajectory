@@ -39,7 +39,7 @@ xb = [0.0, 0.0, 0.0, 0.0]
 
 uab = [0.0, 0.0]
 
-c = {0:[-0.8, 0.4]}
+c = {0:[-0.9, 0.2]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
 T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=False, constraints=c)
