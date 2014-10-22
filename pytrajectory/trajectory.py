@@ -70,7 +70,7 @@ class Trajectory():
         eps         1e-2            Tolerance for the solution of the initial value problem
         ierr        0.0             Tolerance for the error on the whole interval
         tol         1e-5            Tolerance for the solver of the equation system
-        algo        'leven'         The solver algorithm to use
+        method      'leven'         The solver algorithm to use
         use_chains  True            Whether or not to use integrator chains
         colltype    'equidistant'   The type of the collocation points
         use_sparse  True            Whether or not to use sparse matrices
@@ -101,7 +101,7 @@ class Trajectory():
                         'eps' : 1e-2,
                         'ierr' : 0.0,
                         'tol' : 1e-5,
-                        'algo' : 'leven',
+                        'method' : 'leven',
                         'use_chains' : True,
                         'colltype' : 'equidistant',
                         'use_sparse' : True}
@@ -901,8 +901,10 @@ class Trajectory():
         
         # create our solver
         solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
-                        algo=self.mparam['algo'])
-
+                        method=self.mparam['method'])
+        
+        #IPS()
+        
         # solve the equation system
         self.sol = solver.solve()
 
@@ -1301,13 +1303,14 @@ if __name__ == '__main__':
     
     # NEW
     #constraints = {0:[-0.9, 0.2]}
-    constraints = {1:[-1.0, 2.0]}
-    #constraints = dict()
+    #constraints = {1:[-1.0, 2.0]}
+    constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
     #T.setParam('ierr', 1e-2)
+    T.setParam('method', 'new')
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()

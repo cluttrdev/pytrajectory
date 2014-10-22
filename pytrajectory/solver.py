@@ -25,22 +25,22 @@ class Solver:
     tol : float
         The (absolute) tolerance of the solver
     
-    maxx : int
+    maxIt : int
         The maximum number of iterations of the solver
     
-    algo : str
+    method : str
         The solver to use
     '''
     
-    def __init__(self, F, DF, x0, tol=1e-2, maxx=100, algo='leven'):
+    def __init__(self, F, DF, x0, tol=1e-2, maxIt=100, method='leven'):
         self.F = F
         self.DF = DF
         self.x0 = x0
         self.tol = tol
         self.reltol = 1e-6
         #self.reltol = 1e-2
-        self.maxx = maxx
-        self.algo = algo
+        self.maxIt = maxIt
+        self.method = method
         
         self.sol = None
     
@@ -51,20 +51,21 @@ class Solver:
         collocation equation system.
         '''
         
-        if (self.algo == 'newton'):
+        if (self.method == 'newton'):
             #log.info( "Run Newton solver")
             #self.newton()
             log.warn('Not yet implemented. Please use "leven"-algorithm!')
             self.leven()
-        elif (self.algo == 'gauss'):
+        elif (self.method == 'gauss'):
             #log.info( "Run Gauss solver")
             #self.gauss()
             log.warn('Not yet implemented. Please use "leven"-algorithm!')
             self.leven()
-        elif (self.algo == 'leven'):
+        elif (self.method == 'leven'):
             log.info("    Run Levenberg-Marquardt method")
             self.leven()
-            
+        elif (self.method == 'new'):
+            self.new_levenberg_marquardt()
         
         if (self.sol == None):
             log.warn("Wrong solver, returning initial value.")
@@ -98,7 +99,7 @@ class Solver:
         reltol = self.reltol
         
         Fx = self.F(x)
-        while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > reltol)):
+        while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
             DFx = self.DF(x)
@@ -131,9 +132,7 @@ class Solver:
                 
                 # NEW:
                 if (roh < 0.0):
-                    #log.warn("Parameter roh in LM-method became negative")
-                    log.error("Parameter roh in LM-method became negative")
-                    #break
+                    log.warn("Parameter roh in LM-method became negative")
                     #from IPython import embed as IPS
                     #IPS()
             
@@ -152,12 +151,81 @@ class Solver:
         self.sol = x
     
     
+    def new_levenberg_marquardt(self):
+        '''
+        This is an alternative implementation of the Levenberg-Marquardt method
+        due to some bugs, probably, in the one used so far.
+        '''
+        
+        from IPython import embed as IPS
+        
+        eps1 = self.tol
+        eps2 = self.reltol
+        
+        nu = 2.0
+        x = self.x0
+        
+        Fx = self.F(x)
+        
+        DFx = self.DF(x)
+        DFx = scp.sparse.csr_matrix(DFx)
+        
+        A = DFx.T.dot(DFx)
+        g = DFx.T.dot(Fx)
+        
+        tau = 1e-3
+        mu = tau * A.max()
+        
+        I = scp.sparse.identity(len(x))
+        
+        found = (norm(g, np.inf) <= eps1)
+        
+        for i in xrange(self.maxIt):
+            if found:
+                break
+            
+            Q = A+mu*I
+            d = scp.sparse.linalg.spsolve(Q, -g)
+            
+            if norm(d) <= eps2*(norm(x) + eps2):
+                found = True
+            else:
+                x_new = x + d
+                Fx_new = self.F(x_new)
+                
+                roh = (norm(Fx) - norm(Fx_new)) / (0.5*(d.T.dot(mu*d-g)))
+                
+                if roh > 0.0:
+                    x = x_new
+                    
+                    DFx = self.DF(x)
+                    DFx = scp.sparse.csr_matrix(DFx)
+                    
+                    A = DFx.T.dot(DFx)
+                    g = DFx.T.dot(Fx_new)
+                    
+                    found = (norm(g, np.inf) <= eps1)
+                    
+                    mu = mu * max(1/3.0, 1.0 - (2.0*roh - 1.0)**3)
+                    nu = 2.0
+                else:
+                    mu = mu * nu
+                    nu = 2.0 * nu
+            
+            log.info("      nIt= %d    res= %f"%(i,norm(g, np.inf)))
+        
+        self.sol = x
+        
+        #IPS()
+            
+    
+    
     def gauss(self):
         i = 0
         x = self.x0
         res = 1
         res_alt = 10e10
-        while((res>self.tol) and (self.maxx>i) and (abs(res-res_alt)>self.tol)):
+        while((res>self.tol) and (self.maxIt>i) and (abs(res-res_alt)>self.tol)):
             i += 1
             r = self.F(x)
 
@@ -179,7 +247,7 @@ class Solver:
         x = self.x0
         Fx = self.F(x)
         
-        while(res>self.tol and self.maxx>i):
+        while(res>self.tol and self.maxIt>i):
             i += 1
             DFx = self.DF(x)
 

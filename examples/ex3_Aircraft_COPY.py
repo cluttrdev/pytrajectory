@@ -45,7 +45,7 @@ g = [0.5*9.81*50.0/(cos(5/360.0*2*pi)),
      0.5*9.81*50.0/(cos(5/360.0*2*pi))]
 
 # NEW: constraints
-con = {4:[-0.8, 0.8]}
+con = {4:[-0.9, 0.9]}
 
 # create trajectory object
 T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, g=g, constraints=con)
@@ -55,7 +55,7 @@ T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, g=g, constraints=con)
 T.setParam('use_chains', False)
 
 # also alter some other method parameters to increase performance
-T.setParam('sx', 100)
+#T.setParam('sx', 100)
 T.setParam('kx', 3)
 
 # run iteration
