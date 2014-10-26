@@ -45,7 +45,7 @@ g = [0.5*9.81*50.0/(cos(5/360.0*2*pi)),
      0.5*9.81*50.0/(cos(5/360.0*2*pi))]
 
 # NEW: constraints
-con = {4:[-0.9, 0.9]}
+con = {4:[-0.6, 0.6]}
 
 # create trajectory object
 T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, g=g, constraints=con)
@@ -66,7 +66,7 @@ IPS()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+do_animation = True
 
 if do_animation:
     import matplotlib as mpl
@@ -96,7 +96,7 @@ if do_animation:
         return image
     
     A = Animation(drawfnc=draw, simdata=T.sim)
-    A.set_limits(xlim=(-1,11), ylim=(-1,7))
+    A.set_limits(xlim=(-1,11), ylim=(-1,21))
     
     A.animate()
     A.save('ex3_Aircraft.mp4')

@@ -86,10 +86,10 @@ class Solver:
         res = 1
         res_alt = 1e10
         
-        eye = np.eye(len(self.x0))
+        eye = scp.sparse.identity(len(self.x0))
 
         mu = 0.1
-
+        
         # borders for convergence-control
         b0 = 0.2
         b1 = 0.8
@@ -99,6 +99,7 @@ class Solver:
         reltol = self.reltol
         
         Fx = self.F(x)
+        
         while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
@@ -115,7 +116,8 @@ class Solver:
                 A = DFx.T.dot(DFx) + mu**2*eye
                 b = DFx.T.dot(Fx)
                 
-                s = -solve(A, b)
+                #s = -solve(A, b)
+                s = -scp.sparse.linalg.spsolve(A,b)
 
                 xs = x + np.array(s).flatten()
                 

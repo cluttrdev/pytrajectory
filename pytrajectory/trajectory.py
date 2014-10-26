@@ -150,12 +150,22 @@ class Trajectory():
         self.constraints = constraints
         if self.constraints:
             self.constrain(constraints)
+            
+            # Create a numeric vectorfield function of the original vectorfield
+            F_orig = sp.Matrix(self.ff_sym_orig(self.x_sym_orig,self.u_sym))
+            _ff_num_orig = sp.lambdify(self.x_sym_orig+self.u_sym, F_orig, modules='numpy')
+            
+            def ff_num_orig(x, u):
+                xu = np.hstack((x, u))
+                return np.array(_ff_num_orig(*xu)).squeeze()
+            
+            self.ff_orig = ff_num_orig
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
 
         # Create sympy matrix of the vectorfield
-        F = sp.Matrix(ff(self.x_sym,self.u_sym))
+        F = sp.Matrix(self.ff_sym(self.x_sym,self.u_sym))
 
         # Use lambdify to replace sympy functions in the vectorfield with
         # numpy equivalents
@@ -166,10 +176,10 @@ class Trajectory():
         def ff_num(x, u):
             xu = np.hstack((x, u))
             return np.array(_ff_num(*xu)).squeeze()
-
+        
         # This is now the callable (numerical) vectorfield of the system
         self.ff = ff_num
-
+        
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
 
@@ -392,10 +402,6 @@ class Trajectory():
         if self.constraints:
             self.unconstrain(self.constraints)
         
-        # ... and rerun simulation?
-        self.simulateIVP()
-        self.checkAccuracy()
-        
         return self.x, self.u
 
 
@@ -581,7 +587,7 @@ class Trajectory():
         # write back the coefficients
         with log.Timer("setCoeff()"):
             self.setCoeff()
-
+        
         # solve the initial value problem
         with log.Timer("simulateIVP()"):
             self.simulateIVP()
@@ -1069,8 +1075,10 @@ class Trajectory():
         
         # get list as start value
         start = []
-        for xx in self.x_sym:
-            start.append(self.xa[xx])
+        #for xx in self.x_sym:
+            #start.append(self.xa[xx])
+        for xx in self.x_sym_orig:
+            start.append(self.xa_orig[xx])
 
         log.info("    start: %s"%str(start), verb=2)
 
@@ -1078,7 +1086,8 @@ class Trajectory():
         T = self.b - self.a
 
         # create simulation object
-        S = Simulation(self.ff, T, start, self.u)
+        #S = Simulation(self.ff, T, start, self.u)
+        S = Simulation(self.ff_orig, T, start, self.u)
 
         # start forward simulation
         self.sim = S.simulate()
@@ -1101,9 +1110,12 @@ class Trajectory():
         log.info("Ending up with:   Should Be:  Difference:", verb=3)
 
         err = np.empty(self.n)
-        for i, xx in enumerate(self.x_sym):
-            err[i] = abs(self.xb[xx] - xt[-1][i])
-            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
+        #for i, xx in enumerate(self.x_sym):
+        #    err[i] = abs(self.xb[xx] - xt[-1][i])
+        #    log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
+        for i, xx in enumerate(self.x_sym_orig):
+            err[i] = abs(self.xb_orig[xx] - xt[-1][i])
+            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb_orig[xx], err[i]), verb=3)
         
         log.info(40*"-", verb=3)
         
@@ -1292,21 +1304,24 @@ class Trajectory():
 
 
 if __name__ == '__main__':
-    from sympy import cos, sin
+    from sympy import cos, sin, exp
     from numpy import pi
 
     # partially linearised inverted pendulum
 
-    #def f(x,u):
-    #    x1,x2,x3,x4 = x
-    #    u1, = u
-    #    l = 0.5
-    #    g = 9.81
-    #    ff = np.array([     x2,
-    #                        u1,
-    #                        x4,
-    #                    (1/l)*(g*sin(x3)+u1*cos(x3))])
-    #    return ff
+    #~ def f(x,u):
+        #~ x1,x2,x3,x4 = x
+        #~ u1, = u
+        #~ l = 0.5
+        #~ g = 9.81
+        #~ ff = np.array([     x2,
+                            #~ u1,
+                            #~ x4,
+                        #~ (1/l)*(g*sin(x3)+u1*cos(x3))])
+        #~ return ff
+    #~ 
+    #~ xa = [0.0, 0.0, pi, 0.0]
+    #~ xb = [0.0, 0.0, 0.0, 0.0]
     
     def f(x,u):
         x1, x2 = x
@@ -1315,9 +1330,6 @@ if __name__ == '__main__':
         ff = np.array([ x2,
                         u1])
         return ff
-    
-    #xa = [0.0, 0.0, pi, 0.0]
-    #xb = [0.0, 0.0, 0.0, 0.0]
     
     xa = [0.0, 0.0]
     xb = [1.0, 0.0]
@@ -1333,15 +1345,15 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    #constraints = {0:[-0.9, 0.2]}
-    constraints = {1:[-0.5, 1.2]}
+    #constraints = {0:[-0.9, 0.4]}
+    constraints = {1:[-0.1, 0.65]}
     #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    #T.setParam('ierr', 1e-2)
-    T.setParam('method', 'new')
+    T.setParam('ierr', 1e-2)
+    #T.setParam('method', 'new')
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()
