@@ -42,7 +42,7 @@ uab = [0.0, 0.0]
 c = {0:[-0.9, 0.2]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=False, constraints=c)
+T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=True, constraints=c)
 
 # time to run the iteration
 T.startIteration()
@@ -115,14 +115,14 @@ A = Animation(drawfnc=draw, simdata=T.sim)
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
 #A.set_limits(xlim=(-1.2,0.3), ylim=(-0.6,0.6))
-A.set_limits(xlim=(-0.4,1.2), ylim=(-0.6,0.6))
+A.set_limits(xlim=(-1.0,1.0), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation
 # (might take some while)
-#A.animate()
+A.animate()
 
 # then we can save the animation as a `mp4` video file or as an animated `gif` file
-#A.save('simple_example_copy.mp4')
+A.save('simple_example_copy.mp4')
 
 from IPython import embed as IPS
 IPS()

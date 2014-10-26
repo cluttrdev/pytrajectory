@@ -104,7 +104,8 @@ class Trajectory():
                         'method' : 'leven',
                         'use_chains' : True,
                         'colltype' : 'equidistant',
-                        'use_sparse' : True}
+                        'use_sparse' : True,
+                        'ncoll' : 10}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -283,23 +284,14 @@ class Trajectory():
             self.x_sym = self.x_sym_orig
         
         ##########################
-        # Now we transform the symbolic function of the vectorfield to
-        # a numeric one for faster evaluation
-
-        # Create sympy matrix of the vectorfield
+        # recreate vectorfield
         F = sp.Matrix(self.ff_sym_orig(self.x_sym,self.u_sym))
-
-        # Use lambdify to replace sympy functions in the vectorfield with
-        # numpy equivalents
         _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
-
-        # Create a wrapper as the actual function because of the behaviour
-        # of lambdify()
+        
         def ff_num(x, u):
             xu = np.hstack((x, u))
             return np.array(_ff_num(*xu)).squeeze()
-
-        # This is now the callable (numerical) vectorfield of the system
+        
         self.ff = ff_num
         ##########################
             
@@ -397,7 +389,8 @@ class Trajectory():
         self.clear()
         
         # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
-        self.unconstrain(self.constraints)
+        if self.constraints:
+            self.unconstrain(self.constraints)
         
         # ... and rerun simulation?
         self.simulateIVP()
@@ -781,6 +774,7 @@ class Trajectory():
         if self.mparam['colltype'] == 'equidistant':
             # get equidistant collocation points
             cpts = np.linspace(a,b,(self.mparam['sx']*delta+1),endpoint=True)
+            #cpts = np.linspace(a,b,(self.mparam['sx']*self.mparam['ncoll']+1),endpoint=True)
         elif self.mparam['colltype'] == 'chebychev':
             # determine rank of chebychev polynomial
             # of which to calculate zero points
@@ -832,12 +826,12 @@ class Trajectory():
 
         # as promised: here comes the explanation
         #
-        # now, the dictionary 'indic' looks something like follows
+        # now, the dictionary 'indic' looks something like
         #
         # indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}
         #
         # which means, that in the vector of all independent parameters of all splines
-        # the 0th up to the 5st item [remember: Python starts indexing at 0 and leaves out the last]
+        # the 0th up to the 5th item [remember: Python starts indexing at 0 and leaves out the last]
         # belong to the spline created for u1, the items with indices from 6 to 11 belong to the
         # spline created for x1 and so on...
 
@@ -876,7 +870,7 @@ class Trajectory():
         self.Mdx_abs = np.array(Mdx_abs)
         self.Mu = np.array(Mu)
         self.Mu_abs = np.array(Mu_abs)
-
+        
         # here we create a callable function for the jacobian matrix of the vectorfield
         # w.r.t. to the system and input variables
         f = self.ff_sym(x_sym,u_sym)
@@ -1303,20 +1297,31 @@ if __name__ == '__main__':
 
     # partially linearised inverted pendulum
 
+    #def f(x,u):
+    #    x1,x2,x3,x4 = x
+    #    u1, = u
+    #    l = 0.5
+    #    g = 9.81
+    #    ff = np.array([     x2,
+    #                        u1,
+    #                        x4,
+    #                    (1/l)*(g*sin(x3)+u1*cos(x3))])
+    #    return ff
+    
     def f(x,u):
-        x1,x2,x3,x4 = x
+        x1, x2 = x
         u1, = u
-        l = 0.5
-        g = 9.81
-        ff = np.array([     x2,
-                            u1,
-                            x4,
-                        (1/l)*(g*sin(x3)+u1*cos(x3))])
+        
+        ff = np.array([ x2,
+                        u1])
         return ff
-
-    xa = [0.0, 0.0, pi, 0.0]
-    xb = [0.0, 0.0, 0.0, 0.0]
-
+    
+    #xa = [0.0, 0.0, pi, 0.0]
+    #xb = [0.0, 0.0, 0.0, 0.0]
+    
+    xa = [0.0, 0.0]
+    xb = [1.0, 0.0]
+    
     a = 0.0
     b = 2.0
     sx = 5
@@ -1328,8 +1333,8 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    constraints = {0:[-0.9, 0.2]}
-    #constraints = {1:[-1.0, 2.0]}
+    #constraints = {0:[-0.9, 0.2]}
+    constraints = {1:[-0.5, 1.2]}
     #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,

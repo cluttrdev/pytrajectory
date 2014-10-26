@@ -173,7 +173,7 @@ class Solver:
         A = DFx.T.dot(DFx)
         g = DFx.T.dot(Fx)
         
-        tau = 1e-3
+        tau = 1e-6
         mu = tau * A.max()
         
         I = scp.sparse.identity(len(x))
