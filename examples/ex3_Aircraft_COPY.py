@@ -96,7 +96,9 @@ if do_animation:
         return image
     
     A = Animation(drawfnc=draw, simdata=T.sim)
-    A.set_limits(xlim=(-1,11), ylim=(-1,21))
+    ymin = np.min(T.sim[1][:,2])
+    ymax = np.max(T.sim[1][:,2])
+    A.set_limits(xlim=(-1,11), ylim=(ymin - 1.0, ymax + 1.0))
     
     A.animate()
-    A.save('ex3_Aircraft.mp4')
+    A.save('ex3_Aircraft_copy.mp4')

@@ -149,17 +149,7 @@ class Trajectory():
         # HERE WE HANDLE THE STATE CONSTRAINTS
         self.constraints = constraints
         if self.constraints:
-            self.constrain(constraints)
-            
-            # Create a numeric vectorfield function of the original vectorfield
-            F_orig = sp.Matrix(self.ff_sym_orig(self.x_sym_orig,self.u_sym))
-            _ff_num_orig = sp.lambdify(self.x_sym_orig+self.u_sym, F_orig, modules='numpy')
-            
-            def ff_num_orig(x, u):
-                xu = np.hstack((x, u))
-                return np.array(_ff_num_orig(*xu)).squeeze()
-            
-            self.ff_orig = ff_num_orig
+            self.constrain()
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
@@ -190,34 +180,50 @@ class Trajectory():
         #print np.__version__
         #print sp.__version__
         #print scp.__version__
+        #IPS()
     
-    
-    def constrain(self, constraints):
+    def constrain(self):
         '''
         This method is used to enable compliance with the desired box constraints
         by employing appropriate saturation functions for the state variables.
         '''
+        
+        # make some stuff local
         ff = self.ff_sym(self.x_sym, self.u_sym)
         ff = sp.Matrix(ff)
-        
         xa = self.xa
         xb = self.xb
-        
         x_sym = self.x_sym
         
+        # First, we backup all things that will be influenced in some way
+        #
         # backup original state variables and their boundary values
         x_sym_orig = 1*x_sym
         xa_orig = xa.copy()
         xb_orig = xb.copy()
         
+        # backup symbolic vectorfield function
         ff_sym_orig = self.ff_sym
         
-        for k, v in constraints.items():
+        # create a numeric vectorfield function of the original vectorfield
+        # and back it up (will be used in simulation step of the main iteration)
+        F_orig = sp.Matrix(ff_sym_orig(x_sym_orig,self.u_sym))
+        _ff_num_orig = sp.lambdify(x_sym_orig+self.u_sym, F_orig, modules='numpy')
+        
+        def ff_num_orig(x, u):
+            xu = np.hstack((x, u))
+            return np.array(_ff_num_orig(*xu)).squeeze()
+        
+        ff_orig = ff_num_orig
+        
+        # Now we can handle the constraints by projecting the constrained state variables
+        # on new unconstrined variables using saturation functions
+        for k, v in self.constraints.items():
             # check if boundary values are within constraints
             #if not( v[0] <= xa[x_sym[k]] <= v[1] and v[0] <= xb[x_sym[k]] <= v[1] ):
-            #    print "ERROR: boundary value not within constrints"
-            assert( v[0] <= xa[x_sym[k]] <= v[1] )
-            assert( v[0] <= xb[x_sym[k]] <= v[1] )
+            #    print "ERROR: boundary value not within constraints"
+            assert( v[0] < xa[x_sym[k]] < v[1] )
+            assert( v[0] < xb[x_sym[k]] < v[1] )
             
             # replace constrained state variable with new unconstrained one
             x_sym[k] = sp.Symbol('y%d'%(k+1))
@@ -226,7 +232,8 @@ class Trajectory():
             yk = x_sym[k]
             m = 4.0/(v[1] - v[0])
             psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk))
-            dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
+            #dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
+            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
             
             # replace constrained variables in vectorfield with saturation expression
             ff = ff.replace(x_sym_orig[k], psi)
@@ -242,27 +249,32 @@ class Trajectory():
             
             # update boundary values for new unconstrained variable
             wa = xa[yk]
-            xa[yk] = (1/m)*np.log( (wa-v[0])/(v[1]-wa) )
+            xa[yk] = (1.0/m)*np.log( (wa-v[0])/(v[1]-wa) )
             wb = xb[yk]
-            xb[yk] = (1/m)*np.log( (wb-v[0])/(v[1]-wb) )
+            xb[yk] = (1.0/m)*np.log( (wb-v[0])/(v[1]-wb) )
         
+        # create a callable function for the new symbolic vectorfield
         _ff_sym = sp.lambdify(self.x_sym+self.u_sym, ff, modules='sympy')
         
         def ff_sym(x,u):
             xu = np.hstack((x,u))
             return np.array(_ff_sym(*xu)).squeeze()
         
+        # set altered boundary values and vectorfield function
         self.xa = xa
         self.xb = xb
         self.ff_sym = ff_sym
         
-        self.ff_sym_orig = ff_sym_orig
-        self.x_sym_orig = x_sym_orig
+        # and backup the original ones, as well as some other stuff
         self.xa_orig = xa_orig
         self.xb_orig = xb_orig
+        self.ff_sym_orig = ff_sym_orig
         
+        self.x_sym_orig = x_sym_orig
+        self.ff_orig = ff_num_orig
     
-    def unconstrain(self, constraints):
+    
+    def unconstrain(self):
         x_fnc = self.x_fnc
         dx_fnc = self.dx_fnc
         
@@ -288,24 +300,12 @@ class Trajectory():
             self.x_fnc.pop(yk)
             self.dx_fnc[xk] = dpsi_dy
             self.dx_fnc.pop(yk)
-            
-            self.xa = self.xa_orig
-            self.xb = self.xb_orig
-            self.x_sym = self.x_sym_orig
         
-        ##########################
-        # recreate vectorfield
-        F = sp.Matrix(self.ff_sym_orig(self.x_sym,self.u_sym))
-        _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
-        
-        def ff_num(x, u):
-            xu = np.hstack((x, u))
-            return np.array(_ff_num(*xu)).squeeze()
-        
-        self.ff = ff_num
-        ##########################
-            
-        #IPS()
+        # set back to original boundary values, variables and vectorfield function
+        self.xa = self.xa_orig
+        self.xb = self.xb_orig
+        self.x_sym = self.x_sym_orig
+        self.ff = self.ff_orig
     
 
     def startIteration(self):
@@ -400,7 +400,7 @@ class Trajectory():
         
         # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
         if self.constraints:
-            self.unconstrain(self.constraints)
+            self.unconstrain()
         
         return self.x, self.u
 
@@ -1073,22 +1073,27 @@ class Trajectory():
         #log.info( 40*"#", verb=3)
         log.info("  Solving Initial Value Problem", verb=2)
         
-        # get list as start value
-        start = []
-        #for xx in self.x_sym:
-            #start.append(self.xa[xx])
-        for xx in self.x_sym_orig:
-            start.append(self.xa_orig[xx])
-
-        log.info("    start: %s"%str(start), verb=2)
-
         # calulate simulation time
         T = self.b - self.a
-
-        # create simulation object
-        #S = Simulation(self.ff, T, start, self.u)
-        S = Simulation(self.ff_orig, T, start, self.u)
-
+        
+        # get list of start values
+        start = []
+        
+        if self.constraints:
+            for xx in self.x_sym_orig:
+                start.append(self.xa_orig[xx])
+            
+            # create simulation object
+            S = Simulation(self.ff_orig, T, start, self.u)
+        else:
+            for xx in self.x_sym:
+                start.append(self.xa[xx])
+            
+            # create simulation object
+            S = Simulation(self.ff, T, start, self.u)
+        
+        log.info("    start: %s"%str(start), verb=2)
+        
         # start forward simulation
         self.sim = S.simulate()
 
@@ -1110,12 +1115,14 @@ class Trajectory():
         log.info("Ending up with:   Should Be:  Difference:", verb=3)
 
         err = np.empty(self.n)
-        #for i, xx in enumerate(self.x_sym):
-        #    err[i] = abs(self.xb[xx] - xt[-1][i])
-        #    log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
-        for i, xx in enumerate(self.x_sym_orig):
-            err[i] = abs(self.xb_orig[xx] - xt[-1][i])
-            log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb_orig[xx], err[i]), verb=3)
+        if self.constraints:
+            for i, xx in enumerate(self.x_sym_orig):
+                err[i] = abs(self.xb_orig[xx] - xt[-1][i])
+                log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb_orig[xx], err[i]), verb=3)
+        else:
+            for i, xx in enumerate(self.x_sym):
+                err[i] = abs(self.xb[xx] - xt[-1][i])
+                log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.xb[xx], err[i]), verb=3)
         
         log.info(40*"-", verb=3)
         
@@ -1127,7 +1134,7 @@ class Trajectory():
             for t in self.sim[0]:
                 xe = self.x(t)
                 ue = self.u(t)
-            
+                
                 ffe = self.ff(xe, ue)
                 dxe = self.dx(t)
                 
@@ -1245,11 +1252,11 @@ class Trajectory():
             H[i] = error[:,i]
 
         # call utilities.plotsim()
-        #plotsim(self.sim, H)
-        t = self.sim[0]
-        xt = np.array([self.x(tt) for tt in t])
-        ut = self.sim[2]
-        plotsim([t,xt,ut], H)
+        plotsim(self.sim, H)
+        #t = self.sim[0]
+        #xt = np.array([self.x(tt) for tt in t])
+        #ut = self.sim[2]
+        #plotsim([t,xt,ut], H)
 
 
     def save(self, fname=None):
@@ -1345,7 +1352,8 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    #constraints = {0:[-0.9, 0.4]}
+    #constraints = { 0:[-0.8, 0.3],
+    #                1:[-2.0,2.0]}
     constraints = {1:[-0.1, 0.65]}
     #constraints = dict()
 
@@ -1360,3 +1368,54 @@ if __name__ == '__main__':
     
     if DEBUG:
         IPS()
+    
+    
+    do_animation = False
+    
+    if do_animation:
+        import matplotlib as mpl
+        from pytrajectory.utilities import Animation
+        
+        def draw(xt, image):
+            x = xt[0]
+            phi = xt[2]
+            
+            car_width = 0.05
+            car_heigth = 0.02
+            
+            rod_length = 0.5
+            pendulum_size = 0.015
+    
+            x_car = x
+            y_car = 0
+            
+            x_pendulum = -rod_length * sin(phi) + x_car
+            y_pendulum = rod_length * cos(phi)
+    
+            pendulum = mpl.patches.Circle(xy=(x_pendulum, y_pendulum), radius=pendulum_size, color='black')
+    
+            car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
+                                fill=True, facecolor='grey', linewidth=2.0)
+    
+            joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
+            
+            rod = mpl.lines.Line2D([x_car,x_pendulum], [y_car,y_pendulum],
+                                    color='black', zorder=1, linewidth=2.0)
+    
+            image.patches.append(pendulum)
+            image.patches.append(car)
+            image.patches.append(joint)
+            image.lines.append(rod)
+            
+            return image
+
+        #A = Animation(drawfnc=draw, simdata=T.sim)
+        A = Animation(drawfnc=draw, simdata=T.sim,
+                        plotsys=[(0,'x'), (2,'phi')],
+                        plotinputs=[(0,'u1')])
+        xmin = np.min(T.sim[1][:,0])
+        xmax = np.max(T.sim[1][:,0])
+        A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
+        A.animate()
+        A.save('std_ex.mp4')
+    
