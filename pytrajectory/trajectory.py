@@ -1299,7 +1299,7 @@ class Trajectory():
         This method is intended to delete some attributes of the object that
         are no longer neccessary after the iteration has finished.
 
-        TODO: implement this ;-P
+        TODO: extend
         '''
 
         del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
@@ -1316,19 +1316,19 @@ if __name__ == '__main__':
 
     # partially linearised inverted pendulum
 
-    #~ def f(x,u):
-        #~ x1,x2,x3,x4 = x
-        #~ u1, = u
-        #~ l = 0.5
-        #~ g = 9.81
-        #~ ff = np.array([     x2,
-                            #~ u1,
-                            #~ x4,
-                        #~ (1/l)*(g*sin(x3)+u1*cos(x3))])
-        #~ return ff
-    #~ 
-    #~ xa = [0.0, 0.0, pi, 0.0]
-    #~ xb = [0.0, 0.0, 0.0, 0.0]
+    def f2(x,u):
+        x1,x2,x3,x4 = x
+        u1, = u
+        l = 0.5
+        g = 9.81
+        ff = np.array([     x2,
+                            u1,
+                            x4,
+                        (1/l)*(g*sin(x3)+u1*cos(x3))])
+        return ff
+    
+    #xa = [0.0, 0.0, pi, 0.0]
+    #xb = [0.0, 0.0, 0.0, 0.0]
     
     def f(x,u):
         x1, x2 = x
@@ -1352,7 +1352,7 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    #constraints = { 0:[-0.8, 0.3],
+    # = { 0:[-0.8, 0.3],
     #                1:[-2.0,2.0]}
     constraints = {1:[-0.1, 0.65]}
     #constraints = dict()
@@ -1417,5 +1417,5 @@ if __name__ == '__main__':
         xmax = np.max(T.sim[1][:,0])
         A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
         A.animate()
-        A.save('std_ex.mp4')
+        A.save('std_ex.mpeg')
     

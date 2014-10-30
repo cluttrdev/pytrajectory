@@ -2,6 +2,7 @@ import numpy as np
 from sympy.core.symbol import Symbol
 
 import matplotlib as mpl
+mpl.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
@@ -108,7 +109,7 @@ class Animation():
         self.draw = drawfnc
         
         # enable LaTeX text rendering --> slow
-        plt.rc('text', usetex=True)
+        #plt.rc('text', usetex=True)
     
     
     class Image():
@@ -277,7 +278,8 @@ class Animation():
         if fname.endswith('gif'):
             self.anim.save(fname, writer='imagemagick', fps=fps)
         else:
-            self.anim.save(fname, fps=fps, dpi=dpi)
+            FFWriter = animation.FFMpegFileWriter()
+            self.anim.save(fname, fps=fps, dpi=dpi, writer='mencoder')
 
 
 def plotsim(sim, H, fname=None):
