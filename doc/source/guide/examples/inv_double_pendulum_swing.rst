@@ -44,7 +44,7 @@ same position again and the pendulums should be at rest with
 Source Code
 +++++++++++
 
-.. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py
+.. literalinclude:: /../../examples/ex2_InvertedDoublePendulumSwingUp.py
    :lines: 1-46
 
 .. only:: html

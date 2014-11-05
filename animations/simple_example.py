@@ -50,7 +50,7 @@ T.startIteration()
 # now that we (hopefully) have found a solution,
 # we can visualise our systems dynamic
 
-# therefor we define a fnuction that draws a image of the system
+# therefore we define a function that draws a image of the system
 # according to the given simulation data
 
 def draw(xt, image):

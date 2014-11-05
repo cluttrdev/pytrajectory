@@ -66,6 +66,7 @@ or ::
 
 provided that you have the Python modules `pip` or `setuptools` installed on your system.
 
+.. _usage:
 
 Usage
 =====

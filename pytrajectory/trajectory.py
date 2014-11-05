@@ -52,6 +52,9 @@ class Trajectory():
     g : list
         Boundary values of the input variables
     
+    constraints : dict
+        Box-constraints of the state variables
+    
     
     Attributes
     ----------
@@ -104,8 +107,7 @@ class Trajectory():
                         'method' : 'leven',
                         'use_chains' : True,
                         'colltype' : 'equidistant',
-                        'use_sparse' : True,
-                        'ncoll' : 10}
+                        'use_sparse' : True}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -275,8 +277,8 @@ class Trajectory():
     
     
     def unconstrain(self):
-        x_fnc = self.x_fnc
-        dx_fnc = self.dx_fnc
+        x_fnc = self.x_fnc.copy()
+        dx_fnc = self.dx_fnc.copy()
         
         for k, v in self.constraints.items():
             xk = self.x_sym_orig[k]
@@ -285,16 +287,22 @@ class Trajectory():
             
             y_fnc = x_fnc[yk]
             dy_fnc = dx_fnc[yk]
-            m = 4.0/(y1-y0)
             
-            def psi_y(t):
-                y = y_fnc(t)
-                return y1 - (y1-y0)/(1.0+np.exp(m*y))
+            def create_saturation_functions(y_fnc, dy_fnc, y0, y1):
+                m = 4.0/(y1-y0)
+                
+                def psi_y(t):
+                    y = y_fnc(t)
+                    return y1 - (y1-y0)/(1.0+np.exp(m*y))
+                
+                def dpsi_dy(t):
+                    y = y_fnc(t)
+                    dy = dy_fnc(t)
+                    return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
+                
+                return psi_y, dpsi_dy
             
-            def dpsi_dy(t):
-                y = y_fnc(t)
-                dy = dy_fnc(t)
-                return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
+            psi_y, dpsi_dy = create_saturation_functions(y_fnc, dy_fnc, y0, y1)
             
             self.x_fnc[xk] = psi_y
             self.x_fnc.pop(yk)
@@ -636,7 +644,8 @@ class Trajectory():
                     # and this will be the points to evaluate the old spline in
                     #   but we don't want to use the borders because they got
                     #   the boundary values already
-                    gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+                    gpts = np.linspace(self.a,self.b,(nn),endpoint = True)
 
                     # evaluate the old and new spline at all points in gpts
                     #   they should be equal in these points
@@ -662,6 +671,29 @@ class Trajectory():
 
         # the new guess
         self.guess = guess
+        
+        #################################
+        if DEBUG and self.nIt > 4 and 0:
+            tt = np.linspace(self.a, self.b, 1000)
+            xt_old = np.zeros((1000,len(self.x_sym)))
+            for i,x in enumerate(self.x_sym):
+                fx = old_splines[x]
+                xt = np.array([fx.f(t) for t in tt])
+                
+                xt_old[:,i] = xt
+            
+            sol_bak = self.sol
+            splines_bak = self.splines.copy()
+            
+            self.sol = self.guess
+            self.setCoeff()
+            xt_new = np.array([self.x(t) for t in tt])
+            
+            IPS()
+            
+            self.sol = sol_bak
+            self.splines = splines_bak
+        #################################
 
 
     def initSplines(self):
@@ -780,7 +812,6 @@ class Trajectory():
         if self.mparam['colltype'] == 'equidistant':
             # get equidistant collocation points
             cpts = np.linspace(a,b,(self.mparam['sx']*delta+1),endpoint=True)
-            #cpts = np.linspace(a,b,(self.mparam['sx']*self.mparam['ncoll']+1),endpoint=True)
         elif self.mparam['colltype'] == 'chebychev':
             # determine rank of chebychev polynomial
             # of which to calculate zero points
@@ -1252,11 +1283,11 @@ class Trajectory():
             H[i] = error[:,i]
 
         # call utilities.plotsim()
-        plotsim(self.sim, H)
-        #t = self.sim[0]
-        #xt = np.array([self.x(tt) for tt in t])
-        #ut = self.sim[2]
-        #plotsim([t,xt,ut], H)
+        #plotsim(self.sim, H)
+        t = self.sim[0]
+        xt = np.array([self.x(tt) for tt in t])
+        ut = self.sim[2]
+        plotsim([t,xt,ut], H)
 
 
     def save(self, fname=None):
@@ -1316,7 +1347,7 @@ if __name__ == '__main__':
 
     # partially linearised inverted pendulum
 
-    def f2(x,u):
+    def f(x,u):
         x1,x2,x3,x4 = x
         u1, = u
         l = 0.5
@@ -1327,22 +1358,22 @@ if __name__ == '__main__':
                         (1/l)*(g*sin(x3)+u1*cos(x3))])
         return ff
     
-    #xa = [0.0, 0.0, pi, 0.0]
-    #xb = [0.0, 0.0, 0.0, 0.0]
+    xa = [0.0, 0.0, pi, 0.0]
+    xb = [0.0, 0.0, 0.0, 0.0]
     
-    def f(x,u):
-        x1, x2 = x
-        u1, = u
-        
-        ff = np.array([ x2,
-                        u1])
-        return ff
-    
-    xa = [0.0, 0.0]
-    xb = [1.0, 0.0]
+    #~ def f(x,u):
+        #~ x1, x2 = x
+        #~ u1, = u
+        #~ 
+        #~ ff = np.array([ x2,
+                        #~ u1])
+        #~ return ff
+    #~ 
+    #~ xa = [0.0, 0.0]
+    #~ xb = [1.0, 0.0]
     
     a = 0.0
-    b = 2.0
+    b = 3.0
     sx = 5
     su = 5
     kx = 3
@@ -1352,16 +1383,17 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    # = { 0:[-0.8, 0.3],
+    #constraints = { 0:[-0.8, 0.3],
     #                1:[-2.0,2.0]}
-    constraints = {1:[-0.1, 0.65]}
-    #constraints = dict()
+    #constraints = {1:[-0.1, 0.65]}
+    constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-2)
+    T.setParam('ierr', 1e-4)
     #T.setParam('method', 'new')
+    #T.setParam('method', 'powell')
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()
@@ -1417,5 +1449,5 @@ if __name__ == '__main__':
         xmax = np.max(T.sim[1][:,0])
         A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
         A.animate()
-        A.save('std_ex.mpeg')
+        A.save('std_ex.mp4')
     

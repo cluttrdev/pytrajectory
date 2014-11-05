@@ -14,3 +14,4 @@ of PyTrajectory. The deriving of the model equations is omittted here.
    aircraft
    uact_manipulator
    acrobot
+   con_inv_pendulum_swing

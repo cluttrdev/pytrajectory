@@ -51,21 +51,12 @@ class Solver:
         collocation equation system.
         '''
         
-        if (self.method == 'newton'):
-            #log.info( "Run Newton solver")
-            #self.newton()
-            log.warn('Not yet implemented. Please use "leven"-algorithm!')
-            self.leven()
-        elif (self.method == 'gauss'):
-            #log.info( "Run Gauss solver")
-            #self.gauss()
-            log.warn('Not yet implemented. Please use "leven"-algorithm!')
-            self.leven()
-        elif (self.method == 'leven'):
+        if (self.method == 'leven'):
             log.info("    Run Levenberg-Marquardt method")
             self.leven()
-        elif (self.method == 'new'):
-            self.new_levenberg_marquardt()
+        elif (self.method == 'new_leven'):
+            self.alternate_levenberg_marquardt()
+        
         
         if (self.sol == None):
             log.warn("Wrong solver, returning initial value.")
@@ -153,7 +144,7 @@ class Solver:
         self.sol = x
     
     
-    def new_levenberg_marquardt(self):
+    def alternate_levenberg_marquardt(self):
         '''
         This is an alternative implementation of the Levenberg-Marquardt method
         due to some bugs, probably, in the one used so far.
@@ -217,48 +208,4 @@ class Solver:
             log.info("      nIt= %d    res= %f"%(i,norm(g, np.inf)))
         
         self.sol = x
-        
-        #IPS()
-            
-    
-    
-    def gauss(self):
-        i = 0
-        x = self.x0
-        res = 1
-        res_alt = 10e10
-        while((res>self.tol) and (self.maxIt>i) and (abs(res-res_alt)>self.tol)):
-            i += 1
-            r = self.F(x)
 
-            D = self.DF(x)
-            DD = np.linalg.solve(D.T*D,D.T*r.T) 
-
-            x = np.matrix(x).T - DD
-            x = np.array(x.flatten())[0]
-            res_alt = res
-            res = norm(r)
-            print i,': ',res
-
-        self.sol = x
-    
-    
-    def newton(self):
-        res = 1
-        i = 0
-        x = self.x0
-        Fx = self.F(x)
-        
-        while(res>self.tol and self.maxIt>i):
-            i += 1
-            DFx = self.DF(x)
-
-            h=np.array(np.linalg.solve(DFx,Fx.T).flatten())[0] 
-
-            x -= h
-
-            Fx = np.matrix(self.F(x))
-            res = np.linalg.norm(Fx)
-            print i,': ',res
-        
-        self.sol = x
