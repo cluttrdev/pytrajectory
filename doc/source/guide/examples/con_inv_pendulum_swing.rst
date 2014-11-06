@@ -23,15 +23,10 @@ object. ::
 
    >>> T = Trajectory(f, a, b=3.0, xa, xb, uab, constraints=con)
 
-There are some aspects to take into account when considering constraints.
-
-* The boundary values have to be contained in the interval spanned by the constraints
-* ...
-
 Source Code
 +++++++++++
 
-.. literalinclude:: /../../examples/ex6_ConstrainedInvertedPendulum.py
+.. literalinclude:: /../../examples/ex7_ConstrainedInvertedPendulum.py
    :lines: 1-44
 
 .. only:: html

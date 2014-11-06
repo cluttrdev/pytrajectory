@@ -1,5 +1,8 @@
 import time
 import sys
+import os
+
+from IPython import embed as IPS
 
 
 class Logger():
@@ -41,7 +44,7 @@ class Logger():
         sys.stdout = self
 
 
-    def write(self, text, verb=3):
+    def write(self, text='', verb=3):
         '''
         Writes log information if :attr:`verb` is less or equal to the level of verbosity.
         
@@ -53,17 +56,18 @@ class Logger():
             The information to log.
         
         verb : int
-            The 'inportance' of the information.
+            The 'importance' of the information.
         '''
         if self.log2file:
-            self.logfile.write(text)
+            self.logfile.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+text)
         if verb <= self.verbosity and not self.suppressed:
             self.stdout.write(text)
 
     def __del__(self):
-        sys.stdout = self.stdout
         if self.logfile:
+            info('Output written to logfile %s'%os.path.abspath(self.logfile.name))
             self.logfile.close()
+        sys.stdout = self.stdout
 
 
 class Timer():
@@ -100,22 +104,31 @@ def log_on(verbosity=1, log2file=False, fname=None, suppress=False):
     sys.stdout = Logger(log2file, fname, "w", suppress, verbosity)
 
 
+def log_off():
+    Log = sys.stdout
+    if isinstance(Log, Logger):
+        Log.__del__()
+        #del sys.stdout
+    
+
 def msg(label, text, verb=3):
     if isinstance(sys.stdout, Logger):
-        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
         sys.stdout.write(label+"\t"+text+"\n", verb)
     else:
-        #sys.stdout.write(time.strftime('%d-%m-%Y_%H:%M:%S')+"\t"+label+"\t"+text+"\n")
         sys.stdout.write(label+"\t"+text+"\n")
+
 
 def info(text, verb=3):
     msg("INFO:", text, verb)
 
+
 def logtime(text, verb=3):
     msg("TIME:", text, verb)
 
+
 def warn(text, verb=0):
     msg("WARN:", text, verb)
+
 
 def error(text, verb=0):
     msg("ERROR:", text, verb)

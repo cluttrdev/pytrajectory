@@ -119,4 +119,4 @@ A.set_limits(xlim=(-1.2,0.3), ylim=(-0.6,0.6))
 A.animate()
 
 # then we can save the animation as a `mp4` video file or as an animated `gif` file
-A.save('simple_example.mp4')
+A.save('ex0_InvertedPendulum.mp4')

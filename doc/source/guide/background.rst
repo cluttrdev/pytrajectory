@@ -302,8 +302,8 @@ with :math:`0 < b_0 < b_1 < 1` and for :math:`b_0 = 0.2, b_1 = 0.8` we use the f
 * :math:`b_0 < \rho < b_1 \quad :` in the next step :math:`\mu` is maintained and :math:`s_k` is used
 * :math:`\rho \geq b_1 \qquad\quad :` :math:`s_k` is accepted and :math:`\mu` is halved during the next iteration
 
-Constraints
------------
+Handling constraints
+--------------------
 
 In practical situations it is often desired or necessary that the system state variables comply with certain limits.
 To achieve this PyTrajectory uses an approach similar to the one presented by K. Graichen and M. Zeitz in [Graichen06]_.
@@ -322,11 +322,11 @@ To do so the following saturation function is introduced
    \end{equation*}
 
 that depends on the new unbounded variable :math:`y` and satisfies the *saturation limits* :math:`y^-,y^+`. It is assumed that the limits
-are asymptotically and that :math:`\psi(\cdot,y^{\pm})` is strictly increasing , that is :math:`\frac{\partial \psi}{\partial y} > 0`.
+are asymptotically and :math:`\psi(\cdot,y^{\pm})` is strictly increasing , that is :math:`\frac{\partial \psi}{\partial y} > 0`.
 For the constraints :math:`x \in [x_0,x_1]` to hold it is obvious that :math:`y^- = x_0` and :math:`y^+ = x_1`. Thus the constrained 
 variable :math:`x` is projected on the new unconstrained varialbe :math:`y`.
 
-By differentiating the equation above one can replace :math:`\dot{x}` in our vectorfield with a new term for :math:`\dot{y}`.
+By differentiating the equation above one can replace :math:`\dot{x}` in the vectorfield with a new term for :math:`\dot{y}`.
 
 .. math::
    :nowrap:
@@ -336,7 +336,8 @@ By differentiating the equation above one can replace :math:`\dot{x}` in our vec
       \Leftrightarrow\qquad \dot{y} = \frac{\dot{x}}{\frac{\partial}{\partial y} \psi(y,y^{\pm})}
    \end{equation*}
 
-Next, one has to calculate new boundary values :math:`y_a = y(a)` and :math:`y_b = y(b)` for the variable :math:`y` from those of :math:`x`. 
+Next, one has to calculate new boundary values :math:`y_a = y(a)` and :math:`y_b = y(b)` for the variable :math:`y` from those,
+:math:`x_a = x(a)` and :math:`x_b = x(b)`, of :math:`x`. 
 This is simply done by
 
 .. math::
@@ -346,8 +347,8 @@ This is simply done by
       y_a = \psi^{-1}(x_a, y^{\pm}) \qquad y_b = \psi^{-1}(x_b, y^{\pm})
    \end{equation*}
 
-Now, the transformed dynamical system can be solved where all state variables are unconstrained. At the end on gets a solution for
-the original state variable :math:`x` via a composition of the solution :math:`y(t)` and :math:`\psi(\cdot,y^{\pm})`.
+Now, the transformed dynamical system can be solved where all state variables are unconstrained. At the end a solution for the original state 
+variable :math:`x` is obtained via a composition of the calculated solution :math:`y(t)` and the saturation function :math:`\psi(\cdot,y^{\pm})`.
 
 Choice of the saturation functions
 ++++++++++++++++++++++++++++++++++
@@ -363,7 +364,7 @@ functions is the following.
    \end{equation*}
 
 The parameter :math:`m` affects the slope of the function at :math:`y = 0` and is chosen such that 
-:math:`\frac{\partial}{\partial y}\psi(0,y^{\pm}) = 1`.
+:math:`\frac{\partial}{\partial y}\psi(0,y^{\pm}) = 1`, i.e.
 
 .. math::
    :nowrap:
@@ -373,11 +374,10 @@ The parameter :math:`m` affects the slope of the function at :math:`y = 0` and i
    \end{equation*}
 
 
-
 An example
 ++++++++++
 
-to be continued
+to be continued!?
 
 
 .. [Graichen06] 

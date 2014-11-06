@@ -222,7 +222,7 @@ a container for the image. In the considered example `xt` is of the form
 
 and `image` is just a container for the drawn image.
 
-.. literalinclude:: /../../animations/simple_example.py
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
    :lines: 56-122
 
 .. only:: html

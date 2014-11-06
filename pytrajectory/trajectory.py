@@ -71,7 +71,7 @@ class Trajectory():
         delta       2               Constant for calculation of collocation points
         maxIt       7               Maximum number of iteration steps
         eps         1e-2            Tolerance for the solution of the initial value problem
-        ierr        0.0             Tolerance for the error on the whole interval
+        ierr        1e-1            Tolerance for the error on the whole interval
         tol         1e-5            Tolerance for the solver of the equation system
         method      'leven'         The solver algorithm to use
         use_chains  True            Whether or not to use integrator chains
@@ -83,7 +83,7 @@ class Trajectory():
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, constraints=None, **kwargs):
         # Enable logging
         if not DEBUG:
-            log.log_on(verbosity=1)
+            log.log_on(verbosity=1, log2file=True)
         
         # Save the symbolic vectorfield
         self.ff_sym = ff
@@ -102,7 +102,7 @@ class Trajectory():
                         'delta' : 2,
                         'maxIt' : 10,
                         'eps' : 1e-2,
-                        'ierr' : 0.0,
+                        'ierr' : 1e-1,
                         'tol' : 1e-5,
                         'method' : 'leven',
                         'use_chains' : True,
@@ -151,7 +151,7 @@ class Trajectory():
         # HERE WE HANDLE THE STATE CONSTRAINTS
         self.constraints = constraints
         if self.constraints:
-            self.constrain()
+            self.unconstrain()
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
@@ -184,10 +184,11 @@ class Trajectory():
         #print scp.__version__
         #IPS()
     
-    def constrain(self):
+    def unconstrain(self):
         '''
-        This method is used to enable compliance with the desired box constraints
-        by employing appropriate saturation functions for the state variables.
+        This method is used to enable compliance with the desired box constraints.
+        It transforms the vectorfiled by projecting the constrained state variables on
+        new unconstrained ones.
         '''
         
         # make some stuff local
@@ -219,7 +220,7 @@ class Trajectory():
         ff_orig = ff_num_orig
         
         # Now we can handle the constraints by projecting the constrained state variables
-        # on new unconstrined variables using saturation functions
+        # on new unconstrained variables using saturation functions
         for k, v in self.constraints.items():
             # check if boundary values are within constraints
             #if not( v[0] <= xa[x_sym[k]] <= v[1] and v[0] <= xb[x_sym[k]] <= v[1] ):
@@ -238,13 +239,18 @@ class Trajectory():
             dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
             
             # replace constrained variables in vectorfield with saturation expression
+            # x(t) = psi(y(t))
             ff = ff.replace(x_sym_orig[k], psi)
             
             # update vectorfield to represent differential equation for new
             # unconstrained state variable
+            #
+            # d/dt x(t) = (d/dy psi(y(t))) * d/dt y(t)
+            # <==> d/dt y(t) = d/dt x(t) / (d/dy psi(y(t)))
             ff[k] = ff[k] / dpsi
             
-            # replace constrained variable in dictionaries for boundary values
+            # replace key of constrained variable in dictionaries for boundary values
+            # with new symbol for the unconstrained variable
             xk = x_sym_orig[k]
             xa[yk] = xa.pop(xk)
             xb[yk] = xb.pop(xk)
@@ -276,7 +282,7 @@ class Trajectory():
         self.ff_orig = ff_num_orig
     
     
-    def unconstrain(self):
+    def constrain(self):
         x_fnc = self.x_fnc.copy()
         dx_fnc = self.dx_fnc.copy()
         
@@ -406,9 +412,11 @@ class Trajectory():
         # clear workspace
         self.clear()
         
-        # HERE WE HAVE TO UNCONSTRAIN THE STATE FUNCTIONS
+        # HERE WE HAVE TO CONSTRAIN THE STATE FUNCTIONS
         if self.constraints:
-            self.unconstrain()
+            self.constrain()
+        
+        log.log_off()
         
         return self.x, self.u
 
@@ -645,7 +653,7 @@ class Trajectory():
                     #   but we don't want to use the borders because they got
                     #   the boundary values already
                     #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
-                    gpts = np.linspace(self.a,self.b,(nn),endpoint = True)
+                    gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
 
                     # evaluate the old and new spline at all points in gpts
                     #   they should be equal in these points
@@ -662,8 +670,9 @@ class Trajectory():
                     NEW = np.array(NEW)
                     NEW_abs = np.array(NEW_abs)
 
-                    TT = np.linalg.solve(NEW,OLD-NEW_abs)
-
+                    #TT = np.linalg.solve(NEW,OLD-NEW_abs)
+                    TT = np.linalg.lstsq(NEW,OLD-NEW_abs)[0]
+                    
                     guess = np.hstack((guess,TT))
                 else:
                     # if it is a manipulated variable, just take the old solution
@@ -1186,9 +1195,11 @@ class Trajectory():
             self.reached_accuracy = max(err) < self.mparam['eps']
         
         #self.maxerr.append((self.mparam['sx'], max(err)))
-        
-        log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
-
+        if self.reached_accuracy:
+            log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
+        else:
+            log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=2)
+    
 
     def x(self, t):
         '''
@@ -1202,7 +1213,7 @@ class Trajectory():
         '''
         
         if not self.a <= t <= self.b:
-            log.warn("Time point 't' has to be in (a,b)")
+            log.warn("Time point 't' has to be in (a,b)", verb=3)
             arr = None
         else:
             arr = np.array([self.x_fnc[xx](t) for xx in self.x_sym])
@@ -1222,7 +1233,7 @@ class Trajectory():
         '''
         
         if not self.a <= t <= self.b+0.05:
-            log.warn("Time point 't' has to be in (a,b)")
+            log.warn("Time point 't' has to be in (a,b)", verb=3)
             arr = None
             arr = np.array([self.u_fnc[uu](self.b) for uu in self.u_sym])
         else:
@@ -1243,7 +1254,7 @@ class Trajectory():
         '''
         
         if not self.a <= t <= self.b+0.05:
-            log.warn("Time point 't' has to be in (a,b)")
+            log.warn("Time point 't' has to be in (a,b)", verb=3)
             arr = None
         else:
             arr = np.array([self.dx_fnc[xx](t) for xx in self.x_sym])
@@ -1347,33 +1358,33 @@ if __name__ == '__main__':
 
     # partially linearised inverted pendulum
 
-    def f(x,u):
-        x1,x2,x3,x4 = x
-        u1, = u
-        l = 0.5
-        g = 9.81
-        ff = np.array([     x2,
-                            u1,
-                            x4,
-                        (1/l)*(g*sin(x3)+u1*cos(x3))])
-        return ff
-    
-    xa = [0.0, 0.0, pi, 0.0]
-    xb = [0.0, 0.0, 0.0, 0.0]
-    
     #~ def f(x,u):
-        #~ x1, x2 = x
+        #~ x1,x2,x3,x4 = x
         #~ u1, = u
-        #~ 
-        #~ ff = np.array([ x2,
-                        #~ u1])
+        #~ l = 0.5
+        #~ g = 9.81
+        #~ ff = np.array([     x2,
+                            #~ u1,
+                            #~ x4,
+                        #~ (1/l)*(g*sin(x3)+u1*cos(x3))])
         #~ return ff
     #~ 
-    #~ xa = [0.0, 0.0]
-    #~ xb = [1.0, 0.0]
+    #~ xa = [0.0, 0.0, pi, 0.0]
+    #~ xb = [0.0, 0.0, 0.0, 0.0]
+    
+    def f(x,u):
+        x1, x2 = x
+        u1, = u
+        
+        ff = np.array([ x2,
+                        u1])
+        return ff
+    
+    xa = [0.0, 0.0]
+    xb = [1.0, 0.0]
     
     a = 0.0
-    b = 3.0
+    b = 2.0
     sx = 5
     su = 5
     kx = 3
@@ -1385,13 +1396,13 @@ if __name__ == '__main__':
     # NEW
     #constraints = { 0:[-0.8, 0.3],
     #                1:[-2.0,2.0]}
-    #constraints = {1:[-0.1, 0.65]}
-    constraints = dict()
+    constraints = {1:[-0.1, 0.65]}
+    #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-4)
+    T.setParam('ierr', 1e-3)
     #T.setParam('method', 'new')
     #T.setParam('method', 'powell')
     

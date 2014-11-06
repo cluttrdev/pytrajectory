@@ -91,5 +91,5 @@ if do_animation:
     xmax = np.max(T.sim[1][:,0])
     A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
     A.animate()
-    A.save('constrained_example.gif')
+    A.save('ex6_ConstrainedInvertedPendulum.mp4')
     

@@ -125,7 +125,7 @@ class Solver:
                 
                 # NEW:
                 if (roh < 0.0):
-                    log.warn("Parameter roh in LM-method became negative")
+                    log.warn("Parameter roh in LM-method became negative", verb=3)
                     #from IPython import embed as IPS
                     #IPS()
             
