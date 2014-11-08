@@ -1,4 +1,5 @@
 import numpy as np
+import sympy as sp
 from sympy.core.symbol import Symbol
 
 import matplotlib as mpl
@@ -15,18 +16,16 @@ import os
 
 class IntegChain():
     '''
-    This class provides a representation of a integrator chain consisting of sympy symbols.
+    This class provides a representation of an integrator chain consisting of sympy symbols.
     
     For the elements :math:`(x_i)_{i=1,...,n}` the relation
-    :math:`\dot{x}_i = x_{i+1}` applies:
-    
+    :math:`\dot{x}_i = x_{i+1}` applies.
     
     Parameters
     ----------
     
     lst : list
         Ordered list of elements for the integrator chain
-    
     
     Attributes
     ----------
@@ -287,7 +286,6 @@ def plotsim(sim, H, fname=None):
     This method provides graphics for each system variable, manipulated
     variable and error function and plots the solution of the simulation.
     
-    
     Parameters
     ----------
     
@@ -369,3 +367,49 @@ def plotsim(sim, H, fname=None):
             plt.savefig(fname+'.png')
         else:
             plt.savefig(fname)
+
+
+def sym2num_vectorfield(f_sym, x_sym, u_sym):
+    '''
+    This function takes a callable vectorfield of a control system that is to be evaluated with symbols
+    for the state and input variables and returns a corresponding function that can be evaluated with
+    numeric values for these variables.
+    
+    Parameters
+    ----------
+    
+    f_sym : callable
+        The callable ("symbolic") vectorfield of the control system.
+    
+    x_sym : iterable
+        The symbols for the state variables of the control system.
+    
+    u_sym : iterable
+        The symbols for the input variables of the control system.
+    
+    Returns
+    -------
+    
+    f_num : callable
+        The callable ("numeric") vectorfield of the control system.
+    
+    '''
+    
+    # get a sympy.Matrix representation of the vectorfield
+    F = sp.Matrix(f_sym(x_sym, u_sym))
+    if F.T == F.vec():
+        F = F.tolist()[0]
+    else:
+        F = F.T.tolist()[0]
+    
+    # Use lambdify to replace sympy functions in the vectorfield with
+    # numpy equivalents
+    _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
+    
+    # Create a wrapper as the actual function because due to the behaviour
+    # of lambdify()
+    def f_num(x, u):
+        xu = np.hstack((x, u))
+        return np.array(_f_num(*xu))
+    
+    return f_num

@@ -311,7 +311,7 @@ To achieve this PyTrajectory uses an approach similar to the one presented by K.
 The basic idea is to transform the dynamical system into a new one that satisfies the constraints. This is done
 by projecting the constrained state variables on new unconstrained coordinates using socalled *saturation functions*.
 
-Suppose the state :math:`x` should be bounded by :math:`x_0,x_1` such that :math:`x_0 \leq x(t) \leq x_1]` for all :math:`t \in [a,b]`.
+Suppose the state :math:`x` should be bounded by :math:`x_0,x_1` such that :math:`x_0 \leq x(t) \leq x_1` for all :math:`t \in [a,b]`.
 To do so the following saturation function is introduced
 
 .. math::
@@ -321,7 +321,7 @@ To do so the following saturation function is introduced
       x = \psi(y,y^{\pm})
    \end{equation*}
 
-that depends on the new unbounded variable :math:`y` and satisfies the *saturation limits* :math:`y^-,y^+`. It is assumed that the limits
+that depends on the new unbounded variable :math:`y` and satisfies the *saturation limits* :math:`y^-,y^+`, i.e. :math:`y^- \leq \psi(y(t),y^{\pm}) \leq y^+` for all :math:`t`. It is assumed that the limits
 are asymptotically and :math:`\psi(\cdot,y^{\pm})` is strictly increasing , that is :math:`\frac{\partial \psi}{\partial y} > 0`.
 For the constraints :math:`x \in [x_0,x_1]` to hold it is obvious that :math:`y^- = x_0` and :math:`y^+ = x_1`. Thus the constrained 
 variable :math:`x` is projected on the new unconstrained varialbe :math:`y`.
@@ -349,6 +349,11 @@ This is simply done by
 
 Now, the transformed dynamical system can be solved where all state variables are unconstrained. At the end a solution for the original state 
 variable :math:`x` is obtained via a composition of the calculated solution :math:`y(t)` and the saturation function :math:`\psi(\cdot,y^{\pm})`.
+
+There are some aspects to take into consideration when dealing with constraints:
+
+* The boundary values of a constrained variable have to be within the saturation limits
+* It is not possible to make use of an integrator chain that contains a constrained variable
 
 Choice of the saturation functions
 ++++++++++++++++++++++++++++++++++

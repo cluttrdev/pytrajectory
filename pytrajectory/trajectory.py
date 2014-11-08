@@ -8,7 +8,7 @@ import pickle
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
-from utilities import IntegChain, plotsim
+from utilities import IntegChain, plotsim, sym2num_vectorfield
 import log
 
 # DEBUGGING
@@ -114,9 +114,9 @@ class Trajectory():
             self.setParam(k, v)
         
         # Initialise dimensions --> they will be set afterwards
-        self.n = 0
-        self.m = 0
-
+        #self.n = 0
+        #self.m = 0
+        
         # Analyse the given system to set some parameters
         self.analyseSystem()
         
@@ -137,8 +137,8 @@ class Trajectory():
         self.dx_fnc = dict()
 
         # Create symbolic variables
-        self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
-        self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
+        #self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
+        #self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
         
         # Dictionaries for boundary conditions
         self.xa = dict()
@@ -155,22 +155,7 @@ class Trajectory():
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
-
-        # Create sympy matrix of the vectorfield
-        F = sp.Matrix(self.ff_sym(self.x_sym,self.u_sym))
-
-        # Use lambdify to replace sympy functions in the vectorfield with
-        # numpy equivalents
-        _ff_num = sp.lambdify(self.x_sym+self.u_sym, F, modules='numpy')
-
-        # Create a wrapper as the actual function because of the behaviour
-        # of lambdify()
-        def ff_num(x, u):
-            xu = np.hstack((x, u))
-            return np.array(_ff_num(*xu)).squeeze()
-        
-        # This is now the callable (numerical) vectorfield of the system
-        self.ff = ff_num
+        self.ff = sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
         
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
@@ -187,13 +172,12 @@ class Trajectory():
     def unconstrain(self):
         '''
         This method is used to enable compliance with the desired box constraints.
-        It transforms the vectorfiled by projecting the constrained state variables on
+        It transforms the vectorfield by projecting the constrained state variables on
         new unconstrained ones.
         '''
         
         # make some stuff local
-        ff = self.ff_sym(self.x_sym, self.u_sym)
-        ff = sp.Matrix(ff)
+        ff = sp.Matrix(self.ff_sym(self.x_sym, self.u_sym))
         xa = self.xa
         xb = self.xb
         x_sym = self.x_sym
@@ -210,21 +194,12 @@ class Trajectory():
         
         # create a numeric vectorfield function of the original vectorfield
         # and back it up (will be used in simulation step of the main iteration)
-        F_orig = sp.Matrix(ff_sym_orig(x_sym_orig,self.u_sym))
-        _ff_num_orig = sp.lambdify(x_sym_orig+self.u_sym, F_orig, modules='numpy')
-        
-        def ff_num_orig(x, u):
-            xu = np.hstack((x, u))
-            return np.array(_ff_num_orig(*xu)).squeeze()
-        
-        ff_orig = ff_num_orig
+        ff_num_orig = sym2num_vectorfield(ff_sym_orig, x_sym_orig, self.u_sym)
         
         # Now we can handle the constraints by projecting the constrained state variables
         # on new unconstrained variables using saturation functions
         for k, v in self.constraints.items():
-            # check if boundary values are within constraints
-            #if not( v[0] <= xa[x_sym[k]] <= v[1] and v[0] <= xb[x_sym[k]] <= v[1] ):
-            #    print "ERROR: boundary value not within constraints"
+            # check if boundary values are within saturation limits
             assert( v[0] < xa[x_sym[k]] < v[1] )
             assert( v[0] < xb[x_sym[k]] < v[1] )
             
@@ -262,11 +237,16 @@ class Trajectory():
             xb[yk] = (1.0/m)*np.log( (wb-v[0])/(v[1]-wb) )
         
         # create a callable function for the new symbolic vectorfield
+        if ff.T == ff.vec():
+            ff = ff.tolist()[0]
+        else:
+            ff = ff.T.tolist()[0]
+        
         _ff_sym = sp.lambdify(self.x_sym+self.u_sym, ff, modules='sympy')
         
         def ff_sym(x,u):
             xu = np.hstack((x,u))
-            return np.array(_ff_sym(*xu)).squeeze()
+            return np.array(_ff_sym(*xu))
         
         # set altered boundary values and vectorfield function
         self.xa = xa
@@ -283,17 +263,30 @@ class Trajectory():
     
     
     def constrain(self):
+        '''
+        This method is used to determine the solution of the original constrained
+        state variables by creating a composition of the saturation functions and
+        the calculated solution for the introduced unconstrained variables.
+        '''
+        
+        # get a copy of the current functions
+        # (containing functions for unconstraint variables y_i)
         x_fnc = self.x_fnc.copy()
         dx_fnc = self.dx_fnc.copy()
         
+        # iterate of all constraints
         for k, v in self.constraints.items():
+            # get symbols of original constrained variable x_k, the introduced unconstrained variable y_k
+            # the saturation limits y0, y1
             xk = self.x_sym_orig[k]
             yk = self.x_sym[k]
             y0, y1 = v
             
+            # get the calculated solution function for the unconstrained variable and its derivative
             y_fnc = x_fnc[yk]
             dy_fnc = dx_fnc[yk]
             
+            # create the composition
             def create_saturation_functions(y_fnc, dy_fnc, y0, y1):
                 m = 4.0/(y1-y0)
                 
@@ -310,12 +303,14 @@ class Trajectory():
             
             psi_y, dpsi_dy = create_saturation_functions(y_fnc, dy_fnc, y0, y1)
             
+            # replace the key/value pair of the unconstrained solution function and its
+            # derivative with the created composition
             self.x_fnc[xk] = psi_y
             self.x_fnc.pop(yk)
             self.dx_fnc[xk] = dpsi_dy
             self.dx_fnc.pop(yk)
         
-        # set back to original boundary values, variables and vectorfield function
+        # restore the original boundary values, variables and vectorfield function
         self.xa = self.xa_orig
         self.xb = self.xb_orig
         self.x_sym = self.x_sym_orig
@@ -346,10 +341,6 @@ class Trajectory():
             Callable function for the input variables.
         '''
 
-        #log.info(40*"#", verb=3)
-        #log.info("       ---- First Iteration ----")
-        #log.info(40*"#", verb=3)
-        #log.info("# spline parts: %d"%self.mparam['sx'])
         log.info("1st Iteration: %d spline parts"%self.mparam['sx'], verb=1)
         
         # resetting integrator chains according to value of self.use_chains
@@ -389,10 +380,6 @@ class Trajectory():
             # raise the number of spline parts
             self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
             
-            #log.info( 40*"#", verb=3)
-            #log.info("       ---- Next Iteration ----")
-            #log.info( 40*"#", verb=3)
-            #log.info("# spline parts: %d"%self.mparam['sx'])
             if self.nIt == 1:
                 log.info("2nd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
             elif self.nIt == 2:
@@ -423,16 +410,12 @@ class Trajectory():
 
     def analyseSystem(self):
         '''
-        Analyse the system structure and set values for some of the method
-        parameters.
+        Analyse the system structure and set values for some of the method parameters.
 
         By now, this method just determines the number of state and input variables
         and searches for integrator chains.
         '''
 
-        #log.info( 40*"#", verb=3)
-        #log.info("####   Analysing System Strucutre   ####")
-        #log.info( 40*"#", verb=3)
         log.info("  Analysing System Structure", verb=2)
         
         # first, determine system dimensions
@@ -501,7 +484,7 @@ class Trajectory():
                     chaindict[uu] = x_sym[i]
 
         # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
-        # where x_4 = d x_3 / dt and so on
+        # where x_4 = d/dt x_3 and so on
 
         # find upper ends of integrator chains
         uppers = []
@@ -512,7 +495,7 @@ class Trajectory():
         # create ordered lists that temporarily represent the integrator chains
         tmpchains = []
 
-        # therefor we flip the dictionary to work our way through its keys
+        # therefore we flip the dictionary to work our way through its keys
         # (former values)
         dictchain = {v:k for k,v in chaindict.items()}
 
@@ -535,6 +518,8 @@ class Trajectory():
             log.info("      --> found: " + str(ic), verb=3)
 
         self.chains = chains
+        self.x_sym = x_sym
+        self.u_sym = u_sym
 
         # get minimal neccessary number of spline parts
         # for the manipulated variables
@@ -675,7 +660,7 @@ class Trajectory():
                     
                     guess = np.hstack((guess,TT))
                 else:
-                    # if it is a manipulated variable, just take the old solution
+                    # if it is a input variable, just take the old solution
                     guess = np.hstack((guess, self.coeffs_sol[k]))
 
         # the new guess
@@ -709,36 +694,32 @@ class Trajectory():
         '''
         This method is used to initialise the provisionally splines.
         '''
-        #log.info( 40*"#", verb=3)
-        #log.info( "#########  Initialise Splines  #########")
-        #log.info( 40*"#", verb=3)
         log.info("  Initialise Splines", verb=2)
-        
-        # dictionaries for splines and callable solution function for x,u and dx
+        #IPS()
+        # dictionaries for splines and callable solution function for x, u and dx
         splines = dict()
         x_fnc = dict()
         u_fnc = dict()
         dx_fnc = dict()
         
         # make some stuff local
-        chains = self.chains
         sx = self.mparam['sx']
         su = self.mparam['su']
 
         # first handle variables that are part of an integrator chain
-        for ic in chains:
-            upper = ic.upper
+        for chain in self.chains:
+            upper = chain.upper
 
             # here we just create a spline object for the upper ends of every chain
             # w.r.t. its lower end
-            if ic.lower.name.startswith('x'):
+            if chain.lower.name.startswith('x'):
                 splines[upper] = CubicSpline(self.a,self.b,n=sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
                 splines[upper].type = 'x'
-            elif ic.lower.name.startswith('u'):
+            elif chain.lower.name.startswith('u'):
                 splines[upper] = CubicSpline(self.a,self.b,n=su,bc=self.uab,steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
-            for i,elem in enumerate(ic.elements):
+            for i, elem in enumerate(chain.elements):
                 if elem in self.u_sym:
                     if (i == 0):
                         u_fnc[elem] = splines[upper].f
@@ -799,9 +780,6 @@ class Trajectory():
         Builds the collocation equation system.
         '''
 
-        #log.info( 40*"#", verb=3)
-        #log.info("####  Building the equation system  ####")
-        #log.info( 40*"#", verb=3)
         log.info("  Building Equation System", verb=2)
         
         # make functions local
@@ -958,16 +936,11 @@ class Trajectory():
         This method is used to solve the collocation equation system.
         '''
 
-        #log.info( 40*"#", verb=3)
-        #log.info("#####  Solving the equation system  ####")
-        #log.info( 40*"#", verb=3)
         log.info("  Solving Equation System", verb=2)
         
         # create our solver
         solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
                         method=self.mparam['method'])
-        
-        #IPS()
         
         # solve the equation system
         self.sol = solver.solve()
@@ -1108,9 +1081,6 @@ class Trajectory():
         This method is used to solve the initial value problem.
         '''
 
-        #log.info( 40*"#", verb=3)
-        #log.info("##  Solving the initial value problem ##")
-        #log.info( 40*"#", verb=3)
         log.info("  Solving Initial Value Problem", verb=2)
         
         # calulate simulation time
@@ -1358,33 +1328,33 @@ if __name__ == '__main__':
 
     # partially linearised inverted pendulum
 
-    #~ def f(x,u):
-        #~ x1,x2,x3,x4 = x
-        #~ u1, = u
-        #~ l = 0.5
-        #~ g = 9.81
-        #~ ff = np.array([     x2,
-                            #~ u1,
-                            #~ x4,
-                        #~ (1/l)*(g*sin(x3)+u1*cos(x3))])
-        #~ return ff
-    #~ 
-    #~ xa = [0.0, 0.0, pi, 0.0]
-    #~ xb = [0.0, 0.0, 0.0, 0.0]
-    
     def f(x,u):
-        x1, x2 = x
+        x1,x2,x3,x4 = x
         u1, = u
-        
-        ff = np.array([ x2,
-                        u1])
+        l = 0.5
+        g = 9.81
+        ff = np.array([     x2,
+                            u1,
+                            x4,
+                        (1/l)*(g*sin(x3)+u1*cos(x3))])
         return ff
     
-    xa = [0.0, 0.0]
-    xb = [1.0, 0.0]
+    xa = [0.0, 0.0, pi, 0.0]
+    xb = [0.0, 0.0, 0.0, 0.0]
+    
+    # def f(x,u):
+    #     x1, x2 = x
+    #     u1, = u
+    #
+    #     ff = np.array([ x2,
+    #                     u1])
+    #     return ff
+    #
+    # xa = [0.0, 0.0]
+    # xb = [1.0, 0.0]
     
     a = 0.0
-    b = 2.0
+    b = 3.0
     sx = 5
     su = 5
     kx = 3
@@ -1394,15 +1364,15 @@ if __name__ == '__main__':
     use_chains = False
     
     # NEW
-    #constraints = { 0:[-0.8, 0.3],
-    #                1:[-2.0,2.0]}
-    constraints = {1:[-0.1, 0.65]}
+    constraints = { 0:[-0.8, 0.3],
+                    1:[-2.0,2.0]}
+    #constraints = {1:[-0.1, 0.65]}
     #constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-3)
+    T.setParam('ierr', 1e-2)
     #T.setParam('method', 'new')
     #T.setParam('method', 'powell')
     
