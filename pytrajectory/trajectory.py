@@ -638,7 +638,8 @@ class Trajectory():
                     #   but we don't want to use the borders because they got
                     #   the boundary values already
                     #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
-                    gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
+                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
+                    gpts = np.linspace(self.a,self.b,nn,endpoint = True)
 
                     # evaluate the old and new spline at all points in gpts
                     #   they should be equal in these points
