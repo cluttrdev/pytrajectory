@@ -92,9 +92,6 @@ class Trajectory():
         self.a = a
         self.b = b
         
-        # Boundary values for the input variable(s)
-        self.uab = g
-        
         # Set default values for method parameters
         self.mparam = {'sx' : 5,
                         'su' : 5,
@@ -119,6 +116,15 @@ class Trajectory():
         
         # Analyse the given system to set some parameters
         self.analyseSystem()
+        
+        # Dictionary of boundary values for the input variable(s)
+        self.input_bv = dict()
+        if type(g) is list:
+            # backward compatibility
+            for i in xrange(self.m):
+                self.input_bv[i] = g
+        else:
+            self.input_bv = g
         
         # A little check
         if not (len(xa) == len(xb) == self.n):
@@ -717,7 +723,8 @@ class Trajectory():
                 splines[upper] = CubicSpline(self.a,self.b,n=sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
                 splines[upper].type = 'x'
             elif chain.lower.name.startswith('u'):
-                splines[upper] = CubicSpline(self.a,self.b,n=su,bc=self.uab,steady=False,tag=upper.name)
+                i = self.u_sym.index(chain.lower)
+                splines[upper] = CubicSpline(self.a,self.b,n=su,bc=self.input_bv[i],steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
             for i, elem in enumerate(chain.elements):
@@ -731,13 +738,21 @@ class Trajectory():
                 elif elem in self.x_sym:
                     if (i == 0):
                         splines[upper].bc = [self.xa[elem],self.xb[elem]]
-                        if ((self.uab != None) and (splines[upper].type == 'u')):
-                            splines[upper].bcd = self.uab
+                        if splines[upper].type == 'u':
+                            j = self.u_sym.index(chain.lower)
+                            try:
+                                splines[upper].bcd = self.input_bv[j]
+                            except KeyError:
+                                pass
                         x_fnc[elem] = splines[upper].f
                     if (i == 1):
                         splines[upper].bcd = [self.xa[elem],self.xb[elem]]
-                        if ((self.uab != None) and (splines[upper].type == 'u')):
-                            splines[upper].bcdd = self.uab
+                        if splines[upper].type == 'u':
+                            j = self.u_sym.index(chain.lower)
+                            try:
+                                splines[upper].bcdd = self.input_bv[j]
+                            except KeyError:
+                                pass
                         x_fnc[elem] = splines[upper].df
                     if (i == 2):
                         splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
@@ -750,9 +765,9 @@ class Trajectory():
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx].f
 
-        for uu in self.u_sym:
+        for i, uu in enumerate(self.u_sym):
             if (not u_fnc.has_key(uu)):
-                splines[uu] = CubicSpline(self.a,self.b,n=su,bc=self.uab,steady=False,tag=str(uu))
+                splines[uu] = CubicSpline(self.a,self.b,n=su,bc=self.input_bv[i],steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
         
@@ -1362,13 +1377,13 @@ if __name__ == '__main__':
     maxIt  = 5
     g = [0,0]
     eps = 0.01
-    use_chains = False
+    use_chains = True
     
     # NEW
     constraints = { 0:[-0.8, 0.3],
                     1:[-2.0,2.0]}
     #constraints = {1:[-0.1, 0.65]}
-    #constraints = dict()
+    constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
