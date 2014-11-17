@@ -6,7 +6,6 @@ This example of the inverted pendulum demonstrates how to handle possible state 
 from pytrajectory import Trajectory
 import numpy as np
 from sympy import cos, sin
-from numpy import pi
 
 # first, we define the function that returns the vectorfield
 def f(x,u):
@@ -26,19 +25,20 @@ def f(x,u):
 
 # then we specify all boundary conditions
 a = 0.0
-xa = [0.0, 0.0, pi, 0.0]
+xa = [0.0, 0.0, np.pi, 0.0]
 
 b = 3.0
 xb = [0.0, 0.0, 0.0, 0.0]
 
-uab = [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # next, this is the dictionary containing the constraints
 con = { 0 : [-0.8, 0.3], 
         1 : [-2.0, 2.0] }
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, uab, constraints=con, kx=5, use_chains=False)
+T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, kx=5, use_chains=False)
 
 # time to run the iteration
 T.startIteration()

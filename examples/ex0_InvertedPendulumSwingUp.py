@@ -13,7 +13,6 @@ from numpy import pi
 import matplotlib as mpl
 from pytrajectory.utilities import Animation
 
-
 # first, we define the function that returns the vectorfield
 def f(x,u):
     x1, x2, x3, x4 = x  # system variables
@@ -37,14 +36,14 @@ xa = [0.0, 0.0, pi, 0.0]
 b = 2.0
 xb = [0.0, 0.0, 0.0, 0.0]
 
-uab = [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=False)
+T = Trajectory(f, a, b, xa, xb, ua, ub, kx=5, use_chains=False)
 
 # time to run the iteration
 T.startIteration()
-
 
 
 # now that we (hopefully) have found a solution,

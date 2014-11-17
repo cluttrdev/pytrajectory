@@ -49,8 +49,11 @@ class Trajectory():
     xb : list
         Boundary values at the right border
     
-    g : list
-        Boundary values of the input variables
+    ua : list
+        Boundary values of the input variables at left border
+    
+    ub : list
+        Boundary values of the input variables at right border
     
     constraints : dict
         Box-constraints of the state variables
@@ -80,7 +83,7 @@ class Trajectory():
         ==========  =============   =======================================================
     '''
     
-    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, g=None, constraints=None, **kwargs):
+    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, ua=None, ub=None, constraints=None, **kwargs):
         # Enable logging
         if not DEBUG:
             log.log_on(verbosity=1, log2file=True)
@@ -117,15 +120,6 @@ class Trajectory():
         # Analyse the given system to set some parameters
         self.analyseSystem()
         
-        # Dictionary of boundary values for the input variable(s)
-        self.input_bv = dict()
-        if type(g) is list:
-            # backward compatibility
-            for i in xrange(self.m):
-                self.input_bv[i] = g
-        else:
-            self.input_bv = g
-        
         # A little check
         if not (len(xa) == len(xb) == self.n):
             raise ValueError('Dimension mismatch xa,xb')
@@ -150,9 +144,16 @@ class Trajectory():
         self.xa = dict()
         self.xb = dict()
         
-        for i,xx in enumerate(self.x_sym):
+        for i, xx in enumerate(self.x_sym):
             self.xa[xx] = xa[i]
             self.xb[xx] = xb[i]
+        
+        self.ua = dict()
+        self.ub = dict()
+        
+        for i, uu in enumerate(self.u_sym):
+            self.ua[uu] = ua[i]
+            self.ub[uu] = ub[i]
         
         # HERE WE HANDLE THE STATE CONSTRAINTS
         self.constraints = constraints
@@ -169,12 +170,7 @@ class Trajectory():
         # and likewise this should not be existent yet
         self.sol = None
 
-        # just for me
-        #print np.__version__
-        #print sp.__version__
-        #print scp.__version__
-        #IPS()
-    
+        
     def unconstrain(self):
         '''
         This method is used to enable compliance with the desired box constraints.
@@ -206,8 +202,11 @@ class Trajectory():
         # on new unconstrained variables using saturation functions
         for k, v in self.constraints.items():
             # check if boundary values are within saturation limits
-            assert( v[0] < xa[x_sym[k]] < v[1] )
-            assert( v[0] < xb[x_sym[k]] < v[1] )
+            if not ( v[0] < xa[x_sym[k]] < v[1] ) or not ( v[0] < xb[x_sym[k]] < v[1] ):
+                log.error('Boundary values have to be strictly within the saturation limits')
+                log.info('Please have a look at the documentation, \
+                          especially the example of the constrained double intgrator')
+                sys.exit(1)
             
             # replace constrained state variable with new unconstrained one
             x_sym[k] = sp.Symbol('y%d'%(k+1))
@@ -683,7 +682,7 @@ class Trajectory():
                 
                 xt_old[:,i] = xt
             
-            sol_bak = self.sol
+            sol_bak = 1.0*self.sol
             splines_bak = self.splines.copy()
             
             self.sol = self.guess
@@ -702,7 +701,7 @@ class Trajectory():
         This method is used to initialise the provisionally splines.
         '''
         log.info("  Initialise Splines", verb=2)
-        #IPS()
+        
         # dictionaries for splines and callable solution function for x, u and dx
         splines = dict()
         x_fnc = dict()
@@ -716,6 +715,7 @@ class Trajectory():
         # first handle variables that are part of an integrator chain
         for chain in self.chains:
             upper = chain.upper
+            lower = chain.lower
 
             # here we just create a spline object for the upper ends of every chain
             # w.r.t. its lower end
@@ -724,7 +724,7 @@ class Trajectory():
                 splines[upper].type = 'x'
             elif chain.lower.name.startswith('u'):
                 i = self.u_sym.index(chain.lower)
-                splines[upper] = CubicSpline(self.a,self.b,n=su,bc=self.input_bv[i],steady=False,tag=upper.name)
+                splines[upper] = CubicSpline(self.a,self.b,n=su,bc=[self.ua[lower],self.ub[lower]],steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
             for i, elem in enumerate(chain.elements):
@@ -739,20 +739,12 @@ class Trajectory():
                     if (i == 0):
                         splines[upper].bc = [self.xa[elem],self.xb[elem]]
                         if splines[upper].type == 'u':
-                            j = self.u_sym.index(chain.lower)
-                            try:
-                                splines[upper].bcd = self.input_bv[j]
-                            except KeyError:
-                                pass
+                            splines[upper].bcd = [self.ua[lower],self.ub[lower]]
                         x_fnc[elem] = splines[upper].f
                     if (i == 1):
                         splines[upper].bcd = [self.xa[elem],self.xb[elem]]
                         if splines[upper].type == 'u':
-                            j = self.u_sym.index(chain.lower)
-                            try:
-                                splines[upper].bcdd = self.input_bv[j]
-                            except KeyError:
-                                pass
+                            splines[upper].bcdd = [self.ua[lower],self.ub[lower]]
                         x_fnc[elem] = splines[upper].df
                     if (i == 2):
                         splines[upper].bcdd = [self.xa[elem],self.xb[elem]]
@@ -767,7 +759,7 @@ class Trajectory():
 
         for i, uu in enumerate(self.u_sym):
             if (not u_fnc.has_key(uu)):
-                splines[uu] = CubicSpline(self.a,self.b,n=su,bc=self.input_bv[i],steady=False,tag=str(uu))
+                splines[uu] = CubicSpline(self.a,self.b,n=su,bc=[self.ua[uu],self.ub[uu]],steady=False,tag=str(uu))
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
         
@@ -1180,7 +1172,6 @@ class Trajectory():
             # just check if tolerance for the boundary values is satisfied
             self.reached_accuracy = max(err) < self.mparam['eps']
         
-        #self.maxerr.append((self.mparam['sx'], max(err)))
         if self.reached_accuracy:
             log.info("  --> reached desired accuracy: "+str(self.reached_accuracy), verb=1)
         else:
@@ -1375,20 +1366,21 @@ if __name__ == '__main__':
     su = 5
     kx = 3
     maxIt  = 5
-    g = [0,0]
-    eps = 0.01
-    use_chains = True
+    ua = [0.0]
+    ub = [0.0]
+    eps = 1e-4
+    use_chains = False
     
     # NEW
     constraints = { 0:[-0.8, 0.3],
                     1:[-2.0,2.0]}
     #constraints = {1:[-0.1, 0.65]}
-    constraints = dict()
+    #constraints = dict()
 
-    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=sx, su=su, kx=kx,
-                    maxIt=maxIt, g=g, eps=eps, use_chains=use_chains, constraints=constraints)
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, sx=sx, su=su, kx=kx,
+                    maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-2)
+    T.setParam('ierr', 1e-3)
     #T.setParam('method', 'new')
     #T.setParam('method', 'powell')
     
@@ -1397,54 +1389,3 @@ if __name__ == '__main__':
     
     if DEBUG:
         IPS()
-    
-    
-    do_animation = False
-    
-    if do_animation:
-        import matplotlib as mpl
-        from pytrajectory.utilities import Animation
-        
-        def draw(xt, image):
-            x = xt[0]
-            phi = xt[2]
-            
-            car_width = 0.05
-            car_heigth = 0.02
-            
-            rod_length = 0.5
-            pendulum_size = 0.015
-    
-            x_car = x
-            y_car = 0
-            
-            x_pendulum = -rod_length * sin(phi) + x_car
-            y_pendulum = rod_length * cos(phi)
-    
-            pendulum = mpl.patches.Circle(xy=(x_pendulum, y_pendulum), radius=pendulum_size, color='black')
-    
-            car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
-                                fill=True, facecolor='grey', linewidth=2.0)
-    
-            joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
-            
-            rod = mpl.lines.Line2D([x_car,x_pendulum], [y_car,y_pendulum],
-                                    color='black', zorder=1, linewidth=2.0)
-    
-            image.patches.append(pendulum)
-            image.patches.append(car)
-            image.patches.append(joint)
-            image.lines.append(rod)
-            
-            return image
-
-        #A = Animation(drawfnc=draw, simdata=T.sim)
-        A = Animation(drawfnc=draw, simdata=T.sim,
-                        plotsys=[(0,'x'), (2,'phi')],
-                        plotinputs=[(0,'u1')])
-        xmin = np.min(T.sim[1][:,0])
-        xmax = np.max(T.sim[1][:,0])
-        A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
-        A.animate()
-        A.save('std_ex.mp4')
-    

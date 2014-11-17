@@ -352,7 +352,7 @@ variable :math:`x` is obtained via a composition of the calculated solution :mat
 
 There are some aspects to take into consideration when dealing with constraints:
 
-* The boundary values of a constrained variable have to be within the saturation limits
+* The boundary values of a constrained variable have to be strictly  within the saturation limits
 * It is not possible to make use of an integrator chain that contains a constrained variable
 
 Choice of the saturation functions

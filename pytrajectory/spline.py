@@ -73,7 +73,7 @@ class CubicSpline():
     
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=[None, None], bcd=[None, None], bcdd=[None, None], steady=True):
         self.a = a
         self.b = b
         self.n = int(n)
@@ -229,11 +229,11 @@ class CubicSpline():
 
         # mu represents degree of boundary conditions
         mu = -1
-        if (self.bc != None):
+        if (self.bc[0] is not None) or (self.bc[1] is not None):
             mu += 1
-        if (self.bcd != None):
+        if (self.bcd[0] is not None) or (self.bcd[1] is not None):
             mu += 1
-        if (self.bcdd != None):
+        if (self.bcdd[0] is not None) or (self.bcdd[1] is not None):
             mu += 1
 
         # now we determine the free parameters of the spline function
@@ -282,20 +282,23 @@ class CubicSpline():
             M[3*i:3*(i+1),4*i:4*(i+2)] = block
         
         # add equations for boundary conditions
-        if (self.bc != None):
+        if (self.bc[0] != None):
             M[3*(self.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
-            M[3*(self.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
             r[3*(self.n-1)] = self.bc[0]
+        if (self.bc[1] != None):
+            M[3*(self.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
             r[3*(self.n-1)+1] = self.bc[1]
-        if (self.bcd != None):
+        if (self.bcd[0] != None):
             M[3*(self.n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
-            M[3*(self.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
             r[3*(self.n-1)+2] = self.bcd[0]
+        if (self.bcd[1] != None):
+            M[3*(self.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
             r[3*(self.n-1)+3] = self.bcd[1]
-        if (self.bcdd != None):
+        if (self.bcdd[0] != None):
             M[3*(self.n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
-            M[3*(self.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
             r[3*(self.n-1)+4] = self.bcdd[0]
+        if (self.bcdd[1] != None):
+            M[3*(self.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
             r[3*(self.n-1)+5] = self.bcdd[1]
 
         # get A and B matrix --> see docu

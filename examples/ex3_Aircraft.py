@@ -41,11 +41,11 @@ xa = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 xb = [10.0, 0.0, 5.0, 0.0, 0.0, 0.0]
 
 # boundary values for the inputs
-g = [0.5*9.81*50.0/(cos(5/360.0*2*pi)),
-     0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ua = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ub = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, g=g)
+T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # don't take advantage of the system structure (integrator chains)
 # (this will result in a faster solution here)

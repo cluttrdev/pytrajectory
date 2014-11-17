@@ -4,7 +4,6 @@
 from pytrajectory.trajectory import Trajectory
 from sympy import cos, sin
 import numpy as np
-from numpy import pi
 
 # define the function that returns the vectorfield
 def f(x,u):
@@ -28,14 +27,15 @@ def f(x,u):
 	return ff
 
 # system state boundary values for a = 0.0 [s] and b = 2.0 [s]
-xa = [0.0, 0.0,  pi, 0.0,  pi, 0.0]
+xa = [0.0, 0.0,  np.pi, 0.0,  np.pi, 0.0]
 xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 # boundary values for the input
-uab= [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, g=uab)
+T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # alter some method parameters to increase performance
 T.setParam('su', 10)
