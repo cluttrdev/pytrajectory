@@ -18,6 +18,21 @@ if DEBUG:
     from IPython import embed as IPS
 
 
+def create_saturation_functions(y_fnc, dy_fnc, y0, y1):
+    m = 4.0/(y1-y0)
+    
+    def psi_y(t):
+        y = y_fnc(t)
+        return y1 - (y1-y0)/(1.0+np.exp(m*y))
+    
+    def dpsi_dy(t):
+        y = y_fnc(t)
+        dy = dy_fnc(t)
+        return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
+    
+    return psi_y, dpsi_dy
+
+
 class Trajectory():
     '''
     Base class of the PyTrajectory project.
@@ -292,20 +307,6 @@ class Trajectory():
             dy_fnc = dx_fnc[yk]
             
             # create the composition
-            def create_saturation_functions(y_fnc, dy_fnc, y0, y1):
-                m = 4.0/(y1-y0)
-                
-                def psi_y(t):
-                    y = y_fnc(t)
-                    return y1 - (y1-y0)/(1.0+np.exp(m*y))
-                
-                def dpsi_dy(t):
-                    y = y_fnc(t)
-                    dy = dy_fnc(t)
-                    return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
-                
-                return psi_y, dpsi_dy
-            
             psi_y, dpsi_dy = create_saturation_functions(y_fnc, dy_fnc, y0, y1)
             
             # replace the key/value pair of the unconstrained solution function and its
@@ -1380,7 +1381,7 @@ if __name__ == '__main__':
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-3)
+    T.setParam('ierr', 1e-2)
     #T.setParam('method', 'new')
     #T.setParam('method', 'powell')
     
