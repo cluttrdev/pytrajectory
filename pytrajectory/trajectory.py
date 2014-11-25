@@ -18,19 +18,107 @@ if DEBUG:
     from IPython import embed as IPS
 
 
-def create_saturation_functions(y_fnc, dy_fnc, y0, y1):
+def saturation_functions(y_fnc, dy_fnc, y0, y1):
+    '''
+    Creates callable saturation function and its first derivative to project 
+    the solution found for an unconstrained state variable back on the original
+    constrained one.
+    
+    For more information, please have a look at :ref:`handling_constraints`.
+    
+    Parameters
+    ----------
+    
+    y_fnc : callable
+        The calculated solution function for an unconstrained variable.
+    
+    dy_fnc : callable
+        The first derivative of the unconstrained solution function.
+    
+    y0 : float
+        Lower saturation limit.
+    
+    y1 : float
+        Upper saturation limit.
+    
+    Returns
+    -------
+    
+    callable
+        A callable function of a saturation function applied to a calculated solution
+        for an unconstrained state variable.
+    
+    callable
+        A callable function for the first derivative of a saturation function applied 
+        to a calculated solution for an unconstrained state variable.
+    '''
+    
+    # Calculate the parameter m such that the slope of the saturation function
+    # at t = 0 becomes 1
     m = 4.0/(y1-y0)
     
+    # this is the saturation function
     def psi_y(t):
         y = y_fnc(t)
         return y1 - (y1-y0)/(1.0+np.exp(m*y))
     
+    # and this its first derivative
     def dpsi_dy(t):
         y = y_fnc(t)
         dy = dy_fnc(t)
         return dy * (4.0*np.exp(m*y))/(1.0+np.exp(m*y))**2
     
     return psi_y, dpsi_dy
+
+
+def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, return_error_array=False):
+    '''
+    
+    Parameters
+    ----------
+    
+    I : tuple
+        The considered time interval.
+    
+    x_fnc : callable
+        A function for the state variables.
+    
+    u_fnc : callable
+        A function for the input variables.
+    
+    dx_fnc : callable
+        A function for the first derivatives of the state variables.
+    
+    ff_fnc : callable
+        A function for the vectorfield of the control system.
+    
+    return_error_array : bool
+        Whether or not to return the calculated errors (mainly for plotting).
+    
+    Returns
+    -------
+    
+    con_err : float
+    '''
+    
+    tt = np.linspace(I[0], I[1], 1000, endpoint=True)
+    
+    error = []
+    for t in tt:
+        x = x_fnc(t)
+        u = u_fnc(t)
+        
+        ff = ff_fnc(x, u)
+        dx = dx_fnc(t)
+        
+        error.append(ff - dx)
+    error = np.array(error)
+    max_con_err = error.max()
+    
+    if return_error_array:
+        return max_con_err, error
+    else:
+        return max_con_err
 
 
 class Trajectory():
@@ -307,7 +395,7 @@ class Trajectory():
             dy_fnc = dx_fnc[yk]
             
             # create the composition
-            psi_y, dpsi_dy = create_saturation_functions(y_fnc, dy_fnc, y0, y1)
+            psi_y, dpsi_dy = saturation_functions(y_fnc, dy_fnc, y0, y1)
             
             # replace the key/value pair of the unconstrained solution function and its
             # derivative with the created composition
@@ -340,10 +428,10 @@ class Trajectory():
         Returns
         -------
         
-        x : callable
+        callable
             Callable function for the system state.
         
-        u : callable
+        callable
             Callable function for the input variables.
         '''
 
@@ -396,7 +484,7 @@ class Trajectory():
             # store the old spline to calculate the guess later
             self.old_splines = self.splines
 
-            # start next iteration
+            # start next iteration step
             self.iterate()
 
             # check if desired accuracy is reached
@@ -411,6 +499,7 @@ class Trajectory():
         
         log.log_off()
         
+        # return the found solution functions
         return self.x, self.u
 
 
@@ -428,7 +517,10 @@ class Trajectory():
         log.info("    Determine system/input dimensions", verb=3)
         i = -1
         found_nm = False
-
+        
+        # maybe the following procedure fails if there are more input variables
+        # than state variables, so
+        # TODO: improve this!?
         while not found_nm:
             # iteratively increase system and input dimensions and try to call
             # symbolic vectorfield ff_sym with i/j-dimensional vectors
@@ -459,7 +551,8 @@ class Trajectory():
                     #        break
                     #    except:
                     #        pass
-
+        
+        # set system dimensions
         self.n = n
         self.m = m
 
@@ -545,10 +638,10 @@ class Trajectory():
         ----------
 
         param : str
-            Parameter of which to alter the value
+            Parameter of which to alter the value.
 
         val : ???
-            New value for the passed parameter
+            New value for the passed parameter.
         '''
         
         # check if current and new value have the same type
@@ -674,7 +767,9 @@ class Trajectory():
         self.guess = guess
         
         #################################
-        if DEBUG and self.nIt > 4 and 0:
+        if DEBUG and self.nIt > 1 and 0:
+            import matplotlib.pyplot as plt
+            
             tt = np.linspace(self.a, self.b, 1000)
             xt_old = np.zeros((1000,len(self.x_sym)))
             for i,x in enumerate(self.x_sym):
@@ -694,6 +789,8 @@ class Trajectory():
             
             self.sol = sol_bak
             self.splines = splines_bak
+            for s in self.splines.values():
+                s.prov_flag = True
         #################################
 
 
@@ -1125,7 +1222,8 @@ class Trajectory():
         and the given boundary values at the right border and compares its
         maximum against the tolerance set by self.eps
         '''
-
+        
+        
         # this is the solution of the simulation
         xt = self.sim[1]
 
@@ -1146,26 +1244,23 @@ class Trajectory():
         log.info(40*"-", verb=3)
         
         if self.mparam['ierr']:
+            # calculate maximum consistency error on the whole interval
+            maxH = consistency_error((self.a,self.b), self.x, self.u, self.dx, self.ff)
+            
             # calculate the error functions H_i(t)
-            H = dict()
-            
-            error = []
-            for t in self.sim[0]:
-                xe = self.x(t)
-                ue = self.u(t)
-                
-                ffe = self.ff(xe, ue)
-                dxe = self.dx(t)
-                
-                error.append(ffe - dxe)
-            error = np.array(error)
-            
-            for i in self.eqind:
-                H[i] = error[:,i]
-            
-            maxH = 0
-            for arr in H.values():
-                maxH = max(maxH, max(abs(arr)))
+            #H = dict()
+            #
+            #error = []
+            #for t in self.sim[0]:
+            #    xe = self.x(t)
+            #    ue = self.u(t)
+            #
+            #    ffe = self.ff(xe, ue)
+            #    dxe = self.dx(t)
+            #
+            #    error.append(ffe - dxe)
+            #error = np.array(error)
+            #maxH = error.max()
             
             self.reached_accuracy = maxH < self.mparam['ierr']
             log.info('maxH = %f'%maxH)
@@ -1255,8 +1350,6 @@ class Trajectory():
             return
 
         # calculate the error functions H_i(t)
-        H = dict()
-
         error = []
         for t in self.sim[0]:
             xe = self.x(t)
@@ -1268,6 +1361,8 @@ class Trajectory():
             error.append(ffe - dxe)
         error = np.array(error)
 
+        #max_con_err, error = consistency_error((self.a,self.b), self.x, self.u, self.dx, self.ff, True)
+        H = dict()
         for i in self.eqind:
             H[i] = error[:,i]
 
@@ -1381,7 +1476,7 @@ if __name__ == '__main__':
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-2)
+    T.setParam('ierr', 1e-4)
     #T.setParam('method', 'new')
     #T.setParam('method', 'powell')
     

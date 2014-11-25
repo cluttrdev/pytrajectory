@@ -10,8 +10,6 @@ from matplotlib.gridspec import GridSpec
 
 from IPython import embed as IPS
 
-# for import of PyMbs motion equations
-from sympy import *
 import os
 
 class IntegChain():
@@ -390,9 +388,8 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     Returns
     -------
     
-    f_num : callable
+    callable
         The callable ("numeric") vectorfield of the control system.
-    
     '''
     
     # get a sympy.Matrix representation of the vectorfield
