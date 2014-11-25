@@ -9,6 +9,18 @@ background that is the basis of PyTrajectory.
    :backlinks: none
 
 
+Trajectory planning with BVP's
+------------------------------
+
+The task in the field of trajectory planning PyTrajectory is intended
+to perform, is the transition of a control system between desired states.
+A possible way to solve such a problem is to treat it as a two-point
+boundary value problem with free parameters. This approach has been
+presented for example by K. Graichen and M. Zeitz ([Graichen06]_) and was
+picked up by O. Schnabel ([Schnabel13]_)  in the project thesis from which 
+PyTrajectory emerged.
+
+
 .. _collocation_method:
 
 Collocation Method
@@ -302,6 +314,9 @@ with :math:`0 < b_0 < b_1 < 1` and for :math:`b_0 = 0.2, b_1 = 0.8` we use the f
 * :math:`b_0 < \rho < b_1 \quad :` in the next step :math:`\mu` is maintained and :math:`s_k` is used
 * :math:`\rho \geq b_1 \qquad\quad :` :math:`s_k` is accepted and :math:`\mu` is halved during the next iteration
 
+
+.. _handling_constraints:
+
 Handling constraints
 --------------------
 
@@ -389,3 +404,6 @@ to be continued!?
    Graichen, K. and Zeitz, M. "Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen 
    (Inversion-Based Feedforward Control Design under Input and Output Constraints)" at - *Automatisierungstechnik*, 54.4/2006: 187-199
 
+.. [Schnabel13]
+   Schnabel, O. "Untersuchungen zur Trajektorienplanung durch Lösung eines Randwertproblems"
+   Technische Universität Dresden, Institut für Regelungs- und Steuerungstheorie, 2013

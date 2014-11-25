@@ -1,5 +1,5 @@
-Simple constrained double integrator
-------------------------------------
+Constrained double integrator
+-----------------------------
 
 This example is intended to present PyTrajectory's capabilities on handling system constraints.
 To do so, consider the double integrator which models the dynamics of a simple mass in an one-dimensional space, 

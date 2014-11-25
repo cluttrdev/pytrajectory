@@ -16,3 +16,4 @@ of PyTrajectory. The deriving of the model equations is omittted here.
    acrobot
    con_double_integrator
    con_inv_pendulum_swing
+   con_double_pendulum
