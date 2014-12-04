@@ -1,3 +1,5 @@
+.. _constrained_double_integrator:
+
 Constrained double integrator
 -----------------------------
 

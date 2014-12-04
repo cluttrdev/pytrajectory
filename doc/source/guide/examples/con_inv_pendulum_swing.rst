@@ -1,3 +1,5 @@
+.. _constrained_inverted_pendulum:
+
 Constrained swing up of the inverted pundulum
 ---------------------------------------------
 

@@ -8,7 +8,7 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex8_ConstrainedDoublePendulum.py
-   :lines: 1-70
+   :lines: 1-88
 
 .. only:: html
 

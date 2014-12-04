@@ -397,8 +397,14 @@ The parameter :math:`m` affects the slope of the function at :math:`y = 0` and i
 An example
 ++++++++++
 
-to be continued!?
+For examples on how to handle constraints with PyTrajectory please have a
+look at the :ref:`examples` section, e.g. the :ref:`constrained_double_integrator`
+or the :ref:`constrained_inverted_pendulum`.
 
+.. _references:
+
+References
+----------
 
 .. [Graichen06] 
    Graichen, K. and Zeitz, M. "Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen 
