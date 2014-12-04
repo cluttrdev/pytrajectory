@@ -2,13 +2,14 @@
 import numpy as np
 import sympy as sp
 import scipy as scp
+from scipy import sparse
 from scipy.sparse.csr import csr_matrix
 import pickle
 
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
-from utilities import IntegChain, plotsim, sym2num_vectorfield
+from utilities import IntegChain, plotsim
 import log
 
 # DEBUGGING
@@ -16,6 +17,51 @@ DEBUG = True
 
 if DEBUG:
     from IPython import embed as IPS
+
+
+def sym2num_vectorfield(f_sym, x_sym, u_sym):
+    '''
+    This function takes a callable vectorfield of a control system that is to be evaluated with symbols
+    for the state and input variables and returns a corresponding function that can be evaluated with
+    numeric values for these variables.
+    
+    Parameters
+    ----------
+    
+    f_sym : callable
+        The callable ("symbolic") vectorfield of the control system.
+    
+    x_sym : iterable
+        The symbols for the state variables of the control system.
+    
+    u_sym : iterable
+        The symbols for the input variables of the control system.
+    
+    Returns
+    -------
+    
+    callable
+        The callable ("numeric") vectorfield of the control system.
+    '''
+    
+    # get a sympy.Matrix representation of the vectorfield
+    F = sp.Matrix(f_sym(x_sym, u_sym))
+    if F.T == F.vec():
+        F = F.tolist()[0]
+    else:
+        F = F.T.tolist()[0]
+    
+    # Use lambdify to replace sympy functions in the vectorfield with
+    # numpy equivalents
+    _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
+    
+    # Create a wrapper as the actual function because due to the behaviour
+    # of lambdify()
+    def f_num(x, u):
+        xu = np.hstack((x, u))
+        return np.array(_f_num(*xu))
+    
+    return f_num
 
 
 def saturation_functions(y_fnc, dy_fnc, y0, y1):
@@ -101,7 +147,7 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, return_error_array=False)
     con_err : float
     '''
     
-    tt = np.linspace(I[0], I[1], 1000, endpoint=True)
+    tt = np.linspace(I[0], I[1], 500, endpoint=True)
     
     error = []
     for t in tt:
@@ -133,7 +179,6 @@ class Trajectory():
     for the system and input variables as well as some capabilities for
     visualising the systems dynamic.
 
-
     Parameters
     ----------
 
@@ -161,7 +206,6 @@ class Trajectory():
     constraints : dict
         Box-constraints of the state variables
     
-    
     Attributes
     ----------
     
@@ -175,7 +219,7 @@ class Trajectory():
         su          5               Initial number of spline parts for the input variables
         kx          2               Factor for raising the number of spline parts
         delta       2               Constant for calculation of collocation points
-        maxIt       7               Maximum number of iteration steps
+        maxIt       10               Maximum number of iteration steps
         eps         1e-2            Tolerance for the solution of the initial value problem
         ierr        1e-1            Tolerance for the error on the whole interval
         tol         1e-5            Tolerance for the solver of the equation system
@@ -183,6 +227,7 @@ class Trajectory():
         use_chains  True            Whether or not to use integrator chains
         colltype    'equidistant'   The type of the collocation points
         use_sparse  True            Whether or not to use sparse matrices
+        sol_steps   100             maximum number of iteration steps for the eqs solver
         ==========  =============   =======================================================
     '''
     
@@ -210,7 +255,8 @@ class Trajectory():
                         'method' : 'leven',
                         'use_chains' : True,
                         'colltype' : 'equidistant',
-                        'use_sparse' : True}
+                        'use_sparse' : True,
+                        'sol_steps' : 100}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -239,7 +285,7 @@ class Trajectory():
         self.u_fnc = dict()
         self.dx_fnc = dict()
 
-        # Create symbolic variables
+        # Create symbolic variables -> this is now done by analyseSystem()
         #self.x_sym = ([sp.symbols('x%d' % i, type=float) for i in xrange(1,self.n+1)])
         #self.u_sym = ([sp.symbols('u%d' % i, type=float) for i in xrange(1,self.m+1)])
         
@@ -255,13 +301,21 @@ class Trajectory():
         self.ub = dict()
         
         for i, uu in enumerate(self.u_sym):
-            self.ua[uu] = ua[i]
-            self.ub[uu] = ub[i]
+            try:
+                self.ua[uu] = ua[i]
+            except:
+                self.ua[uu] = None
+            
+            try:
+                self.ub[uu] = ub[i]
+            except:
+                self.ub[uu] = None
         
         # HERE WE HANDLE THE STATE CONSTRAINTS
         self.constraints = constraints
         if self.constraints:
             self.unconstrain()
+            self.mparam['use_chains', False]
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
@@ -309,7 +363,7 @@ class Trajectory():
                 log.error('Boundary values have to be strictly within the saturation limits')
                 log.info('Please have a look at the documentation, \
                           especially the example of the constrained double intgrator')
-                sys.exit(1)
+                raise ValueError('Boundary values have to be strictly within the saturation limits')
             
             # replace constrained state variable with new unconstrained one
             x_sym[k] = sp.Symbol('y%d'%(k+1))
@@ -394,14 +448,15 @@ class Trajectory():
             y_fnc = x_fnc[yk]
             dy_fnc = dx_fnc[yk]
             
-            # create the composition
+            # create the compositions
             psi_y, dpsi_dy = saturation_functions(y_fnc, dy_fnc, y0, y1)
             
-            # replace the key/value pair of the unconstrained solution function and its
-            # derivative with the created composition
+            # put created compositions into dictionaries of solution functions
             self.x_fnc[xk] = psi_y
-            self.x_fnc.pop(yk)
             self.dx_fnc[xk] = dpsi_dy
+            
+            # remove solutions for unconstrained auxiliary variable and its derivative
+            self.x_fnc.pop(yk)
             self.dx_fnc.pop(yk)
         
         # restore the original boundary values, variables and vectorfield function
@@ -454,6 +509,10 @@ class Trajectory():
                     idx = self.x_sym.index(ic.lower)
                     eqind.append(idx)
             eqind.sort()
+            
+            # if every integrator chain ended with input variable
+            if not eqind:
+                eqind = range(self.n)
         else:
             # if integrator chains should not be used
             # then every equation has to be solved by collocation
@@ -461,7 +520,7 @@ class Trajectory():
 
         # save equation indices
         self.eqind = np.array(eqind)
-
+        
         # start first iteration
         self.iterate()
         
@@ -518,7 +577,7 @@ class Trajectory():
         i = -1
         found_nm = False
         
-        # maybe the following procedure fails if there are more input variables
+        # the following procedure fails maybe (or probably) if there are more input variables
         # than state variables, so
         # TODO: improve this!?
         while not found_nm:
@@ -1020,12 +1079,14 @@ class Trajectory():
         DXU = []
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
+        xu_len = x_len + u_len
 
         for i in xrange(len(cpts)):
             DXU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
-
+        
         self.DXU = DXU
-
+        self.DXU_s = sparse.csr_matrix(np.vstack(DXU))
+        
         if self.mparam['use_sparse']:
             self.Mx = csr_matrix(self.Mx)
             self.Mx_abs = csr_matrix(self.Mx_abs)
@@ -1035,6 +1096,95 @@ class Trajectory():
             self.Mu_abs = csr_matrix(self.Mu_abs)
 
             self.DdX = csr_matrix(self.DdX)
+        
+        ####################################################
+        # NEW: define functions for eqs and jacobian here
+        
+        # make some stuff local
+        ff = self.ff
+        Df = self.Df
+        
+        eqind = self.eqind
+        
+        cp_len = len(cpts)
+        x_len = len(self.x_sym)
+        u_len = len(self.u_sym)
+        xu_len = x_len + u_len
+        
+        # make sparse matrices
+        Mx = csr_matrix(self.Mx)
+        Mx_abs = csr_matrix(self.Mx_abs)
+        Mdx = csr_matrix(self.Mdx)
+        Mdx_abs = csr_matrix(self.Mdx_abs)
+        Mu = csr_matrix(self.Mu)
+        Mu_abs = csr_matrix(self.Mu_abs)
+
+        DdX = csr_matrix(self.DdX)
+        DXU_s = self.DXU_s
+        
+        
+        # templates
+        F = np.empty((cp_len, len(eqind)))
+        DF = sparse.dok_matrix( (cp_len*x_len, xu_len*cp_len) )
+        
+        # define the callable functions for the eqs
+        def G(c):
+            '''
+            Returns the collocation system evaluated with numeric values for the
+            independent parameters.
+            '''
+            
+            X = Mx.dot(c) + Mx_abs
+            U = Mu.dot(c) + Mu_abs
+
+            X = np.array(X).reshape((-1,x_len))
+            U = np.array(U).reshape((-1,u_len))
+
+            # evaluate system equations and select those related
+            # to lower ends of integrator chains (via eqind)
+            # other equations need not to be solved
+            for i in xrange(cp_len):
+                F[i,:] = ff(X[i], U[i])[eqind]
+            
+            dX = Mdx.dot(c) + Mdx_abs
+            dX = np.array(dX).reshape((-1,x_len))[:,eqind]
+        
+            G = F - dX
+            
+            return G.flatten()
+        
+        # and its jacobian
+        def DG(c):
+            '''
+            Returns the jacobian matrix of the collocation system w.r.t. the
+            independent parameters evaluated at :attr:`c`.
+            '''
+            
+            # first we calculate the x and u values in all collocation points
+            # with the current numerical values of the free parameters
+            X = Mx.dot(c) + Mx_abs
+            X = np.array(X).reshape((-1,x_len)) # one column for every state component
+            U = Mu.dot(c) + Mu_abs
+            U = np.array(U).reshape((-1,u_len)) # one column for every input component
+            
+            # TODO: why is global DF from templates above not visible here? 
+            DF = sparse.dok_matrix( (cp_len*x_len, xu_len*cp_len) )
+            
+            for i in xrange(X.shape[0]):
+                tmp_xu = np.hstack((X[i], U[i]))
+                tmp_Df = Df(*tmp_xu).tolist()
+                for j in xrange(x_len):
+                    DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
+            DF = sparse.csr_matrix(DF).dot(DXU_s)
+        
+            DG = DF - DdX
+            
+            return DG
+        
+        
+        self.G = G
+        self.DG = DG
+        ####################################################
 
 
     def solveEQS(self):
@@ -1045,98 +1195,118 @@ class Trajectory():
         log.info("  Solving Equation System", verb=2)
         
         # create our solver
-        solver = Solver(self.G, self.DG, self.guess, tol= self.mparam['tol'],
-                        method=self.mparam['method'])
+        solver = Solver(F=self.G, DF=self.DG, x0=self.guess, tol=self.mparam['tol'],
+                        maxIt=self.mparam['sol_steps'], method=self.mparam['method'])
         
         # solve the equation system
         self.sol = solver.solve()
 
 
-    def G(self, c):
-        '''
-        Returns the collocation system evaluated with numeric values for the
-        independent parameters.
-        '''
-
-        ff = self.ff
-        eqind = self.eqind
-
-        x_len = len(self.x_sym)
-        u_len = len(self.u_sym)
-
-        X = self.Mx.dot(c) + self.Mx_abs
-        U = self.Mu.dot(c) + self.Mu_abs
-
-        X = np.array(X).reshape((-1,x_len))
-        U = np.array(U).reshape((-1,u_len))
-
-        # evaluate system equations and select those related
-        # to lower ends of integrator chains (via eqind)
-        # other equations need not to be solved
-        F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
-
-        dX = self.Mdx.dot(c) + self.Mdx_abs
-        dX = np.array(dX).reshape((-1,x_len))[:,eqind]
-
-        G = F-dX
-
-        return G.flatten()
-
-
-    def DG(self, c):
-        '''
-        Returns the jacobian matrix of the collocation system w.r.t. the
-        independent parameters evaluated at :attr:`c`.
-        '''
-
-        # make callable function for the jacobian matrix of the vectorfield local
-        Df = self.Df
-        eqind = self.eqind
-
-        x_len = len(self.x_sym)
-        u_len = len(self.u_sym)
-
-        # first we calculate the x and u values in all collocation points
-        # with the current numerical values of the free parameters
-        X = self.Mx.dot(c) + self.Mx_abs
-        X = np.array(X).reshape((-1,x_len)) # one column for every state component
-        U = self.Mu.dot(c) + self.Mu_abs
-        U = np.array(U).reshape((-1,u_len)) # one column for every input component
-
-        # now we compute blocks of the jacobian matrix of the vectorfield with those values
-        DF_blocks = []
-        for x,u in zip(X,U):
-            # get one row of X and U respectively
-            tmp_xu = np.hstack((x,u))
-
-            # evaluate the jacobian of the vectorfield at current collocation point represented by
-            # the row of X and U
-            DF_blocks.append(Df(*tmp_xu))
-
-        # because the system/input variables depend on the free parameters we have to multiply each
-        # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
-        # --> see buildEQS()
-        DF = []
-        for i in xrange(len(DF_blocks)):
-            res = np.dot(DF_blocks[i], self.DXU[i])
-            assert res.shape == (x_len,len(self.c_list))
-            DF.append(res)
-
-        DF = np.array(DF)[:,eqind,:]
-        # 1st index : collocation point
-        # 2nd index : equations that have to be solved --> end of an integrator chain
-        # 3rd index : component of c
-
-        # now compute jacobian of x_dot w.r.t. to indep coeffs
-        # --> see buildEQS()
-        #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
-        DdX = self.DdX
-
-        # stack matrices in vertical direction
-        #DG = np.vstack(DF) - np.vstack(DdX)
-        DG = np.vstack(DF) - DdX
-
-        return DG
+#     def G(self, c):
+#         '''
+#         Returns the collocation system evaluated with numeric values for the
+#         independent parameters.
+#         '''
+#
+#         ff = self.ff
+#         eqind = self.eqind
+#
+#         x_len = len(self.x_sym)
+#         u_len = len(self.u_sym)
+#
+#         X = self.Mx.dot(c) + self.Mx_abs
+#         U = self.Mu.dot(c) + self.Mu_abs
+#
+#         X = np.array(X).reshape((-1,x_len))
+#         U = np.array(U).reshape((-1,u_len))
+#
+#         # evaluate system equations and select those related
+#         # to lower ends of integrator chains (via eqind)
+#         # other equations need not to be solved
+#         F = np.empty((X.shape[0], len(eqind)))
+#         for i in xrange(X.shape[0]):
+#             F[i,:] = ff(X[i], U[i])[eqind]
+#         IPS()
+#         F = []
+#         for i in xrange(X.shape[0]):
+#             F.append( ff(X[i], U[i]) )
+#         F = np.array(F)[:,eqind]
+#         #F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
+#
+#         dX = self.Mdx.dot(c) + self.Mdx_abs
+#         dX = np.array(dX).reshape((-1,x_len))[:,eqind]
+#
+#         G = F-dX
+#         IPS()
+#         1/0
+#         return G.flatten()
+#
+#
+#     def DG(self, c):
+#         '''
+#         Returns the jacobian matrix of the collocation system w.r.t. the
+#         independent parameters evaluated at :attr:`c`.
+#         '''
+#
+#         # make callable function for the jacobian matrix of the vectorfield local
+#         Df = self.Df
+#         eqind = self.eqind
+#
+#         x_len = len(self.x_sym)
+#         u_len = len(self.u_sym)
+#         xu_len = x_len + u_len
+#
+#         # first we calculate the x and u values in all collocation points
+#         # with the current numerical values of the free parameters
+#         X = self.Mx.dot(c) + self.Mx_abs
+#         X = np.array(X).reshape((-1,x_len)) # one column for every state component
+#         U = self.Mu.dot(c) + self.Mu_abs
+#         U = np.array(U).reshape((-1,u_len)) # one column for every input component
+#
+#         DF_s = sparse.dok_matrix( (X.size, xu_len*X.shape[0]) )
+#         for i in xrange(X.shape[0]):
+#             tmp_xu = np.hstack((X[i], U[i]))
+#             tmp_Df = Df(*tmp_xu).tolist()
+#             for j in xrange(x_len):
+#                 DF_s[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
+#         DF_s = sparse.csr_matrix(DF_s).dot(self.DXU_s)
+#
+#         DG = DF_s - self.DdX
+#
+# #        # now we compute blocks of the jacobian matrix of the vectorfield with those values
+# #        DF_blocks = []
+# #        for x,u in zip(X,U):
+# #            # get one row of X and U respectively
+# #            tmp_xu = np.hstack((x,u))
+# #
+# #            # evaluate the jacobian of the vectorfield at current collocation point represented by
+# #            # the row of X and U
+# #            DF_blocks.append(Df(*tmp_xu))
+# #
+# #        # because the system/input variables depend on the free parameters we have to multiply each
+# #        # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
+# #        # --> see buildEQS()
+# #        DF = []
+# #        for i in xrange(len(DF_blocks)):
+# #            res = np.dot(DF_blocks[i], self.DXU[i])
+# #            #assert res.shape == (x_len,len(self.c_list))
+# #            DF.append(res)
+# #        IPS()
+# #        DF = np.array(DF)[:,eqind,:]
+# #        # 1st index : collocation point
+# #        # 2nd index : equations that have to be solved --> end of an integrator chain
+# #        # 3rd index : component of c
+# #
+# #        # now compute jacobian of x_dot w.r.t. to indep coeffs
+# #        # --> see buildEQS()
+# #        #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
+# #
+# #        # stack matrices in vertical direction
+# #        #DG = np.vstack(DF) - np.vstack(DdX)
+# #        DG = np.vstack(DF) - self.DdX
+# #        IPS()
+# #        1/0
+#         return DG
 
 
     def setCoeff(self):
@@ -1262,7 +1432,7 @@ class Trajectory():
             #error = np.array(error)
             #maxH = error.max()
             
-            self.reached_accuracy = maxH < self.mparam['ierr']
+            self.reached_accuracy = (maxH < self.mparam['ierr']) and (max(err) < self.mparam['eps'])
             log.info('maxH = %f'%maxH)
         else:
             # just check if tolerance for the boundary values is satisfied
