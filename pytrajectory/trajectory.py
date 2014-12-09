@@ -3,7 +3,6 @@ import numpy as np
 import sympy as sp
 import scipy as scp
 from scipy import sparse
-from scipy.sparse.csr import csr_matrix
 import pickle
 
 from spline import CubicSpline, fdiff
@@ -117,7 +116,7 @@ def saturation_functions(y_fnc, dy_fnc, y0, y1):
     return psi_y, dpsi_dy
 
 
-def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, return_error_array=False):
+def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500,return_error_array=False):
     '''
     
     Parameters
@@ -138,16 +137,21 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, return_error_array=False)
     ff_fnc : callable
         A function for the vectorfield of the control system.
     
+    npts : int
+        Number of point to determine the error at.
+    
     return_error_array : bool
         Whether or not to return the calculated errors (mainly for plotting).
     
     Returns
     -------
     
-    con_err : float
+    max_con_err : float
+    
+    con_err : numpy.ndarray
     '''
     
-    tt = np.linspace(I[0], I[1], 500, endpoint=True)
+    tt = np.linspace(I[0], I[1], npts, endpoint=True)
     
     error = []
     for t in tt:
@@ -227,8 +231,19 @@ class Trajectory():
         use_chains  True            Whether or not to use integrator chains
         colltype    'equidistant'   The type of the collocation points
         use_sparse  True            Whether or not to use sparse matrices
-        sol_steps   100             maximum number of iteration steps for the eqs solver
+        sol_steps   100             Maximum number of iteration steps for the eqs solver
         ==========  =============   =======================================================
+    
+    Methods
+    -------
+    
+    G
+        Returns the collocation system evaluated with numeric values for the
+        independent parameters.
+    
+    DG
+        Returns the jacobian matrix of the collocation system w.r.t. the
+        independent parameters
     '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, ua=None, ub=None, constraints=None, **kwargs):
@@ -311,15 +326,36 @@ class Trajectory():
             except:
                 self.ub[uu] = None
         
-        # HERE WE HANDLE THE STATE CONSTRAINTS
+        # now we handle system constraints if there are any
         self.constraints = constraints
         if self.constraints:
+            # transform the constrained vectorfield into an unconstrained one
             self.unconstrain()
-            self.mparam['use_chains', False]
+            
+            # we cannot make use of an integrator chain
+            # if it contains a constrained variable
+            self.mparam['use_chains'] = False
+            # TODO: implement it so that just those chains are not use 
+            #       which actually contain a constrained variable
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
         self.ff = sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
+        
+        # initialise dummy procedures for the later equation system and its jecobian
+        # --> they will be defined in self.buildEQS()
+        self.G = lambda c : 'NotImplemented'   #raise NotImplementedError
+        self.DG = lambda c : 'NotImplemented'  #raise NotImplementedError
+        
+        # add docstrings?
+        #self.G.__doc__ = '''
+        #    Returns the collocation system evaluated with numeric values for the
+        #    independent parameters.
+        #    '''
+        #self.DG.__doc__ = '''
+        #    Returns the jacobian matrix of the collocation system w.r.t. the
+        #    independent parameters
+        #    '''
         
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
@@ -328,6 +364,137 @@ class Trajectory():
         self.sol = None
 
         
+    def analyseSystem(self):
+        '''
+        Analyse the system structure and set values for some of the method parameters.
+
+        By now, this method just determines the number of state and input variables
+        and searches for integrator chains.
+        '''
+
+        log.info("  Analysing System Structure", verb=2)
+        
+        # first, determine system dimensions
+        log.info("    Determine system/input dimensions", verb=3)
+        
+        # the number of input variables can be determined via the length
+        # of the boundary value lists
+        #n = len(self.xa)
+        
+        i = -1
+        found_nm = False
+        
+        # the following procedure fails maybe (or probably) if there are more input variables
+        # than state variables, so
+        # TODO: improve this!?
+        while not found_nm:
+            # iteratively increase system and input dimensions and try to call
+            # symbolic vectorfield ff_sym with i/j-dimensional vectors
+            i += 1
+
+            for j in xrange(i):
+                x = np.ones(i)
+                u = np.ones(j)
+
+                try:
+                    self.ff_sym(x, u)
+                    # if no ValueError is raised, i is the system dimension
+                    # and j is the dimension of the inputs
+                    found_nm = True
+                    n = i
+                    m = j
+                    break
+                except ValueError:
+                    # unpacking error inside ff_sym
+                    # (that means the dimensions don't match)
+                    pass
+                    #if j == 0:
+                    #    try:
+                    #        self.ff_sym(x)
+                    #        found_nm = True
+                    #        n = i
+                    #        m = j
+                    #        break
+                    #    except:
+                    #        pass
+        
+        # set system dimensions
+        self.n = n
+        self.m = m
+
+        log.info("      --> system: %d"%n, verb=3)
+        log.info("      --> input : %d"%m, verb=3)
+
+        # next, we look for integrator chains
+        log.info("    Looking for integrator chains", verb=3)
+
+        # create symbolic variables to find integrator chains
+        x_sym = ([sp.symbols('x%d' % k, type=float) for k in xrange(1,n+1)])
+        u_sym = ([sp.symbols('u%d' % k, type=float) for k in xrange(1,m+1)])
+
+        fi = self.ff_sym(x_sym, u_sym)
+
+        chaindict = {}
+        for i in xrange(len(fi)):
+            # substitution because of sympy difference betw. 1.0 and 1
+            if isinstance(fi[i], sp.Basic):
+                fi[i] = fi[i].subs(1.0, 1)
+
+            for xx in x_sym:
+                if fi[i] == xx:
+                    chaindict[xx] = x_sym[i]
+
+            for uu in u_sym:
+                if fi[i] == uu:
+                    chaindict[uu] = x_sym[i]
+
+        # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
+        # where x_4 = d/dt x_3 and so on
+
+        # find upper ends of integrator chains
+        uppers = []
+        for vv in chaindict.values():
+            if (not chaindict.has_key(vv)):
+                uppers.append(vv)
+
+        # create ordered lists that temporarily represent the integrator chains
+        tmpchains = []
+
+        # therefore we flip the dictionary to work our way through its keys
+        # (former values)
+        dictchain = {v:k for k,v in chaindict.items()}
+
+        for var in uppers:
+            tmpchain = []
+            vv = var
+            tmpchain.append(vv)
+
+            while dictchain.has_key(vv):
+                vv = dictchain[vv]
+                tmpchain.append(vv)
+
+            tmpchains.append(tmpchain)
+
+        # create an integrator chain object for every temporary chain
+        chains = []
+        for lst in tmpchains:
+            ic = IntegChain(lst)
+            chains.append(ic)
+            log.info("      --> found: " + str(ic), verb=3)
+
+        self.chains = chains
+        self.x_sym = x_sym
+        self.u_sym = u_sym
+
+        # get minimal neccessary number of spline parts
+        # for the manipulated variables
+        # TODO: implement this!?
+        # --> (3.35)      ?????
+        #nu = -1
+        #...
+        #self.su = self.n - 3 + 2*(nu + 1)  ?????
+
+
     def unconstrain(self):
         '''
         This method is used to enable compliance with the desired box constraints.
@@ -552,7 +719,9 @@ class Trajectory():
         # clear workspace
         self.clear()
         
-        # HERE WE HAVE TO CONSTRAIN THE STATE FUNCTIONS
+        # as a last we, if there were any constraints to be taken care of,
+        # we project the unconstrained variables back on the original
+        # constrained ones
         if self.constraints:
             self.constrain()
         
@@ -560,132 +729,6 @@ class Trajectory():
         
         # return the found solution functions
         return self.x, self.u
-
-
-    def analyseSystem(self):
-        '''
-        Analyse the system structure and set values for some of the method parameters.
-
-        By now, this method just determines the number of state and input variables
-        and searches for integrator chains.
-        '''
-
-        log.info("  Analysing System Structure", verb=2)
-        
-        # first, determine system dimensions
-        log.info("    Determine system/input dimensions", verb=3)
-        i = -1
-        found_nm = False
-        
-        # the following procedure fails maybe (or probably) if there are more input variables
-        # than state variables, so
-        # TODO: improve this!?
-        while not found_nm:
-            # iteratively increase system and input dimensions and try to call
-            # symbolic vectorfield ff_sym with i/j-dimensional vectors
-            i += 1
-
-            for j in xrange(i):
-                x = np.ones(i)
-                u = np.ones(j)
-
-                try:
-                    self.ff_sym(x, u)
-                    # if no ValueError is raised, i is the system dimension
-                    # and j is the dimension of the inputs
-                    found_nm = True
-                    n = i
-                    m = j
-                    break
-                except ValueError:
-                    # unpacking error inside ff_sym
-                    # (that means the dimensions don't match)
-                    pass
-                    #if j == 0:
-                    #    try:
-                    #        self.ff_sym(x)
-                    #        found_nm = True
-                    #        n = i
-                    #        m = j
-                    #        break
-                    #    except:
-                    #        pass
-        
-        # set system dimensions
-        self.n = n
-        self.m = m
-
-        log.info("      --> system: %d"%n, verb=3)
-        log.info("      --> input : %d"%m, verb=3)
-
-        # next, we look for integrator chains
-        log.info("    Looking for integrator chains", verb=3)
-
-        # create symbolic variables to find integrator chains
-        x_sym = ([sp.symbols('x%d' % k, type=float) for k in xrange(1,n+1)])
-        u_sym = ([sp.symbols('u%d' % k, type=float) for k in xrange(1,m+1)])
-
-        fi = self.ff_sym(x_sym, u_sym)
-
-        chaindict = {}
-        for i in xrange(len(fi)):
-            # substitution because of sympy difference betw. 1.0 and 1
-            if isinstance(fi[i], sp.Basic):
-                fi[i] = fi[i].subs(1.0, 1)
-
-            for xx in x_sym:
-                if fi[i] == xx:
-                    chaindict[xx] = x_sym[i]
-
-            for uu in u_sym:
-                if fi[i] == uu:
-                    chaindict[uu] = x_sym[i]
-
-        # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
-        # where x_4 = d/dt x_3 and so on
-
-        # find upper ends of integrator chains
-        uppers = []
-        for vv in chaindict.values():
-            if (not chaindict.has_key(vv)):
-                uppers.append(vv)
-
-        # create ordered lists that temporarily represent the integrator chains
-        tmpchains = []
-
-        # therefore we flip the dictionary to work our way through its keys
-        # (former values)
-        dictchain = {v:k for k,v in chaindict.items()}
-
-        for var in uppers:
-            tmpchain = []
-            vv = var
-            tmpchain.append(vv)
-
-            while dictchain.has_key(vv):
-                vv = dictchain[vv]
-                tmpchain.append(vv)
-
-            tmpchains.append(tmpchain)
-
-        # create an integrator chain object for every temporary chain
-        chains = []
-        for lst in tmpchains:
-            ic = IntegChain(lst)
-            chains.append(ic)
-            log.info("      --> found: " + str(ic), verb=3)
-
-        self.chains = chains
-        self.x_sym = x_sym
-        self.u_sym = u_sym
-
-        # get minimal neccessary number of spline parts
-        # for the manipulated variables
-        # TODO: implement this!?
-        # --> (3.35)      ?????
-        #nu = -1
-        #...
-        #self.su = self.n - 3 + 2*(nu + 1)  ?????
 
 
     def setParam(self, param='', val=None):
@@ -1053,26 +1096,26 @@ class Trajectory():
                 Mu[equ] = mu
                 equ += 1
 
-        self.Mx = np.array(Mx)
-        self.Mx_abs = np.array(Mx_abs)
-        self.Mdx = np.array(Mdx)
-        self.Mdx_abs = np.array(Mdx_abs)
-        self.Mu = np.array(Mu)
-        self.Mu_abs = np.array(Mu_abs)
+        Mx = np.array(Mx)
+        Mx_abs = np.array(Mx_abs)
+        Mdx = np.array(Mdx)
+        Mdx_abs = np.array(Mdx_abs)
+        Mu = np.array(Mu)
+        Mu_abs = np.array(Mu_abs)
         
         # here we create a callable function for the jacobian matrix of the vectorfield
         # w.r.t. to the system and input variables
         f = self.ff_sym(x_sym,u_sym)
         Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
-        self.Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
+        Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
 
         # the following would be created with every call to self.DG but it is possible to
         # only do it once. So we do it here to speed things up.
 
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
-        DdX = self.Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,self.eqind,:]
-        self.DdX = np.vstack(DdX)
+        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,self.eqind,:]
+        DdX = np.vstack(DdX)
 
         # here we compute the jacobian matrix of the system/input functions as they also depend on
         # the free parameters
@@ -1082,27 +1125,25 @@ class Trajectory():
         xu_len = x_len + u_len
 
         for i in xrange(len(cpts)):
-            DXU.append(np.vstack(( self.Mx[x_len*i:x_len*(i+1)], self.Mu[u_len*i:u_len*(i+1)] )))
-        
-        self.DXU = DXU
-        self.DXU_s = sparse.csr_matrix(np.vstack(DXU))
+            DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)], Mu[u_len*i:u_len*(i+1)] )))
+        DXU = np.vstack(DXU)
         
         if self.mparam['use_sparse']:
-            self.Mx = csr_matrix(self.Mx)
-            self.Mx_abs = csr_matrix(self.Mx_abs)
-            self.Mdx = csr_matrix(self.Mdx)
-            self.Mdx_abs = csr_matrix(self.Mdx_abs)
-            self.Mu = csr_matrix(self.Mu)
-            self.Mu_abs = csr_matrix(self.Mu_abs)
+            Mx = sparse.csr_matrix(Mx)
+            Mx_abs = sparse.csr_matrix(Mx_abs)
+            Mdx = sparse.csr_matrix(Mdx)
+            Mdx_abs = sparse.csr_matrix(Mdx_abs)
+            Mu = sparse.csr_matrix(Mu)
+            Mu_abs = sparse.csr_matrix(Mu_abs)
 
-            self.DdX = csr_matrix(self.DdX)
-        
+            DdX = sparse.csr_matrix(DdX)
+            DXU = sparse.csr_matrix(DXU)
+            
         ####################################################
         # NEW: define functions for eqs and jacobian here
         
         # make some stuff local
         ff = self.ff
-        Df = self.Df
         
         eqind = self.eqind
         
@@ -1110,18 +1151,6 @@ class Trajectory():
         x_len = len(self.x_sym)
         u_len = len(self.u_sym)
         xu_len = x_len + u_len
-        
-        # make sparse matrices
-        Mx = csr_matrix(self.Mx)
-        Mx_abs = csr_matrix(self.Mx_abs)
-        Mdx = csr_matrix(self.Mdx)
-        Mdx_abs = csr_matrix(self.Mdx_abs)
-        Mu = csr_matrix(self.Mu)
-        Mu_abs = csr_matrix(self.Mu_abs)
-
-        DdX = csr_matrix(self.DdX)
-        DXU_s = self.DXU_s
-        
         
         # templates
         F = np.empty((cp_len, len(eqind)))
@@ -1143,6 +1172,8 @@ class Trajectory():
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
             # other equations need not to be solved
+            #F = np.empty((cp_len, len(eqind)))
+            
             for i in xrange(cp_len):
                 F[i,:] = ff(X[i], U[i])[eqind]
             
@@ -1175,12 +1206,11 @@ class Trajectory():
                 tmp_Df = Df(*tmp_xu).tolist()
                 for j in xrange(x_len):
                     DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
-            DF = sparse.csr_matrix(DF).dot(DXU_s)
+            DF = sparse.csr_matrix(DF).dot(DXU)
         
             DG = DF - DdX
             
             return DG
-        
         
         self.G = G
         self.DG = DG
@@ -1200,115 +1230,12 @@ class Trajectory():
         
         # solve the equation system
         self.sol = solver.solve()
-
-
-#     def G(self, c):
-#         '''
-#         Returns the collocation system evaluated with numeric values for the
-#         independent parameters.
-#         '''
-#
-#         ff = self.ff
-#         eqind = self.eqind
-#
-#         x_len = len(self.x_sym)
-#         u_len = len(self.u_sym)
-#
-#         X = self.Mx.dot(c) + self.Mx_abs
-#         U = self.Mu.dot(c) + self.Mu_abs
-#
-#         X = np.array(X).reshape((-1,x_len))
-#         U = np.array(U).reshape((-1,u_len))
-#
-#         # evaluate system equations and select those related
-#         # to lower ends of integrator chains (via eqind)
-#         # other equations need not to be solved
-#         F = np.empty((X.shape[0], len(eqind)))
-#         for i in xrange(X.shape[0]):
-#             F[i,:] = ff(X[i], U[i])[eqind]
-#         IPS()
-#         F = []
-#         for i in xrange(X.shape[0]):
-#             F.append( ff(X[i], U[i]) )
-#         F = np.array(F)[:,eqind]
-#         #F = np.array([ff(x,u) for x,u in zip(X,U)], dtype=float).squeeze()[:,eqind]
-#
-#         dX = self.Mdx.dot(c) + self.Mdx_abs
-#         dX = np.array(dX).reshape((-1,x_len))[:,eqind]
-#
-#         G = F-dX
-#         IPS()
-#         1/0
-#         return G.flatten()
-#
-#
-#     def DG(self, c):
-#         '''
-#         Returns the jacobian matrix of the collocation system w.r.t. the
-#         independent parameters evaluated at :attr:`c`.
-#         '''
-#
-#         # make callable function for the jacobian matrix of the vectorfield local
-#         Df = self.Df
-#         eqind = self.eqind
-#
-#         x_len = len(self.x_sym)
-#         u_len = len(self.u_sym)
-#         xu_len = x_len + u_len
-#
-#         # first we calculate the x and u values in all collocation points
-#         # with the current numerical values of the free parameters
-#         X = self.Mx.dot(c) + self.Mx_abs
-#         X = np.array(X).reshape((-1,x_len)) # one column for every state component
-#         U = self.Mu.dot(c) + self.Mu_abs
-#         U = np.array(U).reshape((-1,u_len)) # one column for every input component
-#
-#         DF_s = sparse.dok_matrix( (X.size, xu_len*X.shape[0]) )
-#         for i in xrange(X.shape[0]):
-#             tmp_xu = np.hstack((X[i], U[i]))
-#             tmp_Df = Df(*tmp_xu).tolist()
-#             for j in xrange(x_len):
-#                 DF_s[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
-#         DF_s = sparse.csr_matrix(DF_s).dot(self.DXU_s)
-#
-#         DG = DF_s - self.DdX
-#
-# #        # now we compute blocks of the jacobian matrix of the vectorfield with those values
-# #        DF_blocks = []
-# #        for x,u in zip(X,U):
-# #            # get one row of X and U respectively
-# #            tmp_xu = np.hstack((x,u))
-# #
-# #            # evaluate the jacobian of the vectorfield at current collocation point represented by
-# #            # the row of X and U
-# #            DF_blocks.append(Df(*tmp_xu))
-# #
-# #        # because the system/input variables depend on the free parameters we have to multiply each
-# #        # jacobian block with the jacobian matrix of the x/u functions w.r.t. the free parameters
-# #        # --> see buildEQS()
-# #        DF = []
-# #        for i in xrange(len(DF_blocks)):
-# #            res = np.dot(DF_blocks[i], self.DXU[i])
-# #            #assert res.shape == (x_len,len(self.c_list))
-# #            DF.append(res)
-# #        IPS()
-# #        DF = np.array(DF)[:,eqind,:]
-# #        # 1st index : collocation point
-# #        # 2nd index : equations that have to be solved --> end of an integrator chain
-# #        # 3rd index : component of c
-# #
-# #        # now compute jacobian of x_dot w.r.t. to indep coeffs
-# #        # --> see buildEQS()
-# #        #DdX = self.Mdx.reshape((len(self.cpts),-1,len(self.c_list)))[:,eqind,:]
-# #
-# #        # stack matrices in vertical direction
-# #        #DG = np.vstack(DF) - np.vstack(DdX)
-# #        DG = np.vstack(DF) - self.DdX
-# #        IPS()
-# #        1/0
-#         return DG
-
-
+        
+        #from scipy import optimize as op
+        #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
+        #IPS()
+    
+    
     def setCoeff(self):
         '''
         Set found numerical values for the independent parameters of each spline.
@@ -1417,21 +1344,6 @@ class Trajectory():
             # calculate maximum consistency error on the whole interval
             maxH = consistency_error((self.a,self.b), self.x, self.u, self.dx, self.ff)
             
-            # calculate the error functions H_i(t)
-            #H = dict()
-            #
-            #error = []
-            #for t in self.sim[0]:
-            #    xe = self.x(t)
-            #    ue = self.u(t)
-            #
-            #    ffe = self.ff(xe, ue)
-            #    dxe = self.dx(t)
-            #
-            #    error.append(ffe - dxe)
-            #error = np.array(error)
-            #maxH = error.max()
-            
             self.reached_accuracy = (maxH < self.mparam['ierr']) and (max(err) < self.mparam['eps'])
             log.info('maxH = %f'%maxH)
         else:
@@ -1510,7 +1422,7 @@ class Trajectory():
         Plot the calculated trajectories and error functions.
 
         This method calculates the error functions and then calls
-        the :func:`utilities.plot` function.
+        the :func:`utilities.plotsim` function.
         '''
 
         try:
@@ -1520,18 +1432,8 @@ class Trajectory():
             return
 
         # calculate the error functions H_i(t)
-        error = []
-        for t in self.sim[0]:
-            xe = self.x(t)
-            ue = self.u(t)
-
-            ffe = self.ff(xe, ue)
-            dxe = self.dx(t)
-
-            error.append(ffe - dxe)
-        error = np.array(error)
-
-        #max_con_err, error = consistency_error((self.a,self.b), self.x, self.u, self.dx, self.ff, True)
+        max_con_err, error = consistency_error((self.a,self.b), self.x, self.u, 
+                                                self.dx, self.ff, len(self.sim[0]), True)
         H = dict()
         for i in self.eqind:
             H[i] = error[:,i]
@@ -1567,7 +1469,7 @@ class Trajectory():
         #save['u'] = self.u
         #save['dx'] = self.dx
 
-        # simulation resutls
+        # simulation results
         save['sim'] = self.sim
         
         if not fname:
@@ -1584,14 +1486,12 @@ class Trajectory():
         This method is intended to delete some attributes of the object that
         are no longer neccessary after the iteration has finished.
 
-        TODO: extend
+        TODO: extend (may be not necessary anymore...)
         '''
-
-        del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
-        del self.Df, self.DXU, self.DdX
-        del self.c_list
-
-        return
+        
+        #del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
+        #del self.Df, self.DXU, self.DdX
+        del self.c_list, self.old_splines
 
 
 
@@ -1634,7 +1534,7 @@ if __name__ == '__main__':
     maxIt  = 5
     ua = [0.0]
     ub = [0.0]
-    eps = 1e-4
+    eps = 1e-3
     use_chains = False
     
     # NEW
@@ -1647,8 +1547,6 @@ if __name__ == '__main__':
                     maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
     
     T.setParam('ierr', 1e-4)
-    #T.setParam('method', 'new')
-    #T.setParam('method', 'powell')
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()

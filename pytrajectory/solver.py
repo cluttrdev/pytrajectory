@@ -122,9 +122,10 @@ class Solver:
                 if (roh>=b1): mu = 0.5*mu
                 #log.info("  roh= %f    mu= %f"%(roh,mu))
                 
-                # NEW:
-                if (roh < 0.0):
-                    log.warn("Parameter roh in LM-method became negative", verb=3)
+                # the following was believed to be some kind of bug, hence the warning
+                # but that was not the case...
+                #if (roh < 0.0):
+                    #log.warn("Parameter roh in LM-method became negative", verb=3)
                     #from IPython import embed as IPS
                     #IPS()
             

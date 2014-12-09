@@ -237,10 +237,6 @@ class Animation():
             for l in image.lines:
                 ax_img.add_line(l)
             
-            # automatically set limits --> does not work as wanted
-            #ax_img.relim()
-            #ax_img.autoscale_view()
-            
             self.image = image
             self.axes['ax_img'] = ax_img
             
@@ -365,48 +361,3 @@ def plotsim(sim, H, fname=None):
             plt.savefig(fname+'.png')
         else:
             plt.savefig(fname)
-
-
-def sym2num_vectorfield(f_sym, x_sym, u_sym):
-    '''
-    This function takes a callable vectorfield of a control system that is to be evaluated with symbols
-    for the state and input variables and returns a corresponding function that can be evaluated with
-    numeric values for these variables.
-    
-    Parameters
-    ----------
-    
-    f_sym : callable
-        The callable ("symbolic") vectorfield of the control system.
-    
-    x_sym : iterable
-        The symbols for the state variables of the control system.
-    
-    u_sym : iterable
-        The symbols for the input variables of the control system.
-    
-    Returns
-    -------
-    
-    callable
-        The callable ("numeric") vectorfield of the control system.
-    '''
-    
-    # get a sympy.Matrix representation of the vectorfield
-    F = sp.Matrix(f_sym(x_sym, u_sym))
-    if F.T == F.vec():
-        F = F.tolist()[0]
-    else:
-        F = F.T.tolist()[0]
-    
-    # Use lambdify to replace sympy functions in the vectorfield with
-    # numpy equivalents
-    _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
-    
-    # Create a wrapper as the actual function because due to the behaviour
-    # of lambdify()
-    def f_num(x, u):
-        xu = np.hstack((x, u))
-        return np.array(_f_num(*xu))
-    
-    return f_num
