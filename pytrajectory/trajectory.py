@@ -54,7 +54,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     # numpy equivalents
     _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
     
-    # Create a wrapper as the actual function because due to the behaviour
+    # Create a wrapper as the actual function due to the behaviour
     # of lambdify()
     def f_num(x, u):
         xu = np.hstack((x, u))
@@ -90,11 +90,11 @@ def saturation_functions(y_fnc, dy_fnc, y0, y1):
     -------
     
     callable
-        A callable function of a saturation function applied to a calculated solution
+        A callable of a saturation function applied to a calculated solution
         for an unconstrained state variable.
     
     callable
-        A callable function for the first derivative of a saturation function applied 
+        A callable for the first derivative of a saturation function applied 
         to a calculated solution for an unconstrained state variable.
     '''
     
@@ -146,11 +146,14 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500,return_error_arr
     Returns
     -------
     
-    max_con_err : float
+    float
+        The maximum error between the systems dynamic and its approximation.
     
-    con_err : numpy.ndarray
+    numpy.ndarray
+        An array with all errors calculated on the interval.
     '''
     
+    # get some test points to calculate the error at
     tt = np.linspace(I[0], I[1], npts, endpoint=True)
     
     error = []
@@ -282,7 +285,7 @@ class Trajectory():
         #self.m = 0
         
         # Analyse the given system to set some parameters
-        self.analyseSystem()
+        self.analyseSystem(xa)
         
         # A little check
         if not (len(xa) == len(xb) == self.n):
@@ -347,16 +350,6 @@ class Trajectory():
         self.G = lambda c : 'NotImplemented'   #raise NotImplementedError
         self.DG = lambda c : 'NotImplemented'  #raise NotImplementedError
         
-        # add docstrings?
-        #self.G.__doc__ = '''
-        #    Returns the collocation system evaluated with numeric values for the
-        #    independent parameters.
-        #    '''
-        #self.DG.__doc__ = '''
-        #    Returns the jacobian matrix of the collocation system w.r.t. the
-        #    independent parameters
-        #    '''
-        
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
 
@@ -364,12 +357,18 @@ class Trajectory():
         self.sol = None
 
         
-    def analyseSystem(self):
+    def analyseSystem(self, xa):
         '''
         Analyse the system structure and set values for some of the method parameters.
 
         By now, this method just determines the number of state and input variables
         and searches for integrator chains.
+        
+        Parameters
+        ----------
+        
+        xa : list
+            Initial values of the state variables (for determining the system dimensions)
         '''
 
         log.info("  Analysing System Structure", verb=2)
@@ -379,45 +378,25 @@ class Trajectory():
         
         # the number of input variables can be determined via the length
         # of the boundary value lists
-        #n = len(self.xa)
+        n = len(xa)
         
-        i = -1
-        found_nm = False
-        
-        # the following procedure fails maybe (or probably) if there are more input variables
-        # than state variables, so
-        # TODO: improve this!?
-        while not found_nm:
-            # iteratively increase system and input dimensions and try to call
-            # symbolic vectorfield ff_sym with i/j-dimensional vectors
-            i += 1
-
-            for j in xrange(i):
-                x = np.ones(i)
-                u = np.ones(j)
-
-                try:
-                    self.ff_sym(x, u)
-                    # if no ValueError is raised, i is the system dimension
-                    # and j is the dimension of the inputs
-                    found_nm = True
-                    n = i
-                    m = j
-                    break
-                except ValueError:
-                    # unpacking error inside ff_sym
-                    # (that means the dimensions don't match)
-                    pass
-                    #if j == 0:
-                    #    try:
-                    #        self.ff_sym(x)
-                    #        found_nm = True
-                    #        n = i
-                    #        m = j
-                    #        break
-                    #    except:
-                    #        pass
-        
+        # now we iteratively increase the inputs dimension and try to call
+        # the vectorfield
+        found_m = False
+        j = 0
+        x = np.ones(n)
+        while not found_m:
+            u = np.ones(j)
+            try:
+                self.ff_sym(x, u)
+                # if no ValueError is raised j is the dimension of the inputs
+                m = j
+                found_m = True
+            except ValueError:
+                # unpacking error inside ff_sym
+                # (that means the dimensions don't match)
+                j += 1
+                
         # set system dimensions
         self.n = n
         self.m = m
@@ -527,10 +506,10 @@ class Trajectory():
         for k, v in self.constraints.items():
             # check if boundary values are within saturation limits
             if not ( v[0] < xa[x_sym[k]] < v[1] ) or not ( v[0] < xb[x_sym[k]] < v[1] ):
-                log.error('Boundary values have to be strictly within the saturation limits')
+                log.error('Boundary values have to be strictly within the saturation limits!')
                 log.info('Please have a look at the documentation, \
-                          especially the example of the constrained double intgrator')
-                raise ValueError('Boundary values have to be strictly within the saturation limits')
+                          especially the example of the constrained double intgrator.')
+                raise ValueError('Boundary values have to be strictly within the saturation limits!')
             
             # replace constrained state variable with new unconstrained one
             x_sym[k] = sp.Symbol('y%d'%(k+1))
@@ -919,11 +898,10 @@ class Trajectory():
 
             # here we just create a spline object for the upper ends of every chain
             # w.r.t. its lower end
-            if chain.lower.name.startswith('x'):
+            if lower.name.startswith('x'):
                 splines[upper] = CubicSpline(self.a,self.b,n=sx,bc=[self.xa[upper],self.xb[upper]],steady=False,tag=upper.name)
                 splines[upper].type = 'x'
-            elif chain.lower.name.startswith('u'):
-                i = self.u_sym.index(chain.lower)
+            elif lower.name.startswith('u'):
                 splines[upper] = CubicSpline(self.a,self.b,n=su,bc=[self.ua[lower],self.ub[lower]],steady=False,tag=upper.name)
                 splines[upper].type = 'u'
 
@@ -1126,6 +1104,7 @@ class Trajectory():
 
         for i in xrange(len(cpts)):
             DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)], Mu[u_len*i:u_len*(i+1)] )))
+        DXU_old = DXU
         DXU = np.vstack(DXU)
         
         if self.mparam['use_sparse']:
@@ -1207,7 +1186,11 @@ class Trajectory():
                 for j in xrange(x_len):
                     DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
             DF = sparse.csr_matrix(DF).dot(DXU)
-        
+            
+            if self.mparam['use_chains']:
+                DF = [row for idx,row in enumerate(DF.toarray()[:]) if idx%x_len in eqind]
+                DF = sparse.csr_matrix(DF)
+            
             DG = DF - DdX
             
             return DG
@@ -1534,19 +1517,18 @@ if __name__ == '__main__':
     maxIt  = 5
     ua = [0.0]
     ub = [0.0]
-    eps = 1e-3
+    eps = 1e-2
     use_chains = False
     
     # NEW
     constraints = { 0:[-0.8, 0.3],
                     1:[-2.0,2.0]}
-    #constraints = {1:[-0.1, 0.65]}
-    #constraints = dict()
+    constraints = dict()
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, sx=sx, su=su, kx=kx,
                     maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
     
-    T.setParam('ierr', 1e-4)
+    T.setParam('ierr', 1e-2)
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()

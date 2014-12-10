@@ -314,13 +314,13 @@ class CubicSpline():
         a_mat = sparse.lil_matrix((N2,N2-N1))
         b_mat = sparse.lil_matrix((N2,N1))
         
-        for i,aa in enumerate(a):
+        for i, aa in enumerate(a):
             tmp = aa.name.split('_')[-2:]
             j = int(tmp[0])
             k = int(tmp[1])
             a_mat[4*j+k,i] = 1
 
-        for i,bb in enumerate(b):
+        for i, bb in enumerate(b):
             tmp = bb.name.split('_')[-2:]
             j = int(tmp[0])
             k = int(tmp[1])
