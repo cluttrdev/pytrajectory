@@ -1,4 +1,4 @@
-# oscillation of the inverted double pendulum with partial linearization
+# oscillation of the inverted dual pendulum with partial linearization
 
 # import trajectory class and necessary dependencies
 from pytrajectory.trajectory import Trajectory

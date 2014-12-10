@@ -104,14 +104,14 @@ def draw(xt, image):
     # and return the image
     return image
 
-
 # now we can create an instance of the `Animation` class 
 # with our draw function and the simulation results
 A = Animation(drawfnc=draw, simdata=T.sim)
 
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
-A.set_limits(xlim=(-1.2,0.3), ylim=(-0.6,0.6))
+xmin = np.min(T.sim[1][:,0]); xmax = np.max(T.sim[1][:,0])
+A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation
 # (might take some while)

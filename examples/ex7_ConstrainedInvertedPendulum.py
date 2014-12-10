@@ -46,8 +46,7 @@ T.startIteration()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-
-do_animation = True
+do_animation = False
 
 if do_animation:
     import matplotlib as mpl
@@ -91,5 +90,5 @@ if do_animation:
     xmax = np.max(T.sim[1][:,0])
     A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
     A.animate()
-    A.save('ex6_ConstrainedInvertedPendulum.mp4')
+    A.save('ex7_ConstrainedInvertedPendulum.mp4')
     
