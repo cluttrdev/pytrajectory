@@ -349,7 +349,7 @@ if __name__=='__main__':
     
     # now we create our Trajectory object and alter some method parameters via the keyword arguments
     T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, eps=4e-1, su=20, kx=2, use_chains=False)
-    T.setParam('sol_steps', 30)
+    T.setParam('sol_steps', 100)
     
     # time to run the iteration
     print "Run iteration"
@@ -421,7 +421,7 @@ if __name__=='__main__':
                         image.lines.append( mpl.lines.Line2D(xdata=[x_car, x_p[0]], ydata=[y_car, y_p[0]],
                                                              color='black', zorder=1, linewidth=2.0) )
                     else:
-                        image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[1]], ydata=[y_p[i-1], y_p[i]],
+                        image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[i]], ydata=[y_p[i-1], y_p[i]],
                                                              color='black', zorder=1, linewidth=2.0) )
                 # and return the image
                 return image

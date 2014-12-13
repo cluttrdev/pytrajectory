@@ -92,12 +92,12 @@ class Timer():
 
     def __exit__(self, *args):
         self.delta = time.time() - self.start
-        logtime("---> [%s elapsed %f s]"%(self.label, self.delta), verb=self.verb)
+        info("---> [%s elapsed %f s]"%(self.label, self.delta), verb=self.verb)
 
 
 def log_on(verbosity=1, log2file=False, fname=None, suppress=False):
     '''
-    Sets a file to which all log information are written.
+    Sets a file all log information will be written to.
     '''
     if log2file and not fname:
         fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log"
@@ -120,10 +120,6 @@ def msg(label, text, verb=3):
 
 def info(text, verb=3):
     msg("INFO:", text, verb)
-
-
-def logtime(text, verb=3):
-    msg("TIME:", text, verb)
 
 
 def warn(text, verb=0):

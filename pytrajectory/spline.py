@@ -229,11 +229,11 @@ class CubicSpline():
 
         # mu represents degree of boundary conditions
         mu = -1
-        if (self.bc[0] is not None) or (self.bc[1] is not None):
+        if (self.bc[0] is not None) and (self.bc[1] is not None):
             mu += 1
-        if (self.bcd[0] is not None) or (self.bcd[1] is not None):
+        if (self.bcd[0] is not None) and (self.bcd[1] is not None):
             mu += 1
-        if (self.bcdd[0] is not None) or (self.bcdd[1] is not None):
+        if (self.bcdd[0] is not None) and (self.bcdd[1] is not None):
             mu += 1
 
         # now we determine the free parameters of the spline function
@@ -374,6 +374,18 @@ class CubicSpline():
 
         self.steady_flag = True
     
+    ################################################################
+    # NEW
+    #def interpolate(self, fun=None, points=[]):
+    #    '''
+    #    Set polynomial coefficients by interpolating another function.
+    #    
+    #    TODO: implement this
+    #    '''
+    #    pass
+    #
+    #
+    ################################################################
     
     def set_coeffs(self, c_sol):
         '''

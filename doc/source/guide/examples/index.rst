@@ -17,3 +17,4 @@ of PyTrajectory. The deriving of the model equations is omittted here.
    con_double_integrator
    con_inv_pendulum_swing
    con_double_pendulum
+   inv_n_bar_pend3

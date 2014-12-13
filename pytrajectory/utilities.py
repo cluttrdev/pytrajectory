@@ -181,6 +181,14 @@ class Animation():
         xt = self.xt
         ut = self.ut
         
+        # NEW: try to repeat first and last frame
+        #for i in xrange(10):
+        #    t = np.hstack((t[0],t,t[-1]))
+        #    xt = np.vstack((xt[0],xt,xt[-1]))
+        #    ut = np.vstack((ut[0],ut,ut[-1]))
+        
+        IPS()
+        
         tt = np.linspace(0,(len(t)-1),self.nframes+1,endpoint=True)
         
         self.T = t[-1] - t[0]
@@ -258,7 +266,8 @@ class Animation():
             
             plt.draw()
         
-        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, interval=1, blit=True)
+        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, 
+                                            interval=1, blit=True)
     
     
     def save(self, fname, fps=None, dpi=200):

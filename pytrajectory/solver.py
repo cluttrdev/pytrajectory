@@ -93,13 +93,8 @@ class Solver:
         while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
+            #if (i-1)%4 == 0:
             DFx = self.DF(x)
-            
-            # NEW -experimental
-            #if res >= 1:
-            #    DFx = self.DF(x)
-            
-            # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
             
             while (roh < b0):                

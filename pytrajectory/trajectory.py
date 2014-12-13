@@ -14,9 +14,6 @@ import log
 # DEBUGGING
 DEBUG = True
 
-if DEBUG:
-    from IPython import embed as IPS
-
 
 def sym2num_vectorfield(f_sym, x_sym, u_sym):
     '''
@@ -237,16 +234,6 @@ class Trajectory():
         sol_steps   100             Maximum number of iteration steps for the eqs solver
         ==========  =============   =======================================================
     
-    Methods
-    -------
-    
-    G
-        Returns the collocation system evaluated with numeric values for the
-        independent parameters.
-    
-    DG
-        Returns the jacobian matrix of the collocation system w.r.t. the
-        independent parameters
     '''
     
     def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, ua=None, ub=None, constraints=None, **kwargs):
@@ -361,8 +348,8 @@ class Trajectory():
         '''
         Analyse the system structure and set values for some of the method parameters.
 
-        By now, this method just determines the number of state and input variables
-        and searches for integrator chains.
+        By now, this method determines the number of state and input variables, creates
+        sympy.symbols for them and searches for integrator chains.
         
         Parameters
         ----------
@@ -380,7 +367,8 @@ class Trajectory():
         # of the boundary value lists
         n = len(xa)
         
-        # now we iteratively increase the inputs dimension and try to call
+        # now we want to determine the input dimension
+        # therefore we iteratively increase the inputs dimension and try to call
         # the vectorfield
         found_m = False
         j = 0
@@ -759,11 +747,11 @@ class Trajectory():
 
         # create equation system
         with log.Timer("buildEQS()"):
-            self.buildEQS()
+            G, DG = self.buildEQS()
 
         # solve it
         with log.Timer("solveEQS()"):
-            self.solveEQS()
+            self.solveEQS(G, DG)
 
         # write back the coefficients
         with log.Timer("setCoeff()"):
@@ -847,37 +835,37 @@ class Trajectory():
         # the new guess
         self.guess = guess
         
-        #################################
-        if DEBUG and self.nIt > 1 and 0:
-            import matplotlib.pyplot as plt
-            
-            tt = np.linspace(self.a, self.b, 1000)
-            xt_old = np.zeros((1000,len(self.x_sym)))
-            for i,x in enumerate(self.x_sym):
-                fx = old_splines[x]
-                xt = np.array([fx.f(t) for t in tt])
-                
-                xt_old[:,i] = xt
-            
-            sol_bak = 1.0*self.sol
-            splines_bak = self.splines.copy()
-            
-            self.sol = self.guess
-            self.setCoeff()
-            xt_new = np.array([self.x(t) for t in tt])
-            
-            IPS()
-            
-            self.sol = sol_bak
-            self.splines = splines_bak
-            for s in self.splines.values():
-                s.prov_flag = True
-        #################################
+#         #################################
+#         if DEBUG and self.nIt > 1 and 0:
+#             import matplotlib.pyplot as plt
+#
+#             tt = np.linspace(self.a, self.b, 1000)
+#             xt_old = np.zeros((1000,len(self.x_sym)))
+#             for i,x in enumerate(self.x_sym):
+#                 fx = old_splines[x]
+#                 xt = np.array([fx.f(t) for t in tt])
+#
+#                 xt_old[:,i] = xt
+#
+#             sol_bak = 1.0*self.sol
+#             splines_bak = self.splines.copy()
+#
+#             self.sol = self.guess
+#             self.setCoeff()
+#             xt_new = np.array([self.x(t) for t in tt])
+#
+#             IPS()
+#
+#             self.sol = sol_bak
+#             self.splines = splines_bak
+#             for s in self.splines.values():
+#                 s.prov_flag = True
+#          #################################
 
 
     def initSplines(self):
         '''
-        This method is used to initialise the provisionally splines.
+        This method is used to initialise the spline objects.
         '''
         log.info("  Initialise Splines", verb=2)
         
@@ -964,6 +952,15 @@ class Trajectory():
     def buildEQS(self):
         '''
         Builds the collocation equation system.
+        
+        Returns
+        -------
+        
+        callable
+            Function `G` for the "evaluation" of the equation system.
+        
+        callable
+            Function `DG` for the jacobian.
         '''
 
         log.info("  Building Equation System", verb=2)
@@ -1117,19 +1114,16 @@ class Trajectory():
 
             DdX = sparse.csr_matrix(DdX)
             DXU = sparse.csr_matrix(DXU)
-            
-        ####################################################
-        # NEW: define functions for eqs and jacobian here
         
+        # now we are going to create a callable function for the equation system
+        # and its jacobian
+            
         # make some stuff local
         ff = self.ff
         
         eqind = self.eqind
         
         cp_len = len(cpts)
-        x_len = len(self.x_sym)
-        u_len = len(self.u_sym)
-        xu_len = x_len + u_len
         
         # templates
         F = np.empty((cp_len, len(eqind)))
@@ -1177,38 +1171,57 @@ class Trajectory():
             U = Mu.dot(c) + Mu_abs
             U = np.array(U).reshape((-1,u_len)) # one column for every input component
             
-            # TODO: why is global DF from templates above not visible here? 
-            DF = sparse.dok_matrix( (cp_len*x_len, xu_len*cp_len) )
-            
+            # now we iterate over every row
+            # (one for every collocation point)
             for i in xrange(X.shape[0]):
+                # concatenate the values so that they can be unpacked at once
                 tmp_xu = np.hstack((X[i], U[i]))
-                tmp_Df = Df(*tmp_xu).tolist()
+                
+                # calculate one block of the jacobian
+                DF_block = Df(*tmp_xu).tolist()
+                
+                # the sparse format (dok) only allows us to add multiple values
+                # in one dimension, so we cannot add the block at once but
+                # have to iterate over its rows
                 for j in xrange(x_len):
-                    DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = tmp_Df[j]
-            DF = sparse.csr_matrix(DF).dot(DXU)
+                    DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = DF_block[j]
             
+            # now transform it into another sparse format that is more suitable
+            # for calculating matrix products,
+            # and then do so with `DXU`
+            DF_csr = sparse.csr_matrix(DF).dot(DXU)
+            
+            # TODO: explain the following code
             if self.mparam['use_chains']:
-                DF = [row for idx,row in enumerate(DF.toarray()[:]) if idx%x_len in eqind]
-                DF = sparse.csr_matrix(DF)
+                DF_csr = [row for idx,row in enumerate(DF_csr.toarray()[:]) if idx%x_len in eqind]
+                DF_csr = sparse.csr_matrix(DF_csr)
             
-            DG = DF - DdX
+            DG = DF_csr - DdX
             
             return DG
         
-        self.G = G
-        self.DG = DG
-        ####################################################
+        # return the callable functions
+        return G, DG
 
 
-    def solveEQS(self):
+    def solveEQS(self, G, DG):
         '''
         This method is used to solve the collocation equation system.
+        
+        Parameters
+        ----------
+        
+        G : callable
+            Function that "evaluates" the equation system.
+        
+        DG : callable
+            Function for the jacobian.
         '''
 
         log.info("  Solving Equation System", verb=2)
         
         # create our solver
-        solver = Solver(F=self.G, DF=self.DG, x0=self.guess, tol=self.mparam['tol'],
+        solver = Solver(F=G, DF=DG, x0=self.guess, tol=self.mparam['tol'],
                         maxIt=self.mparam['sol_steps'], method=self.mparam['method'])
         
         # solve the equation system
@@ -1479,59 +1492,38 @@ class Trajectory():
 
 
 if __name__ == '__main__':
-    from sympy import cos, sin, exp
-    from numpy import pi
-
-    # partially linearised inverted pendulum
-
+    # test example: double integrator
+    
     def f(x,u):
-        x1,x2,x3,x4 = x
+        x1, x2 = x
         u1, = u
-        l = 0.5
-        g = 9.81
-        ff = np.array([     x2,
-                            u1,
-                            x4,
-                        (1/l)*(g*sin(x3)+u1*cos(x3))])
+
+        ff = np.array([ x2,
+                        u1])
         return ff
-    
-    xa = [0.0, 0.0, pi, 0.0]
-    xb = [0.0, 0.0, 0.0, 0.0]
-    
-    # def f(x,u):
-    #     x1, x2 = x
-    #     u1, = u
-    #
-    #     ff = np.array([ x2,
-    #                     u1])
-    #     return ff
-    #
-    # xa = [0.0, 0.0]
-    # xb = [1.0, 0.0]
+
+    xa = [0.0, 0.0]
+    xb = [1.0, 0.0]
     
     a = 0.0
-    b = 3.0
-    sx = 5
-    su = 5
-    kx = 3
-    maxIt  = 5
+    b = 2.0
     ua = [0.0]
     ub = [0.0]
-    eps = 1e-2
-    use_chains = False
-    
-    # NEW
-    constraints = { 0:[-0.8, 0.3],
-                    1:[-2.0,2.0]}
-    constraints = dict()
+    constraints = { 1:[-0.1, 0.65]}
+    #constraints = dict()
 
-    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, sx=sx, su=su, kx=kx,
-                    maxIt=maxIt, eps=eps, use_chains=use_chains, constraints=constraints)
+    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
     
+    T.setParam('kx', 3)
+    T.setParam('maxIt', 5)
+    T.setParam('eps', 1e-2)
     T.setParam('ierr', 1e-2)
+    T.setParam('use_chains', False)
+    
     
     with log.Timer("Iteration", verb=0):
         T.startIteration()
     
     if DEBUG:
+        from IPython import embed as IPS
         IPS()
