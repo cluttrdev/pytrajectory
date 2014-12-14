@@ -1485,9 +1485,12 @@ class Trajectory():
         TODO: extend (may be not necessary anymore...)
         '''
         
-        #del self.Mx, self.Mx_abs, self.Mu, self.Mu_abs, self.Mdx, self.Mdx_abs
-        #del self.Df, self.DXU, self.DdX
-        del self.c_list, self.old_splines
+        del self.c_list
+        
+        try:
+            self.old_splines
+        except:
+            pass
 
 
 

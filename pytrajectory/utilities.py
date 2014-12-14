@@ -182,19 +182,33 @@ class Animation():
         ut = self.ut
         
         # NEW: try to repeat first and last frame
-        #for i in xrange(10):
-        #    t = np.hstack((t[0],t,t[-1]))
-        #    xt = np.vstack((xt[0],xt,xt[-1]))
-        #    ut = np.vstack((ut[0],ut,ut[-1]))
+        pause_time = 1.0 #[s]
         
-        IPS()
+        # how many frames will be plotted per second of system time
+        fps = self.nframes/(t[-1] - t[0])
         
-        tt = np.linspace(0,(len(t)-1),self.nframes+1,endpoint=True)
+        # add so many frames that they fill the `pause`
+        add_frames = int(fps * pause_time)
         
-        self.T = t[-1] - t[0]
+        for i in xrange(add_frames):
+            t = np.hstack((t[0],t,t[-1]))
+            xt = np.vstack((xt[0],xt,xt[-1]))
+            ut = np.vstack((ut[0],ut,ut[-1]))
+        
+        
+        #tt = np.linspace(0,len(t)-1,self.nframes,endpoint=True)
+        tt = np.linspace(0,xt.shape[0]-1,self.nframes,endpoint=True)
+        tt = np.hstack(([tt[0]]*add_frames,tt,[tt[-1]]*add_frames))
+        
+        self.T = t[-1] - t[0] + 2 * pause_time
+        
+        # raise number of frames
+        self.nframes += 2 * add_frames
+        
+        #IPS()
         
         # set axis limits and labels of system curves
-        xlim = (0.0, self.T)
+        xlim = (0.0, self.T - 2 * pause_time)
         for i, idxlabel in enumerate(self.plotsys):
             idx, label = idxlabel
             
@@ -220,7 +234,7 @@ class Animation():
         
         def _animate(frame):
             i = tt[frame]
-            print frame
+            print "frame = {f}, t = {t}, x = {x}, u = {u}".format(f=frame, t=t[i], x=xt[i,:], u=ut[i,:])
             
             # draw picture
             image = self.image
@@ -275,7 +289,7 @@ class Animation():
         Saves the animation as a video file or animated gif.
         '''
         if not fps:
-            fps = self.nframes/float(self.T)
+            fps = self.nframes/(float(self.T))  # add pause_time here?
         
         if fname.endswith('gif'):
             self.anim.save(fname, writer='imagemagick', fps=fps)

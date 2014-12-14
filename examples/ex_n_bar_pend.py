@@ -327,7 +327,7 @@ if __name__=='__main__':
     # get matrices of motion equations
     print "Get matrices of motion equations"
     M, B, state_vars, input_vars = N_Bar_Pendulum(N=N, param_values=param_values)
-    
+    IPS()
     # get callable function for vectorfield that can be used with PyTrajectory
     print "Get callable vectorfield"
     f = solve_motion_equations(M, B, state_vars, input_vars)
