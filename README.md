@@ -15,7 +15,7 @@ To install PyTrajectory, simply:
 
     pip install pytrajectory
 
-or download the tarball from [here](https://bitbucket.org/akunze3/pytrajectory/downloads) extract it and run
+or download the tarball from [here](https://github.com/akunze3/pytrajectory/tree/master/dist) extract it and run
 
     python setup.py install
 
