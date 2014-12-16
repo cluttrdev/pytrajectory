@@ -236,7 +236,7 @@ class Trajectory():
     
     '''
     
-    def __init__(self, ff, a=0.0, b=1.0, xa=None, xb=None, ua=None, ub=None, constraints=None, **kwargs):
+    def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
         # Enable logging
         if not DEBUG:
             log.log_on(verbosity=1, log2file=True)
@@ -951,16 +951,20 @@ class Trajectory():
 
     def buildEQS(self):
         '''
-        Builds the collocation equation system.
+        This method is used to set up the equations for the collocation equation system
+        and defines functions for the numerical evaluation of the system and its jacobian.
         
         Returns
         -------
         
         callable
-            Function `G` for the "evaluation" of the equation system.
-        
+            Function :py:func:`G(c)` that returns the collocation system 
+            evaluated with numeric values for the independent parameters.
+            
         callable
-            Function `DG` for the jacobian.
+            Function :py:func:`DG(c)` that returns the jacobian matrix of the collocation system 
+            w.r.t. the free parameters, evaluated with numeric values for them.
+        
         '''
 
         log.info("  Building Equation System", verb=2)
@@ -1131,11 +1135,6 @@ class Trajectory():
         
         # define the callable functions for the eqs
         def G(c):
-            '''
-            Returns the collocation system evaluated with numeric values for the
-            independent parameters.
-            '''
-            
             X = Mx.dot(c) + Mx_abs
             U = Mu.dot(c) + Mu_abs
 

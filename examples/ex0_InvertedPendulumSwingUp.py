@@ -106,7 +106,11 @@ def draw(xt, image):
 
 # now we can create an instance of the `Animation` class 
 # with our draw function and the simulation results
-A = Animation(drawfnc=draw, simdata=T.sim)
+#
+# to plot the curves of some trajectories along with the picture
+# we also pass the appropriate lists as arguments (see documentation)
+A = Animation(drawfnc=draw, simdata=T.sim, 
+              plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
 
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
@@ -118,4 +122,4 @@ A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
 A.animate()
 
 # then we can save the animation as a `mp4` video file or as an animated `gif` file
-A.save('ex0_InvertedPendulum.mp4')
+A.save('ex0_InvertedPendulum.gif')

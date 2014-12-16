@@ -91,8 +91,9 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'phi1'),(2,'phi2')], plotinputs=[(0,'u')])
     A.set_limits(xlim=(-1.1,1.1), ylim=(-1.1,1.1))
     
     A.animate()
-    A.save('ex5_Acrobot.mp4')
+    A.save('ex5_Acrobot.gif')

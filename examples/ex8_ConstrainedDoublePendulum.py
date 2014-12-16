@@ -7,7 +7,6 @@ import sympy as sp
 from sympy import cos, sin, Matrix
 from numpy import pi
 
-from IPython import embed as IPS
 
 # to define a callable function that returns the vectorfield
 # we first solve the motion equations of form Mx = B
@@ -253,7 +252,8 @@ if do_animation:
         return image
 
     # create Animation object
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'x'),(1,'dx')], plotinputs=[(0,'u')])
     xmin = np.min(T.sim[1][:,0])
     xmax = np.max(T.sim[1][:,0])
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-1.2,1.2))

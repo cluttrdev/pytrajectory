@@ -57,9 +57,9 @@ if do_animation:
     
     A = Animation(drawfnc=draw, simdata=T.sim,
                         plotsys=[(0,'x'), (1,'dx')],
-                        plotinputs=[(0,'u1')])
+                        plotinputs=[(0,'u')])
     xmin = np.min(T.sim[1][:,0])
     xmax = np.max(T.sim[1][:,0])
     A.set_limits(xlim=(xmin - 0.1, xmax + 0.1), ylim=(-0.1,0.1))
     A.animate()
-    A.save('ex7_DoubleIntegrator.mp4')
+    A.save('ex6_DoubleIntegrator.gif')

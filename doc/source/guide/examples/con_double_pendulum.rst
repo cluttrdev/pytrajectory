@@ -8,8 +8,8 @@ Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex8_ConstrainedDoublePendulum.py
-   :lines: 1-88
+   :lines: 1-201
 
 .. only:: html
 
-   .. image:: /../pic/con_double_pendulum.gif
+   .. image:: /../pic/con_double_pend_swing.gif

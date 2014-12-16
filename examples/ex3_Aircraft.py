@@ -88,8 +88,9 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(4,'theta')], plotinputs=[(0,'F1'),(1,'F2')])
     A.set_limits(xlim=(-1,11), ylim=(-1,7))
     
     A.animate()
-    A.save('ex3_Aircraft.mp4')
+    A.save('ex3_Aircraft.gif')

@@ -49,5 +49,5 @@ Source Code
 
 .. only:: html
 
-   .. image:: /../pic/inv_dual_pendulum.gif
+   .. image:: /../pic/inv_dual_pend_swing.gif
 

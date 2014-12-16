@@ -1,4 +1,4 @@
-# oscillation of the inverted dual pendulum with partial linearization
+# swing up of the inverted dual pendulum with partial linearization
 
 # import trajectory class and necessary dependencies
 from pytrajectory.trajectory import Trajectory
@@ -97,8 +97,12 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
-    A.set_limits(xlim=(-1.0,0.8), ylim=(-0.8,0.8))
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'x'),(2,'phi1'),(4,'phi2')], plotinputs=[(0,'u')])
+    
+    xmin = np.min(T.sim[1][:,0])
+    xmax = np.max(T.sim[1][:,0])
+    A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-0.8,0.8))
     
     A.animate()
-    A.save('ex2_InvertedDoublePendulumUpswing.mp4')
+    A.save('ex2_InvertedDualPendulumUpswing.gif')

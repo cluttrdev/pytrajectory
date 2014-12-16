@@ -33,5 +33,5 @@ Source Code
 
 .. only:: html
 
-   .. image:: /../pic/con_inv_pendulum.gif
+   .. image:: /../pic/con_inv_pend_swing.gif
 

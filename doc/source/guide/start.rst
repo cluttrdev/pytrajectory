@@ -227,9 +227,9 @@ and `image` is just a container for the drawn image.
 
 .. only:: html
 
-   .. image:: /../pic/inv_pendulum_osc.gif
+   .. image:: /../pic/inv_pend_swing.gif
 
 .. only:: latex
 
-  .. image:: /../pic/inv_pendulum_osc.png
+  .. image:: /../pic/inv_pend_swing.png
 
