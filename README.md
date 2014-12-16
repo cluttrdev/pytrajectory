@@ -25,5 +25,5 @@ from within the extracted folder.
 Documentation
 =============
 
-Th documentation can be found at <https://pytrajectory.readthedocs.org>.
+The documentation can be found at <https://pytrajectory.readthedocs.org>.
 
