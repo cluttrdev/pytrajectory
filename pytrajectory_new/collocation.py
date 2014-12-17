@@ -1,5 +1,7 @@
 # IMPORTS
 import numpy as np
+import sympy as sp
+from scipy import sparse
 
 from solver import Solver
 import log
@@ -91,7 +93,7 @@ class CollocationSystem(object):
         j = 0
         
         # iterate over spline quantities
-        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
+        for k, v in sorted(self.sys.trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
@@ -271,105 +273,105 @@ class CollocationSystem(object):
         return G, DG
     
     
-        def getGuess(self):
-            '''
-            This method is used to determine a starting value (guess) for the
-            solver of the collocation equation system.
+    def getGuess(self):
+        '''
+        This method is used to determine a starting value (guess) for the
+        solver of the collocation equation system.
 
-            If it is the first iteration step, then a vector with the same length as
-            the vector of the free parameters with arbitrarily values is returned.
+        If it is the first iteration step, then a vector with the same length as
+        the vector of the free parameters with arbitrarily values is returned.
 
-            Else, for every variable a spline has been created for, the old spline
-            of the iteration before and the new spline are evaluated at specific
-            points and a equation system is solved which ensures that they are equal
-            in these points.
+        Else, for every variable a spline has been created for, the old spline
+        of the iteration before and the new spline are evaluated at specific
+        points and a equation system is solved which ensures that they are equal
+        in these points.
 
-            The solution of this system is the new start value for the solver.
-            '''
+        The solution of this system is the new start value for the solver.
+        '''
 
-            if (self.sys.nIt == 1):
-                self.c_list = np.empty(0)
+        if (self.sys.nIt == 1):
+            self.c_list = np.empty(0)
 
-                for k, v in sorted(self.sys.trajectories.indep_coeffs.items(), key = lambda (k, v): k.name):
-                    self.c_list = np.hstack((self.c_list, v))
-                guess = 0.1*np.ones(len(self.c_list))
-            else:
-                # make splines local
-                old_splines = self.old_splines
-                new_splines = self.splines
+            for k, v in sorted(self.sys.trajectories.indep_coeffs.items(), key = lambda (k, v): k.name):
+                self.c_list = np.hstack((self.c_list, v))
+            guess = 0.1*np.ones(len(self.c_list))
+        else:
+            # make splines local
+            old_splines = self.sys.trajectories.old_splines
+            new_splines = self.sys.trajectories.splines
 
-                guess = np.empty(0)
-                self.c_list = np.empty(0)
+            guess = np.empty(0)
+            self.c_list = np.empty(0)
 
-                # get new guess for every independent variable
-                for k, v in sorted(self.sys.trajectories.coeffs_sol.items(), key = lambda (k, v): k.name):
-                    self.c_list = np.hstack((self.c_list, self.sys.trajectories.indep_coeffs[k]))
+            # get new guess for every independent variable
+            for k, v in sorted(self.sys.trajectories.coeffs_sol.items(), key = lambda (k, v): k.name):
+                self.c_list = np.hstack((self.c_list, self.sys.trajectories.indep_coeffs[k]))
 
-                    if (new_splines[k].type == 'x'):
-                        log.info("    Get new guess for spline %s"%k.name, verb=3)
+                if (new_splines[k].type == 'x'):
+                    log.info("    Get new guess for spline %s"%k.name, verb=3)
 
-                        # how many unknown coefficients does the new spline have
-                        nn = len(self.sys.trajectories.indep_coeffs[k])
+                    # how many unknown coefficients does the new spline have
+                    nn = len(self.sys.trajectories.indep_coeffs[k])
 
-                        # and this will be the points to evaluate the old spline in
-                        #   but we don't want to use the borders because they got
-                        #   the boundary values already
-                        #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
-                        #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
-                        gpts = np.linspace(self.sys.a,self.sys.b,nn,endpoint = True)
+                    # and this will be the points to evaluate the old spline in
+                    #   but we don't want to use the borders because they got
+                    #   the boundary values already
+                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
+                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
+                    gpts = np.linspace(self.sys.a,self.sys.b,nn,endpoint = True)
 
-                        # evaluate the old and new spline at all points in gpts
-                        #   they should be equal in these points
+                    # evaluate the old and new spline at all points in gpts
+                    #   they should be equal in these points
 
-                        OLD = [None]*len(gpts)
-                        NEW = [None]*len(gpts)
-                        NEW_abs = [None]*len(gpts)
+                    OLD = [None]*len(gpts)
+                    NEW = [None]*len(gpts)
+                    NEW_abs = [None]*len(gpts)
 
-                        for i, p in enumerate(gpts):
-                            OLD[i] = old_splines[k].f(p)
-                            NEW[i], NEW_abs[i] = new_splines[k].f(p)
+                    for i, p in enumerate(gpts):
+                        OLD[i] = old_splines[k].f(p)
+                        NEW[i], NEW_abs[i] = new_splines[k].f(p)
 
-                        OLD = np.array(OLD)
-                        NEW = np.array(NEW)
-                        NEW_abs = np.array(NEW_abs)
+                    OLD = np.array(OLD)
+                    NEW = np.array(NEW)
+                    NEW_abs = np.array(NEW_abs)
 
-                        #TT = np.linalg.solve(NEW,OLD-NEW_abs)
-                        TT = np.linalg.lstsq(NEW,OLD-NEW_abs)[0]
-                    
-                        guess = np.hstack((guess,TT))
-                    else:
-                        # if it is a input variable, just take the old solution
-                        guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
+                    #TT = np.linalg.solve(NEW,OLD-NEW_abs)
+                    TT = np.linalg.lstsq(NEW,OLD-NEW_abs)[0]
+                
+                    guess = np.hstack((guess,TT))
+                else:
+                    # if it is a input variable, just take the old solution
+                    guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
 
-            # the new guess
-            self.guess = guess
-        
-    #         #################################
-    #         if DEBUG and self.nIt > 1 and 0:
-    #             import matplotlib.pyplot as plt
-    #
-    #             tt = np.linspace(self.a, self.b, 1000)
-    #             xt_old = np.zeros((1000,len(self.x_sym)))
-    #             for i,x in enumerate(self.x_sym):
-    #                 fx = old_splines[x]
-    #                 xt = np.array([fx.f(t) for t in tt])
-    #
-    #                 xt_old[:,i] = xt
-    #
-    #             sol_bak = 1.0*self.sol
-    #             splines_bak = self.splines.copy()
-    #
-    #             self.sol = self.guess
-    #             self.setCoeff()
-    #             xt_new = np.array([self.x(t) for t in tt])
-    #
-    #             IPS()
-    #
-    #             self.sol = sol_bak
-    #             self.splines = splines_bak
-    #             for s in self.splines.values():
-    #                 s.prov_flag = True
-    #          #################################
+        # the new guess
+        self.guess = guess
+    
+#         #################################
+#         if DEBUG and self.nIt > 1 and 0:
+#             import matplotlib.pyplot as plt
+#
+#             tt = np.linspace(self.a, self.b, 1000)
+#             xt_old = np.zeros((1000,len(self.x_sym)))
+#             for i,x in enumerate(self.x_sym):
+#                 fx = old_splines[x]
+#                 xt = np.array([fx.f(t) for t in tt])
+#
+#                 xt_old[:,i] = xt
+#
+#             sol_bak = 1.0*self.sol
+#             splines_bak = self.splines.copy()
+#
+#             self.sol = self.guess
+#             self.setCoeff()
+#             xt_new = np.array([self.x(t) for t in tt])
+#
+#             IPS()
+#
+#             self.sol = sol_bak
+#             self.splines = splines_bak
+#             for s in self.splines.values():
+#                 s.prov_flag = True
+#          #################################
     
     
     def solve(self, G, DG):

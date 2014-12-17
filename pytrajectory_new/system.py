@@ -5,6 +5,8 @@ import scipy as scp
 from scipy import sparse
 import sympy as sp
 
+from trajectories import Trajectory
+from collocation import CollocationSystem
 from simulation import Simulator
 import auxiliary
 import log
@@ -17,13 +19,12 @@ if DEBUG:
     from IPython import embed as IPS
 
 
-
 class ControlSystem(object):
-	'''
-    here comes the docstring...
+    '''
+    the docstring...
     '''
     
-    def __init__(self, fnc, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
+    def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
         # Save the symbolic vectorfield
         self.ff_sym = ff
         
@@ -70,30 +71,25 @@ class ControlSystem(object):
         self.eqind = eqind
         
         # Transform lists of boundary values into dictionaries
-        xa = dict()
-        xb = dict()
-        ua = dict()
-        ub = dict()
+        self.xa = dict()
+        self.xb = dict()
+        self.ua = dict()
+        self.ub = dict()
         
         for i, xx in enumerate(self.x_sym):
-            xa[xx] = xa[i]
-            xb[xx] = xb[i]
+            self.xa[xx] = xa[i]
+            self.xb[xx] = xb[i]
         
         for i, uu in enumerate(self.u_sym):
             try:
-                ua[uu] = ua[i]
+                self.ua[uu] = ua[i]
             except:
-                ua[uu] = None
+                self.ua[uu] = None
             
             try:
-                ub[uu] = ub[i]
+                self.ub[uu] = ub[i]
             except:
-                ub[uu] = None
-        
-        self.xa = xa
-        self.xb = xb
-        self.ua = ua
-        self.ub = ub
+                self.ub[uu] = None
         
         # Handle system constraints if there are any
         if constraints:
@@ -115,10 +111,11 @@ class ControlSystem(object):
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
-        self.ff = sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
+        self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
         
-        # Create trajectories
+        # Create trajectory and equations system objects
         self.trajectories = Trajectory(self)
+        self.eqs = CollocationSystem(self)
         
         # Reset iteration number
         self.nIt = 0
@@ -226,7 +223,7 @@ class ControlSystem(object):
 
         fi = self.ff_sym(x_sym, u_sym)
 
-        chains, eqind = auxiliary.findIntegratorChains(fi, x_sym)
+        chains, eqind = auxiliary.findIntegratorChains(fi, x_sym, u_sym)
         
         # get minimal neccessary number of spline parts
         # for the manipulated variables
@@ -264,7 +261,7 @@ class ControlSystem(object):
         
         # create a numeric vectorfield function of the original vectorfield
         # and back it up (will be used in simulation step of the main iteration)
-        ff_num_orig = sym2num_vectorfield(ff_sym_orig, x_sym_orig, self.u_sym)
+        ff_num_orig = auxiliary.sym2num_vectorfield(ff_sym_orig, x_sym_orig, self.u_sym)
         
         # Now we can handle the constraints by projecting the constrained state variables
         # on new unconstrained variables using saturation functions
@@ -330,6 +327,50 @@ class ControlSystem(object):
         return ff_sym, xa, xb, orig_backup
     
     
+    def constrain(self):
+        '''
+        This method is used to determine the solution of the original constrained
+        state variables by creating a composition of the saturation functions and
+        the calculated solution for the introduced unconstrained variables.
+        '''
+        
+        # get a copy of the current function dictionaries
+        # (containing functions for unconstrained variables y_i)
+        x_fnc = self.trajectories.x_fnc.copy()
+        dx_fnc = self.trajectories.dx_fnc.copy()
+        
+        # iterate over all constraints
+        for k, v in self.constraints.items():
+            # get symbols of original constrained variable x_k, the introduced unconstrained variable y_k
+            # and the saturation limits y0, y1
+            xk = self.orig_backup['x_sym'][k]
+            yk = self.x_sym[k]
+            y0, y1 = v
+            
+            # get the calculated solution function for the unconstrained variable and its derivative
+            y_fnc = x_fnc[yk]
+            dy_fnc = dx_fnc[yk]
+            
+            # create the compositions
+            psi_y, dpsi_dy = auxiliary.saturation_functions(y_fnc, dy_fnc, y0, y1)
+            
+            # put created compositions into dictionaries of solution functions
+            self.trajectories.x_fnc[xk] = psi_y
+            self.trajectories.dx_fnc[xk] = dpsi_dy
+            
+            # remove solutions for unconstrained auxiliary variable and its derivative
+            self.trajectories.x_fnc.pop(yk)
+            self.trajectories.dx_fnc.pop(yk)
+        
+        # restore the original boundary values, variables and vectorfield functions
+        # TODO: should the constrained stuff be saved (not longer needed?)
+        self.xa = self.orig_backup['xa']
+        self.xb = self.orig_backup['xb']
+        self.x_sym = self.orig_backup['x_sym']
+        self.ff = self.orig_backup['ff_num']
+        self.ff_sym = self.orig_backup['ff_sym']
+    
+    
     def solveControlProblem(self):
         '''
         here comes the docstring...
@@ -364,11 +405,10 @@ class ControlSystem(object):
             self.reached_accuracy = self.trajectories.checkAccuracy()
             
         # clear workspace
-        self.clear()
+        #self.clear()
         
         # as a last we, if there were any constraints to be taken care of,
-        # we project the unconstrained variables back on the original
-        # constrained ones
+        # we project the unconstrained variables back on the original constrained ones
         if self.constraints:
             self.constrain()
         
@@ -389,14 +429,14 @@ class ControlSystem(object):
         # Initialise the spline function objects
         self.trajectories.initSplines()
         
-        # Build the collocation equations system
-        G, DG = self.eqs.build()
-        
         # Get a initial value (guess)
         self.eqs.getGuess()
         
+        # Build the collocation equations system
+        G, DG = self.eqs.build()
+        
         # Solve the collocation equation system
-        self.eqs.solve(D, DG)
+        self.eqs.solve(G, DG)
         
         # Set the found solution
         self.trajectories.setCoeffs()
@@ -437,19 +477,43 @@ class ControlSystem(object):
         
         # start forward simulation
         self.sim = S.simulate()
-        
 
 
 
 
+if __name__ == '__main__':
+    # test example: double integrator
+    
+    def f(x,u):
+        x1, x2 = x
+        u1, = u
 
+        ff = np.array([ x2,
+                        u1])
+        return ff
 
+    xa = [0.0, 0.0]
+    xb = [1.0, 0.0]
+    
+    a = 0.0
+    b = 2.0
+    ua = [0.0]
+    ub = [0.0]
+    constraints = { 1:[-0.1, 0.65]}
+    #constraints = dict()
 
-
-
-
-
-
-
-
-
+    S = ControlSystem(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
+    
+    S.setParam('kx', 3)
+    S.setParam('maxIt', 5)
+    S.setParam('eps', 1e-2)
+    S.setParam('ierr', 1e-1)
+    S.setParam('use_chains', False)
+    
+    
+    with log.Timer("Iteration", verb=0):
+        S.solveControlProblem()
+    
+    if DEBUG:
+        from IPython import embed as IPS
+        IPS()

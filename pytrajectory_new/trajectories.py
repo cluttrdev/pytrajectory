@@ -1,7 +1,8 @@
 # IMPORTS
 import numpy as np
 
-from splines import CubicSpline
+from splines import CubicSpline, fdiff
+import auxiliary
 import log
 
 
@@ -118,7 +119,7 @@ class Trajectory(object):
                                              steady=False, tag=upper.name)
                 splines[upper].type = 'u'
 
-            for i, elem in enumerate(chain.elements):
+            for i, elem in enumerate(chain.elements()):
                 if elem in self.sys.u_sym:
                     if (i == 0):
                         u_fnc[elem] = splines[upper].f
@@ -177,7 +178,7 @@ class Trajectory(object):
         self.dx_fnc = dx_fnc
     
     
-    def setCoeff(self):
+    def setCoeffs(self):
         '''
         Set found numerical values for the independent parameters of each spline.
 
@@ -188,7 +189,7 @@ class Trajectory(object):
 
         log.info("    Set spline coefficients", verb=2)
 
-        sol = self.sys.sol
+        sol = self.sys.eqs.sol
         subs = dict()
 
         for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
@@ -214,7 +215,7 @@ class Trajectory(object):
 
         for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             j += len(v)
-            coeffs_sol[k] = self.sys.sol[i:j]
+            coeffs_sol[k] = self.sys.eqs.sol[i:j]
             i = j
 
         self.coeffs_sol = coeffs_sol
@@ -242,11 +243,11 @@ class Trajectory(object):
         log.info(40*"-", verb=3)
         log.info("Ending up with:   Should Be:  Difference:", verb=3)
 
-        err = np.empty(self.n)
+        err = np.empty(xt.shape[1])
         if self.sys.constraints:
-            for i, xx in enumerate(self.orig_backup['x_sym']):
-                err[i] = abs(self.orig_backup['xb'][xx] - xt[-1][i])
-                log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.orig_backup['xb'][xx], err[i]), verb=3)
+            for i, xx in enumerate(self.sys.orig_backup['x_sym']):
+                err[i] = abs(self.sys.orig_backup['xb'][xx] - xt[-1][i])
+                log.info(str(xx)+" : %f     %f    %f"%(xt[-1][i], self.sys.orig_backup['xb'][xx], err[i]), verb=3)
         else:
             for i, xx in enumerate(self.sys.x_sym):
                 err[i] = abs(self.sys.xb[xx] - xt[-1][i])
@@ -256,13 +257,13 @@ class Trajectory(object):
         
         if self.sys.mparam['ierr']:
             # calculate maximum consistency error on the whole interval
-            maxH = consistency_error((self.sys.a,self.sys.b), self.x, self.u, self.dx, self.sys.ff)
+            maxH = auxiliary.consistency_error((self.sys.a,self.sys.b), self.x, self.u, self.dx, self.sys.ff)
             
             reached_accuracy = (maxH < self.sys.mparam['ierr']) and (max(err) < self.sys.mparam['eps'])
             log.info('maxH = %f'%maxH)
         else:
             # just check if tolerance for the boundary values is satisfied
-            reached_accuracy = max(err) < self.mparam['eps']
+            reached_accuracy = max(err) < self.sys.mparam['eps']
         
         if reached_accuracy:
             log.info("  --> reached desired accuracy: "+str(reached_accuracy), verb=1)
