@@ -1,16 +1,24 @@
 
 # IMPORTS
 import numpy as np
-import scipy as scp
-from scipy import sparse
 import sympy as sp
+from scipy import sparse
 
 from trajectories import Trajectory
 from collocation import CollocationSystem
 from simulation import Simulator
 import auxiliary
-import log
 
+# LOGGING
+import logging
+# message format
+fmt = '%(asctime)s %(levelname)s: \t %(message)s'
+# date/time format
+dfmt = '%d-%m-%Y %H:%M:%S'
+# log level
+lvl = logging.DEBUG
+# configure
+logging.basicConfig(level=lvl, format=fmt, datefmt=dfmt)
 
 # DEBUGGING
 DEBUG = True
@@ -21,9 +29,60 @@ if DEBUG:
 
 class ControlSystem(object):
     '''
-    the docstring...
-    '''
+    Base class of the PyTrajectory project.
+
+    Parameters
+    ----------
+
+    ff :  callable
+        Vectorfield (rhs) of the control system.
     
+    a : float
+        Left border of the considered time interval.
+    
+    b : float
+        Right border of the considered time interval.
+    
+    xa : list
+        Boundary values at the left border.
+    
+    xb : list
+        Boundary values at the right border.
+    
+    ua : list
+        Boundary values of the input variables at left border.
+    
+    ub : list
+        Boundary values of the input variables at right border.
+    
+    constraints : dict
+        Box-constraints of the state variables.
+    
+    Attributes
+    ----------
+    
+    mparam : dict
+        Dictionary with method parameters
+        
+        ==========  =============   =======================================================
+        key         default value   meaning
+        ==========  =============   =======================================================
+        sx          5               Initial number of spline parts for the system variables
+        su          5               Initial number of spline parts for the input variables
+        kx          2               Factor for raising the number of spline parts
+        delta       2               Constant for calculation of collocation points
+        maxIt       10              Maximum number of iteration steps
+        eps         1e-2            Tolerance for the solution of the initial value problem
+        ierr        1e-1            Tolerance for the error on the whole interval
+        tol         1e-5            Tolerance for the solver of the equation system
+        method      'leven'         The solver algorithm to use
+        use_chains  True            Whether or not to use integrator chains
+        colltype    'equidistant'   The type of the collocation points
+        use_sparse  True            Whether or not to use sparse matrices
+        sol_steps   100             Maximum number of iteration steps for the eqs solver
+        ==========  =============   =======================================================
+    
+    '''
     def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
         # Save the symbolic vectorfield
         self.ff_sym = ff
@@ -49,10 +108,10 @@ class ControlSystem(object):
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
-            self.setParam(k, v)
+            self.set_param(k, v)
         
         # Analyse the given system to set some parameters
-        n, m, x_sym, u_sym, chains, eqind = self.analyseSystem(xa)
+        n, m, x_sym, u_sym, chains, eqind = self.analyse(xa)
         
         # a little check
         if not (len(xa) == len(xb) == n):
@@ -70,37 +129,33 @@ class ControlSystem(object):
         self.chains = chains
         self.eqind = eqind
         
-        # Transform lists of boundary values into dictionaries
-        self.xa = dict()
-        self.xb = dict()
-        self.ua = dict()
-        self.ub = dict()
+        # Transform lists of boundary values into dictionary
+        boundary_values = dict()
         
         for i, xx in enumerate(self.x_sym):
-            self.xa[xx] = xa[i]
-            self.xb[xx] = xb[i]
+            boundary_values[xx] = (xa[i], xb[i])
         
-        for i, uu in enumerate(self.u_sym):
-            try:
-                self.ua[uu] = ua[i]
-            except:
-                self.ua[uu] = None
-            
-            try:
-                self.ub[uu] = ub[i]
-            except:
-                self.ub[uu] = None
+        if ua and ub:
+            for i, uu in enumerate(self.u_sym):
+                boundary_values[uu] = (ua[i], ub[i])
+        elif ua and not ub:
+            for i, uu in enumerate(self.u_sym):
+                boundary_values[uu] = (ua[i], None)
+        elif not ua and ub:
+            for i, uu in enumerate(self.u_sym):
+                boundary_values[uu] = (None, ub[i])
+        
+        self._boundary_values = boundary_values
         
         # Handle system constraints if there are any
         if constraints:
             self.constraints = constraints
             
             # transform the constrained vectorfield into an unconstrained one
-            ff_sym, xa, xb, orig_backup = self.unconstrain()
+            ff_sym, boundary_values, orig_backup = self.unconstrain()
             
             self.ff_sym = ff_sym
-            self.xa = xa
-            self.xb = xb
+            self._boundary_values = boundary_values
             self.orig_backup = orig_backup
             
             # we cannot make use of an integrator chain
@@ -127,7 +182,7 @@ class ControlSystem(object):
         self.sol = None
     
     
-    def setParam(self, param='', val=None):
+    def set_param(self, param='', val=None):
         '''
         Method to assign value :attr:`val` to method parameter :attr:`param`.
         (mainly for didactic purpose)
@@ -149,7 +204,7 @@ class ControlSystem(object):
         self.mparam[param] = val
     
     
-    def analyseSystem(self, xa):
+    def analyse(self, xa):
         '''
         Analyse the system structure and set values for some of the method parameters.
 
@@ -184,10 +239,10 @@ class ControlSystem(object):
             Indices of the equations that have to be solved using collocation.
         '''
 
-        log.info("  Analysing System Structure", verb=2)
+        logging.info("Analysing System Structure")
         
         # first, determine system dimensions
-        log.info("    Determine system/input dimensions", verb=3)
+        logging.debug("Determine system/input dimensions")
         
         # the number of system variables can be determined via the length
         # of the boundary value lists
@@ -211,11 +266,11 @@ class ControlSystem(object):
                 # (that means the dimensions don't match)
                 j += 1
         
-        log.info("      --> system: %d"%n, verb=3)
-        log.info("      --> input : %d"%m, verb=3)
+        logging.debug("--> system: %d"%n)
+        logging.debug("--> input : %d"%m)
 
         # next, we look for integrator chains
-        log.info("    Looking for integrator chains", verb=3)
+        logging.debug("Looking for integrator chains")
 
         # create symbolic variables to find integrator chains
         x_sym = ([sp.symbols('x%d' % k, type=float) for k in xrange(1,n+1)])
@@ -223,7 +278,7 @@ class ControlSystem(object):
 
         fi = self.ff_sym(x_sym, u_sym)
 
-        chains, eqind = auxiliary.findIntegratorChains(fi, x_sym, u_sym)
+        chains, eqind = auxiliary.find_integrator_chains(fi, x_sym, u_sym)
         
         # get minimal neccessary number of spline parts
         # for the manipulated variables
@@ -245,16 +300,14 @@ class ControlSystem(object):
         
         # make some stuff local
         ff = sp.Matrix(self.ff_sym(self.x_sym, self.u_sym))
-        xa = self.xa
-        xb = self.xb
+        boundary_values = self._boundary_values
         x_sym = self.x_sym
         
         # First, we backup all things that will be influenced in some way
         #
         # backup original state variables and their boundary values
         x_sym_orig = 1*x_sym
-        xa_orig = xa.copy()
-        xb_orig = xb.copy()
+        boundary_values_orig = boundary_values.copy()
         
         # backup symbolic vectorfield function
         ff_sym_orig = self.ff_sym
@@ -267,10 +320,12 @@ class ControlSystem(object):
         # on new unconstrained variables using saturation functions
         for k, v in self.constraints.items():
             # check if boundary values are within saturation limits
-            if not ( v[0] < xa[x_sym[k]] < v[1] ) or not ( v[0] < xb[x_sym[k]] < v[1] ):
-                log.error('Boundary values have to be strictly within the saturation limits!')
-                log.info('Please have a look at the documentation, \
-                          especially the example of the constrained double intgrator.')
+            bv_a, bv_b = boundary_values[x_sym[k]]
+            if not ( v[0] < bv_a < v[1] ) or \
+                not ( v[0] < bv_b < v[1] ):
+                logging.error('Boundary values have to be strictly within the saturation limits!')
+                logging.info('Please have a look at the documentation, \
+                              especially the example of the constrained double intgrator.')
                 raise ValueError('Boundary values have to be strictly within the saturation limits!')
             
             # replace constrained state variable with new unconstrained one
@@ -297,14 +352,12 @@ class ControlSystem(object):
             # replace key of constrained variable in dictionaries for boundary values
             # with new symbol for the unconstrained variable
             xk = x_sym_orig[k]
-            xa[yk] = xa.pop(xk)
-            xb[yk] = xb.pop(xk)
+            boundary_values[yk] = boundary_values.pop(xk)
             
             # update boundary values for new unconstrained variable
-            wa = xa[yk]
-            xa[yk] = (1.0/m)*np.log( (wa-v[0])/(v[1]-wa) )
-            wb = xb[yk]
-            xb[yk] = (1.0/m)*np.log( (wb-v[0])/(v[1]-wb) )
+            wa, wb = boundary_values[yk]
+            boundary_values[yk] = ( (1.0/m)*np.log((wa-v[0])/(v[1]-wa)),
+                                    (1.0/m)*np.log((wb-v[0])/(v[1]-wb)) )
         
         # create a callable function for the new symbolic vectorfield
         if ff.T == ff.vec():
@@ -320,11 +373,11 @@ class ControlSystem(object):
         
         # backup the original ones, as well as some other stuff
         orig_backup = dict()
-        orig_backup = {'xa' : xa_orig, 'xb' : xb_orig,
+        orig_backup = {'boundary_values' : boundary_values_orig,
                         'ff_sym' : ff_sym_orig, 'ff_num' : ff_num_orig,
                         'x_sym' : x_sym_orig}
         
-        return ff_sym, xa, xb, orig_backup
+        return ff_sym, boundary_values, orig_backup
     
     
     def constrain(self):
@@ -336,8 +389,8 @@ class ControlSystem(object):
         
         # get a copy of the current function dictionaries
         # (containing functions for unconstrained variables y_i)
-        x_fnc = self.trajectories.x_fnc.copy()
-        dx_fnc = self.trajectories.dx_fnc.copy()
+        x_fnc = self.trajectories._x_fnc.copy()
+        dx_fnc = self.trajectories._dx_fnc.copy()
         
         # iterate over all constraints
         for k, v in self.constraints.items():
@@ -355,32 +408,40 @@ class ControlSystem(object):
             psi_y, dpsi_dy = auxiliary.saturation_functions(y_fnc, dy_fnc, y0, y1)
             
             # put created compositions into dictionaries of solution functions
-            self.trajectories.x_fnc[xk] = psi_y
-            self.trajectories.dx_fnc[xk] = dpsi_dy
+            self.trajectories._x_fnc[xk] = psi_y
+            self.trajectories._dx_fnc[xk] = dpsi_dy
             
             # remove solutions for unconstrained auxiliary variable and its derivative
-            self.trajectories.x_fnc.pop(yk)
-            self.trajectories.dx_fnc.pop(yk)
+            self.trajectories._x_fnc.pop(yk)
+            self.trajectories._dx_fnc.pop(yk)
         
         # restore the original boundary values, variables and vectorfield functions
         # TODO: should the constrained stuff be saved (not longer needed?)
-        self.xa = self.orig_backup['xa']
-        self.xb = self.orig_backup['xb']
+        self._boundary_values = self.orig_backup['boundary_values']
         self.x_sym = self.orig_backup['x_sym']
         self.ff = self.orig_backup['ff_num']
         self.ff_sym = self.orig_backup['ff_sym']
     
     
-    def solveControlProblem(self):
+    def solve(self):
         '''
-        here comes the docstring...
+        This is the main loop.
+        
+        While the desired accuracy has not been reached, the number of
+        spline parts is raised and one iteration step is done.
+        
+        Returns
+        -------
+        
+        callable
+            Callable function for the system state.
+        
+        callable
+            Callable function for the input variables.
         '''
         
         # do the first step
-        self.iterate()
-        
-        # check if desired accuracy is already reached
-        self.trajectories.checkAccuracy()
+        self._iterate()
         
         # this was the first iteration
         # now we are getting into the loop
@@ -389,60 +450,77 @@ class ControlSystem(object):
             self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
             
             if self.nIt == 1:
-                log.info("2nd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
+                logging.info("2nd Iteration: %d spline parts"%self.mparam['sx'])
             elif self.nIt == 2:
-                log.info("3rd Iteration: %d spline parts"%self.mparam['sx'], verb=1)
+                logging.info("3rd Iteration: %d spline parts"%self.mparam['sx'])
             elif self.nIt >= 3:
-                log.info("%dth Iteration: %d spline parts"%(self.nIt+1, self.mparam['sx']), verb=1)
+                logging.info("%dth Iteration: %d spline parts"%(self.nIt+1, self.mparam['sx']))
 
             # store the old spline to calculate the guess later
-            self.trajectories.old_splines = self.trajectories.splines
+            self.trajectories._old_splines = self.trajectories._splines
 
             # start next iteration step
-            self.iterate()
+            self._iterate()
 
-            # check if desired accuracy is reached
-            self.reached_accuracy = self.trajectories.checkAccuracy()
-            
-        # clear workspace
-        #self.clear()
-        
         # as a last we, if there were any constraints to be taken care of,
         # we project the unconstrained variables back on the original constrained ones
         if self.constraints:
             self.constrain()
         
-        log.log_off()
-        
         # return the found solution functions
         return self.trajectories.x, self.trajectories.u
     
     
-    def iterate(self):
+    def _iterate(self):
         '''
-        here comes the docstring...
+        This method is used to run one iteration step.
+
+        First, new splines are initialised for the variables that are the upper
+        end of an integrator chain.
+
+        Then, a start value for the solver is determined and the equation
+        system is build.
+
+        Next, the equation system is solved and the resulting numerical values
+        for the free parameters are applied to the corresponding splines.
+
+        As a last, the initial value problem is simulated.
         '''
         
         # Increase iteration number
         self.nIt += 1
         
         # Initialise the spline function objects
-        self.trajectories.initSplines()
+        self.trajectories.init_splines(interval=(self.a, self.b),
+                                       sx=self.mparam['sx'], su=self.mparam['su'],
+                                       x_sym=self.x_sym, u_sym=self.u_sym,
+                                       boundary_values=self._boundary_values,
+                                       chains=self.chains)
         
         # Get a initial value (guess)
-        self.eqs.getGuess()
+        self.eqs.get_guess()
         
         # Build the collocation equations system
         G, DG = self.eqs.build()
         
         # Solve the collocation equation system
-        self.eqs.solve(G, DG)
+        sol = self.eqs.solve(G, DG)
         
         # Set the found solution
-        self.trajectories.setCoeffs()
+        self.trajectories.set_coeffs(sol, self.x_sym + self.u_sym, self.chains)
         
         # Solve the resulting initial value problem
         self.simulate()
+        
+        # check if desired accuracy is reached
+        if self.constraints:
+            boundary_values = self.orig_backup['boundary_values']
+            x_sym = self.orig_backup['x_sym']
+        else:
+            boundary_values = self._boundary_values
+            x_sym = self.x_sym
+        
+        self.reached_accuracy = self.trajectories.check_accuracy(self.sim_data, self.ff, x_sym, boundary_values)
     
     
     def simulate(self):
@@ -450,7 +528,7 @@ class ControlSystem(object):
         This method is used to solve the initial value problem.
         '''
 
-        log.info("  Solving Initial Value Problem", verb=2)
+        logging.debug("Solving Initial Value Problem")
         
         # calulate simulation time
         T = self.b - self.a
@@ -459,12 +537,12 @@ class ControlSystem(object):
         start = []
         
         if self.constraints:
-            start_dict = self.orig_backup['xa']
             x_vars = self.orig_backup['x_sym']
+            start_dict = dict([(k, v[0]) for k, v in self.orig_backup['boundary_values'].items() if k in x_vars])
             ff = self.orig_backup['ff_num']
         else:
-            start_dict = self.xa
             x_vars = self.x_sym
+            start_dict = dict([(k, v[0]) for k, v in self._boundary_values.items() if k in x_vars])
             ff = self.ff
         
         for x in x_vars:
@@ -473,10 +551,80 @@ class ControlSystem(object):
         # create simulation object
         S = Simulator(ff, T, start, self.trajectories.u)
         
-        log.info("    start: %s"%str(start), verb=2)
+        logging.debug("start: %s"%str(start))
         
         # start forward simulation
-        self.sim = S.simulate()
+        self.sim_data = S.simulate()
+    
+    
+    def plot(self):
+        '''
+        Plot the calculated trajectories and show interval error functions.
+
+        This method calculates the error functions and then calls
+        the :py:func:`visualisation.plotsim` function.
+        '''
+
+        try:
+            import matplotlib
+        except ImportError:
+            logging.error('Matplotlib is not available for plotting.')
+            return
+
+        # calculate the error functions H_i(t)
+        max_con_err, error = auxiliary.consistency_error((self.a,self.b), 
+                                                          self.trajectories.x,
+                                                          self.trajectories.u, 
+                                                          self.trajectories.dx, 
+                                                          self.ff, len(self.sim_data[0]), True)
+        H = dict()
+        for i in self.eqind:
+            H[i] = error[:,i]
+
+        # call utilities.plotsim()
+        #plotsim(self.sim_data, H)
+        t = self.sim_data[0]
+        xt = np.array([self.trajectories.x(tt) for tt in t])
+        ut = self.sim_data[2]
+        auxiliary.plot_simulation([t,xt,ut], H)
+    
+    
+    def save(self):
+        '''
+        Save data to using the module :py:mod:`pickle`.
+        
+        Currently only saves simulation data.
+        '''
+
+        save = dict()
+
+        # system data
+        #save['ff_sym'] = self.ff_sym
+        #save['ff'] = self.ff
+        #save['a'] = self.a
+        #save['b'] = self.b
+
+        # boundary values
+        #save['xa'] = self.xa
+        #save['xb'] = self.xb
+        #save['uab'] = self.uab
+
+        # solution functions       
+        #save['x'] = self.x
+        #save['u'] = self.u
+        #save['dx'] = self.dx
+
+        # simulation results
+        save['sim_data'] = self.sim_data
+        
+        if not fname:
+            fname = __file__.split('.')[0] + '.pkl'
+        elif not fname.endswith('.pkl'):
+            fname += '.pkl'
+        
+        with open(fname, 'wb') as dumpfile:
+            pickle.dump(save, dumpfile)
+        
 
 
 
@@ -504,15 +652,15 @@ if __name__ == '__main__':
 
     S = ControlSystem(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
     
-    S.setParam('kx', 3)
-    S.setParam('maxIt', 5)
-    S.setParam('eps', 1e-2)
-    S.setParam('ierr', 1e-1)
-    S.setParam('use_chains', False)
+    S.set_param('kx', 3)
+    S.set_param('maxIt', 5)
+    S.set_param('eps', 1e-2)
+    S.set_param('ierr', 1e-1)
+    S.set_param('use_chains', False)
     
     
-    with log.Timer("Iteration", verb=0):
-        S.solveControlProblem()
+    with auxiliary.Timer("Iteration"):
+        S.solve()
     
     if DEBUG:
         from IPython import embed as IPS

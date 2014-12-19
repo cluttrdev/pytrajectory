@@ -2,19 +2,29 @@
 import numpy as np
 import sympy as sp
 from scipy import sparse
+import logging
 
 from solver import Solver
-import log
 
+from IPython import embed as IPS
 
 
 
 
 class CollocationSystem(object):
     '''
-    here comes the docstring...
-    '''
+    This class represents the collocation system that is used
+    to determine a solution for the free parameters of the
+    control system, i.e. the independent coefficients of the
+    trajectory splines.
     
+    Parameters
+    ----------
+    
+    CtrlSys : system.ControlSystem
+        Instance of a control system.
+    
+    '''
     def __init__(self, CtrlSys):
         self.sys = CtrlSys
     
@@ -37,12 +47,12 @@ class CollocationSystem(object):
         
         '''
 
-        log.info("  Building Equation System", verb=2)
+        logging.debug("  Building Equation System")
         
         # make functions local
-        x_fnc = self.sys.trajectories.x_fnc
-        dx_fnc = self.sys.trajectories.dx_fnc
-        u_fnc = self.sys.trajectories.u_fnc
+        x_fnc = self.sys.trajectories._x_fnc
+        dx_fnc = self.sys.trajectories._dx_fnc
+        u_fnc = self.sys.trajectories._u_fnc
 
         # make symbols local
         x_sym = self.sys.x_sym
@@ -73,8 +83,8 @@ class CollocationSystem(object):
             # add left and right borders
             cpts = np.hstack((a, chpts, b))
         else:
-            log.warn('Unknown type of collocation points.')
-            log.warn('--> will use equidistant points!')
+            logging.warning('Unknown type of collocation points.')
+            logging.warning('--> will use equidistant points!')
             cpts = np.linspace(a,b,(self.sys.mparam['sx']*delta+1),endpoint=True)
 
         lx = len(cpts)*len(x_sym)
@@ -273,7 +283,7 @@ class CollocationSystem(object):
         return G, DG
     
     
-    def getGuess(self):
+    def get_guess(self):
         '''
         This method is used to determine a starting value (guess) for the
         solver of the collocation equation system.
@@ -297,8 +307,8 @@ class CollocationSystem(object):
             guess = 0.1*np.ones(len(self.c_list))
         else:
             # make splines local
-            old_splines = self.sys.trajectories.old_splines
-            new_splines = self.sys.trajectories.splines
+            old_splines = self.sys.trajectories._old_splines
+            new_splines = self.sys.trajectories._splines
 
             guess = np.empty(0)
             self.c_list = np.empty(0)
@@ -308,7 +318,7 @@ class CollocationSystem(object):
                 self.c_list = np.hstack((self.c_list, self.sys.trajectories.indep_coeffs[k]))
 
                 if (new_splines[k].type == 'x'):
-                    log.info("    Get new guess for spline %s"%k.name, verb=3)
+                    logging.debug("Get new guess for spline %s"%k.name)
 
                     # how many unknown coefficients does the new spline have
                     nn = len(self.sys.trajectories.indep_coeffs[k])
@@ -346,33 +356,6 @@ class CollocationSystem(object):
         # the new guess
         self.guess = guess
     
-#         #################################
-#         if DEBUG and self.nIt > 1 and 0:
-#             import matplotlib.pyplot as plt
-#
-#             tt = np.linspace(self.a, self.b, 1000)
-#             xt_old = np.zeros((1000,len(self.x_sym)))
-#             for i,x in enumerate(self.x_sym):
-#                 fx = old_splines[x]
-#                 xt = np.array([fx.f(t) for t in tt])
-#
-#                 xt_old[:,i] = xt
-#
-#             sol_bak = 1.0*self.sol
-#             splines_bak = self.splines.copy()
-#
-#             self.sol = self.guess
-#             self.setCoeff()
-#             xt_new = np.array([self.x(t) for t in tt])
-#
-#             IPS()
-#
-#             self.sol = sol_bak
-#             self.splines = splines_bak
-#             for s in self.splines.values():
-#                 s.prov_flag = True
-#          #################################
-    
     
     def solve(self, G, DG):
         '''
@@ -388,7 +371,7 @@ class CollocationSystem(object):
             Function for the jacobian.
         '''
 
-        log.info("  Solving Equation System", verb=2)
+        logging.debug("Solving Equation System")
         
         # create our solver
         solver = Solver(F=G, DF=DG, x0=self.guess, tol=self.sys.mparam['tol'],
@@ -400,5 +383,7 @@ class CollocationSystem(object):
         #from scipy import optimize as op
         #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
         #IPS()
+        
+        return self.sol
     
         

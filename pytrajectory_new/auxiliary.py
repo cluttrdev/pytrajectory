@@ -1,11 +1,36 @@
 # IMPORTS
 import numpy as np
 import sympy as sp
+import logging
+import time
 
 import log
 
 
 
+
+class Timer():
+    '''
+    Provides a context manager that takes the time of a code block.
+    
+    Parameters
+    ----------
+    
+    label : str
+        The 'name' of the code block which is timed
+    
+    verb : int
+        Level of verbosity
+    '''
+    def __init__(self, label="~"):
+        self.label = label
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, *args):
+        self.delta = time.time() - self.start
+        logging.debug("--> [%s elapsed %f s]"%(self.label, self.delta))
 
 
 class IntegChain(object):
@@ -61,9 +86,22 @@ class IntegChain(object):
         return self._elements
 
 
-def findIntegratorChains(fi, x_sym, u_sym):
+def find_integrator_chains(fi, x_sym, u_sym):
     '''
-    here comes the docstring...
+    Searches for integrator chains in given vector field matrix `fi`,
+    i.e. equations of the form :math:`\dot{x}_i = x_j, i \neq j`.
+    
+    Parameters
+    ----------
+    
+    fi : array_like
+        Matrix representation for the vectorfield of the control system.
+    
+    x_sym : list
+        Symbols for the state variables.
+    
+    u_sym : list
+        Symbols for the input variables.
     
     Returns
     -------
@@ -124,7 +162,7 @@ def findIntegratorChains(fi, x_sym, u_sym):
     for lst in tmpchains:
         ic = IntegChain(lst)
         chains.append(ic)
-        log.info("      --> found: " + str(ic), verb=3)
+        logging.debug("--> found: " + str(ic))
     
     # now we determine the equations that have to be solved by collocation
     # (--> lower ends of integrator chains)
@@ -154,7 +192,7 @@ def findIntegratorChains(fi, x_sym, u_sym):
 
 def sym2num_vectorfield(f_sym, x_sym, u_sym):
     '''
-    This function takes a callable vectorfield of a control system that is to be evaluated with symbols
+    This function takes a callable vector field of a control system that is to be evaluated with symbols
     for the state and input variables and returns a corresponding function that can be evaluated with
     numeric values for these variables.
     
@@ -162,7 +200,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     ----------
     
     f_sym : callable
-        The callable ("symbolic") vectorfield of the control system.
+        The callable ("symbolic") vector field of the control system.
     
     x_sym : iterable
         The symbols for the state variables of the control system.
@@ -174,7 +212,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     -------
     
     callable
-        The callable ("numeric") vectorfield of the control system.
+        The callable ("numeric") vector field of the control system.
     '''
     
     # get a sympy.Matrix representation of the vectorfield
@@ -250,8 +288,10 @@ def saturation_functions(y_fnc, dy_fnc, y0, y1):
     return psi_y, dpsi_dy
 
 
-def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500,return_error_array=False):
+def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500, return_error_array=False):
     '''
+    Calculates an error that shows how "well" the spline functions comply with the system
+    dynamic given by the vector field.
     
     Parameters
     ----------

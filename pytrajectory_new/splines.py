@@ -2,6 +2,7 @@ import numpy as np
 import sympy as sp
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
+import logging
 
 import log
 
@@ -111,7 +112,7 @@ class CubicSpline():
         self.jpts = np.linspace(self.a, self.b, self.n+1)
 
         if (steady):
-            with log.Timer("makesteady()"):
+            with auxiliary.Timer("makesteady()"):
                 self.makesteady()
     
     
@@ -219,7 +220,7 @@ class CubicSpline():
         Please see the documentation for more details: :ref:`candidate_functions`
         '''
         
-        log.info("    makesteady: "+self.tag, verb=2)
+        logging.debug("makesteady: "+self.tag)
         
         # This should be untouched yet
         assert self.steady_flag == False
