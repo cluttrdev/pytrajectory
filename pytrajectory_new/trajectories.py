@@ -3,6 +3,7 @@ import numpy as np
 import logging
 
 from splines import CubicSpline, fdiff
+from new_spline import CubicSpline as new_CubicSpline
 import auxiliary
 
 from IPython import embed as IPS
@@ -228,6 +229,104 @@ class Trajectory(object):
         self._x_fnc = x_fnc
         self._u_fnc = u_fnc
         self._dx_fnc = dx_fnc
+    
+    
+    def init_new_splines(self, interval, sx, su, x_sym, u_sym, boundary_values, chains):
+        '''
+        This method is used to create the necessary spline function objects.
+        
+        Parameters
+        ----------
+        
+        interval : tuple
+            The considered time interval.
+        
+        sx : int
+            Number of polynomial parts for the state spline functions
+        
+        su : int
+            Number of polynomial parts for the input spline functions
+        
+        x_sym : iterable
+            Sympy.symbols for the state variables.
+        
+        u_sym : iterable
+            Sympy.symbols for the input variables.
+        
+        boundary_values : dict
+            Dictionary of boundary values for the state and input splines functions.
+        
+        chains : iterable
+            Integrator chains of the control system.
+        
+        '''
+        logging.debug("Initialise Splines")
+        
+        # Unpack arguments
+        a, b = interval
+        self.sx = sx
+        self.su = su
+        
+        bv = boundary_values
+        
+        # dictionaries for splines and callable solution function for x,u and dx
+        splines = dict()
+        x_fnc = dict()
+        u_fnc = dict()
+        dx_fnc = dict()
+    
+        # first handle variables that are part of an integrator chain
+        for chain in chains:
+            upper = chain.upper
+            lower = chain.lower
+        
+            # here we just create a spline object for the upper ends of every chain
+            # w.r.t. its lower end (whether it is an input variable or not)
+            if chain.lower.name.startswith('x'):
+                splines[upper] = new_CubicSpline(a, b, n=self.sx, bc={0:bv[upper]}, tag=upper.name)
+                splines[upper].type = 'x'
+            elif chain.lower.name.startswith('u'):
+                splines[upper] = new_CubicSpline(a, b, n=self.su, bc={0:bv[lower]}, tag=upper.name)
+                splines[upper].type = 'u'
+        
+            # search for boundary values to satisfy
+            for i, elem in enumerate(chain.elements):
+                if elem in x_sym:
+                    splines[upper].boundary_values(i, boundary_values[elem])
+                    if splines[upper].type == 'u':
+                        splines[upper].boundary_values(i+1, boundary_values[lower])
+        
+            # solve smoothness and boundary conditions
+            splines[upper].make_steady()
+        
+            # calculate derivatives
+            for i, elem in enumerate(chain.elements):
+                if elem in x_sym:
+                    x_fnc[elem] = splines[upper].derive(i)
+                elif elem in u_sym:
+                    u_fnc[elem] = splines[upper].derive(i)
+
+        # now handle the variables which are not part of any chain
+        for xx in x_sym:
+            if (not x_fnc.has_key(xx)):
+                splines[xx] = new_CubicSpline(a, b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True)
+                splines[xx].type = 'x'
+                x_fnc[xx] = splines[xx].derive(0)
+
+        for uu in u_sym:
+            if (not u_fnc.has_key(uu)):
+                splines[uu] = new_CubicSpline(a, b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True)
+                splines[uu].type = 'u'
+                u_fnc[uu] = splines[uu].derive(0)
+    
+        # calculate derivatives of every state variable spline
+        #for xx in x_sym:
+            #dx_fnc[xx] = x_fnc[xx].derive()
+
+        #free_coeffs= dict()
+        #for ss in splines:
+        #    free_coeffs[ss] = splines[ss].c_indep
+    
     
     
     def set_coeffs(self, sol, symbols, chains):
