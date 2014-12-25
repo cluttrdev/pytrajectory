@@ -1,4 +1,5 @@
 # IMPORTS
+import numpy as np
 import matplotlib as mpl
 mpl.use('TKAgg')
 import matplotlib.pyplot as plt
@@ -8,7 +9,7 @@ import os
 
 
 
-def plot_simulation(sim_data, H, fname=None):
+def plot_simulation(sim_data, H=[], fname=None):
     '''
     This method provides graphics for each system variable, manipulated
     variable and error function and plots the solution of the simulation.
@@ -26,7 +27,7 @@ def plot_simulation(sim_data, H, fname=None):
         If not None, plot will be saved as <fname>.png
     '''
     
-    t, xt, ut = sim
+    t, xt, ut = sim_data
     n = xt.shape[1]
     m = ut.shape[1]
     

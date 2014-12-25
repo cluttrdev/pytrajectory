@@ -248,7 +248,7 @@ class CubicSpline():
             a = coeffs[:-1,v]
         if (mu == 2):
             a = coeffs[:-3,v]
-
+        IPS()
         # b is what is not in a
         coeffs_set = set(coeffs.flatten())
         a_set = set(a)

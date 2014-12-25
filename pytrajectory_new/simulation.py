@@ -56,6 +56,7 @@ class Simulator(object):
         '''
         u = self.u(t)
         dx = self.ff(x, u)
+        
         return dx
 
 

@@ -14,6 +14,8 @@ import log
 # DEBUGGING
 DEBUG = True
 
+from IPython import embed as IPS
+
 
 def sym2num_vectorfield(f_sym, x_sym, u_sym):
     '''
@@ -760,6 +762,8 @@ class Trajectory():
         # solve the initial value problem
         with log.Timer("simulateIVP()"):
             self.simulateIVP()
+        
+        IPS()
     
     
     def getGuess(self):
@@ -1199,6 +1203,8 @@ class Trajectory():
             
             return DG
         
+        IPS()
+        
         # return the callable functions
         return G, DG
 
@@ -1225,6 +1231,8 @@ class Trajectory():
         
         # solve the equation system
         self.sol = solver.solve()
+        
+        #IPS()
         
         #from scipy import optimize as op
         #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
@@ -1516,10 +1524,10 @@ if __name__ == '__main__':
 
     T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
     
-    T.setParam('kx', 3)
-    T.setParam('maxIt', 5)
-    T.setParam('eps', 1e-2)
-    T.setParam('ierr', 1e-2)
+    #T.setParam('kx', 3)
+    #T.setParam('maxIt', 5)
+    T.setParam('eps', 1e-1)
+    T.setParam('ierr', 1.0)
     T.setParam('use_chains', False)
     
     

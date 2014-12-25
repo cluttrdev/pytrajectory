@@ -8,7 +8,7 @@ from solver import Solver
 
 from IPython import embed as IPS
 
-
+USE_OLD_SPLINES = False
 
 
 class CollocationSystem(object):
@@ -25,14 +25,28 @@ class CollocationSystem(object):
         Instance of a control system.
     
     '''
-    def __init__(self, CtrlSys):
-        self.sys = CtrlSys
+    def __init__(self, ctrl_sys):
+        # TODO: get rid of the following
+        self.sys = ctrl_sys
+        
+        # Save some information
+        self._coll_type = ctrl_sys.mparam['coll_type']
+        self._use_sparse = ctrl_sys.mparam['use_sparse']
     
     
-    def build(self):
+    def build(self, sys, traj):
         '''
         This method is used to set up the equations for the collocation equation system
         and defines functions for the numerical evaluation of the system and its jacobian.
+        
+        Parameters
+        ----------
+        
+        sys : system.ControlSystem
+            The control system for which to build the collocation equation system.
+        
+        traj : trajectories.Trajectory
+            The control system's trajectory object.
         
         Returns
         -------
@@ -50,43 +64,21 @@ class CollocationSystem(object):
         logging.debug("  Building Equation System")
         
         # make functions local
-        x_fnc = self.sys.trajectories._x_fnc
-        dx_fnc = self.sys.trajectories._dx_fnc
-        u_fnc = self.sys.trajectories._u_fnc
+        x_fnc = traj._x_fnc
+        dx_fnc = traj._dx_fnc
+        u_fnc = traj._u_fnc
 
         # make symbols local
-        x_sym = self.sys.x_sym
-        u_sym = self.sys.u_sym
+        x_sym = traj._x_sym
+        u_sym = traj._u_sym
 
-        a = self.sys.a
-        b = self.sys.b
-        delta = self.sys.mparam['delta']
+        a = sys.a
+        b = sys.b
+        delta = sys.mparam['delta']
 
         # now we generate the collocation points
-        if self.sys.mparam['colltype'] == 'equidistant':
-            # get equidistant collocation points
-            cpts = np.linspace(a,b,(self.sys.mparam['sx']*delta+1),endpoint=True)
-        elif self.sys.mparam['colltype'] == 'chebychev':
-            # determine rank of chebychev polynomial
-            # of which to calculate zero points
-            nc = int(self.sys.mparam['sx']*delta - 1)
-
-            # calculate zero points of chebychev polynomial --> in [-1,1]
-            cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
-            cheb_cpts.sort()
-
-            # transfer chebychev nodes from [-1,1] to our interval [a,b]
-            a = self.sys.a
-            b = self.sys.b
-            chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
-
-            # add left and right borders
-            cpts = np.hstack((a, chpts, b))
-        else:
-            logging.warning('Unknown type of collocation points.')
-            logging.warning('--> will use equidistant points!')
-            cpts = np.linspace(a,b,(self.sys.mparam['sx']*delta+1),endpoint=True)
-
+        cpts = collocation_nodes(a=a, b=b, npts=(sys.mparam['sx']*delta+1), coll_type=sys.mparam['coll_type'])
+        
         lx = len(cpts)*len(x_sym)
         lu = len(cpts)*len(u_sym)
 
@@ -103,18 +95,20 @@ class CollocationSystem(object):
         j = 0
         
         # iterate over spline quantities
-        for k, v in sorted(self.sys.trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
+        for k, v in sorted(sys.trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
             i = j
-
+        
         # iterate over all quantities including inputs
-        for sq in x_sym+u_sym:
-            for ic in self.sys.chains:
-                if sq in ic:
-                    indic[sq] = indic[ic.upper]
-
+        # and take care of integrator chain elements
+        if sys.mparam['use_chains']:
+            for sq in x_sym+u_sym:
+                for ic in sys.chains:
+                    if sq in ic:
+                        indic[sq] = indic[ic.upper]
+        
         # as promised: here comes the explanation
         #
         # now, the dictionary 'indic' looks something like
@@ -136,7 +130,7 @@ class CollocationSystem(object):
                 mx = np.zeros(c_len)
                 mdx = np.zeros(c_len)
 
-                i,j= indic[xx]
+                i,j = indic[xx]
 
                 mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
                 mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
@@ -149,9 +143,9 @@ class CollocationSystem(object):
                 mu = np.zeros(c_len)
 
                 i,j = indic[uu]
-
+                
                 mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
-
+                
                 Mu[equ] = mu
                 equ += 1
 
@@ -164,7 +158,7 @@ class CollocationSystem(object):
         
         # here we create a callable function for the jacobian matrix of the vectorfield
         # w.r.t. to the system and input variables
-        f = self.sys.ff_sym(x_sym,u_sym)
+        f = sys.ff_sym(x_sym,u_sym)
         Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
         Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
 
@@ -173,14 +167,14 @@ class CollocationSystem(object):
 
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
-        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,self.sys.eqind,:]
+        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,sys.eqind,:]
         DdX = np.vstack(DdX)
 
         # here we compute the jacobian matrix of the system/input functions as they also depend on
         # the free parameters
         DXU = []
-        x_len = len(self.sys.x_sym)
-        u_len = len(self.sys.u_sym)
+        x_len = len(sys.x_sym)
+        u_len = len(sys.u_sym)
         xu_len = x_len + u_len
 
         for i in xrange(len(cpts)):
@@ -188,7 +182,7 @@ class CollocationSystem(object):
         DXU_old = DXU
         DXU = np.vstack(DXU)
         
-        if self.sys.mparam['use_sparse']:
+        if sys.mparam['use_sparse']:
             Mx = sparse.csr_matrix(Mx)
             Mx_abs = sparse.csr_matrix(Mx_abs)
             Mdx = sparse.csr_matrix(Mdx)
@@ -203,9 +197,9 @@ class CollocationSystem(object):
         # and its jacobian
             
         # make some stuff local
-        ff = self.sys.ff
+        ff = sys.ff
         
-        eqind = self.sys.eqind
+        eqind = sys.eqind
         
         cp_len = len(cpts)
         
@@ -234,7 +228,7 @@ class CollocationSystem(object):
         
             G = F - dX
             
-            return G.flatten()
+            return G.ravel()
         
         # and its jacobian
         def DG(c):
@@ -271,7 +265,7 @@ class CollocationSystem(object):
             DF_csr = sparse.csr_matrix(DF).dot(DXU)
             
             # TODO: explain the following code
-            if self.sys.mparam['use_chains']:
+            if sys.mparam['use_chains']:
                 DF_csr = [row for idx,row in enumerate(DF_csr.toarray()[:]) if idx%x_len in eqind]
                 DF_csr = sparse.csr_matrix(DF_csr)
             
@@ -279,11 +273,13 @@ class CollocationSystem(object):
             
             return DG
         
+        #IPS()
+        
         # return the callable functions
         return G, DG
     
     
-    def get_guess(self):
+    def get_guess(self, free_coeffs, old_splines, new_splines):
         '''
         This method is used to determine a starting value (guess) for the
         solver of the collocation equation system.
@@ -297,31 +293,40 @@ class CollocationSystem(object):
         in these points.
 
         The solution of this system is the new start value for the solver.
+        
+        Parameters
+        ----------
+        
+        free_coeffs : dict
+            The free parameters, i.e. the independent coefficients of the splines.
+        
+        old_splines : dict
+            The splines from the last iteration (None if there are none).
+        
+        new_splines : dict
+            The newly initialised splines of the current iteration step.
+        
         '''
-
-        if (self.sys.nIt == 1):
+        if (old_splines == None):
             self.c_list = np.empty(0)
 
-            for k, v in sorted(self.sys.trajectories.indep_coeffs.items(), key = lambda (k, v): k.name):
+            for k, v in sorted(free_coeffs.items(), key = lambda (k, v): k.name):
                 self.c_list = np.hstack((self.c_list, v))
             guess = 0.1*np.ones(len(self.c_list))
         else:
-            # make splines local
-            old_splines = self.sys.trajectories._old_splines
-            new_splines = self.sys.trajectories._splines
-
             guess = np.empty(0)
             self.c_list = np.empty(0)
 
             # get new guess for every independent variable
-            for k, v in sorted(self.sys.trajectories.coeffs_sol.items(), key = lambda (k, v): k.name):
-                self.c_list = np.hstack((self.c_list, self.sys.trajectories.indep_coeffs[k]))
+            #for k, v in sorted(self.sys.trajectories.coeffs_sol.items(), key = lambda (k, v): k.name):
+            for k, v in sorted(free_coeffs.items(), key = lambda (k, v): k.name):
+                self.c_list = np.hstack((self.c_list, free_coeffs[k]))
 
                 if (new_splines[k].type == 'x'):
                     logging.debug("Get new guess for spline %s"%k.name)
 
                     # how many unknown coefficients does the new spline have
-                    nn = len(self.sys.trajectories.indep_coeffs[k])
+                    nn = len(free_coeffs[k])
 
                     # and this will be the points to evaluate the old spline in
                     #   but we don't want to use the borders because they got
@@ -336,10 +341,15 @@ class CollocationSystem(object):
                     OLD = [None]*len(gpts)
                     NEW = [None]*len(gpts)
                     NEW_abs = [None]*len(gpts)
-
-                    for i, p in enumerate(gpts):
-                        OLD[i] = old_splines[k].f(p)
-                        NEW[i], NEW_abs[i] = new_splines[k].f(p)
+                    
+                    if USE_OLD_SPLINES:
+                        for i, p in enumerate(gpts):
+                            OLD[i] = old_splines[k].f(p)
+                            NEW[i], NEW_abs[i] = new_splines[k].f(p)
+                    else:
+                        for i, p in enumerate(gpts):
+                            OLD[i] = old_splines[k](p)
+                            NEW[i], NEW_abs[i] = new_splines[k](p)
 
                     OLD = np.array(OLD)
                     NEW = np.array(NEW)
@@ -351,7 +361,8 @@ class CollocationSystem(object):
                     guess = np.hstack((guess,TT))
                 else:
                     # if it is a input variable, just take the old solution
-                    guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
+                    #guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
+                    guess = np.hstack((guess, old_splines[k]._indep_coeffs))
 
         # the new guess
         self.guess = guess
@@ -380,10 +391,65 @@ class CollocationSystem(object):
         # solve the equation system
         self.sol = solver.solve()
         
+        #print "SOLVE"
+        #IPS()
+        
         #from scipy import optimize as op
         #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
         #IPS()
         
         return self.sol
+
+
+def collocation_nodes(a, b, npts, coll_type):
+    '''
+    Create collocation points/nodes for the equation system.
+    
+    Parameters
+    ----------
+    
+    a : float
+        The left border of the considered interval.
+    
+    b : float
+        The right border of the considered interval.
+    
+    npts : int
+        The number of nodes.
+    
+    coll_type : str
+        Specifies how to generate the nodes.
+    
+    Returns
+    -------
+    
+    numpy.ndarray
+        The collocation nodes.
+    
+    '''
+    if coll_type == 'equidistant':
+        # get equidistant collocation points
+        cpts = np.linspace(a, b, npts, endpoint=True)
+    elif coll_type == 'chebychev':
+        # determine rank of chebychev polynomial
+        # of which to calculate zero points
+        nc = int(npts) - 2
+
+        # calculate zero points of chebychev polynomial --> in [-1,1]
+        cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
+        cheb_cpts.sort()
+
+        # transfer chebychev nodes from [-1,1] to our interval [a,b]
+        chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
+
+        # add left and right borders
+        cpts = np.hstack((a, chpts, b))
+    else:
+        logging.warning('Unknown type of collocation points.')
+        logging.warning('--> will use equidistant points!')
+        cpts = np.linspace(a, b, npts, endpoint=True)
+    
+    return cpts
+    
     
         

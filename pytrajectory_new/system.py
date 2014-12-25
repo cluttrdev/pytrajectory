@@ -8,6 +8,7 @@ from trajectories import Trajectory
 from collocation import CollocationSystem
 from simulation import Simulator
 import auxiliary
+import visualisation
 
 # LOGGING
 import logging
@@ -22,6 +23,7 @@ logging.basicConfig(level=lvl, format=fmt, datefmt=dfmt)
 
 # DEBUGGING
 DEBUG = True
+USE_OLD_SPLINES = False
 
 if DEBUG:
     from IPython import embed as IPS
@@ -35,7 +37,7 @@ class ControlSystem(object):
     ----------
 
     ff :  callable
-        Vectorfield (rhs) of the control system.
+        Vector field (rhs) of the control system.
     
     a : float
         Left border of the considered time interval.
@@ -77,7 +79,7 @@ class ControlSystem(object):
         tol         1e-5            Tolerance for the solver of the equation system
         method      'leven'         The solver algorithm to use
         use_chains  True            Whether or not to use integrator chains
-        colltype    'equidistant'   The type of the collocation points
+        coll_type    'equidistant'  The type of the collocation points
         use_sparse  True            Whether or not to use sparse matrices
         sol_steps   100             Maximum number of iteration steps for the eqs solver
         ==========  =============   =======================================================
@@ -102,7 +104,7 @@ class ControlSystem(object):
                         'tol' : 1e-5,
                         'method' : 'leven',
                         'use_chains' : True,
-                        'colltype' : 'equidistant',
+                        'coll_type' : 'equidistant',
                         'use_sparse' : True,
                         'sol_steps' : 100}
         
@@ -421,6 +423,7 @@ class ControlSystem(object):
         self.x_sym = self.orig_backup['x_sym']
         self.ff = self.orig_backup['ff_num']
         self.ff_sym = self.orig_backup['ff_sym']
+        self.trajectories._x_sym = self.x_sym
     
     
     def solve(self):
@@ -491,23 +494,28 @@ class ControlSystem(object):
         self.nIt += 1
         
         # Initialise the spline function objects
-        self.trajectories.init_splines(interval=(self.a, self.b),
-                                       sx=self.mparam['sx'], su=self.mparam['su'],
-                                       x_sym=self.x_sym, u_sym=self.u_sym,
-                                       boundary_values=self._boundary_values,
-                                       chains=self.chains)
+        if USE_OLD_SPLINES:
+            self.trajectories.init_old_splines(sx=self.mparam['sx'], su=self.mparam['su'],
+                                           boundary_values=self._boundary_values,
+                                           use_chains=self.mparam['use_chains'])
+        else:
+            self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
+                                           boundary_values=self._boundary_values,
+                                           use_chains=self.mparam['use_chains'])
         
         # Get a initial value (guess)
-        self.eqs.get_guess()
+        self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
+                            old_splines=self.trajectories._old_splines,
+                            new_splines=self.trajectories._splines)
         
         # Build the collocation equations system
-        G, DG = self.eqs.build()
+        G, DG = self.eqs.build(self, self.trajectories)
         
         # Solve the collocation equation system
         sol = self.eqs.solve(G, DG)
         
         # Set the found solution
-        self.trajectories.set_coeffs(sol, self.x_sym + self.u_sym, self.chains)
+        self.trajectories.set_coeffs(sol, use_chains=self.mparam['use_chains'])
         
         # Solve the resulting initial value problem
         self.simulate()
@@ -586,7 +594,7 @@ class ControlSystem(object):
         t = self.sim_data[0]
         xt = np.array([self.trajectories.x(tt) for tt in t])
         ut = self.sim_data[2]
-        auxiliary.plot_simulation([t,xt,ut], H)
+        visualisation.plot_simulation([t,xt,ut], H)
     
     
     def save(self):
@@ -652,12 +660,14 @@ if __name__ == '__main__':
 
     S = ControlSystem(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
     
-    S.set_param('kx', 3)
-    S.set_param('maxIt', 5)
+    #S.set_param('kx', 3)
+    #S.set_param('maxIt', 5)
     S.set_param('eps', 1e-2)
     S.set_param('ierr', 1e-1)
     S.set_param('use_chains', False)
     
+    #print "############### Instanciated System ################"
+    #IPS()
     
     with auxiliary.Timer("Iteration"):
         S.solve()
