@@ -109,12 +109,12 @@ def draw(xt, image):
 #
 # to plot the curves of some trajectories along with the picture
 # we also pass the appropriate lists as arguments (see documentation)
-A = Animation(drawfnc=draw, simdata=S.sim, 
+A = Animation(drawfnc=draw, simdata=S.sim_data, 
               plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
 
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
-xmin = np.min(T.sim[1][:,0]); xmax = np.max(T.sim[1][:,0])
+xmin = np.min(S.sim_data[1][:,0]); xmax = np.max(S.sim_data[1][:,0])
 A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation

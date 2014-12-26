@@ -167,7 +167,9 @@ class CollocationSystem(object):
 
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
-        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))[:,sys.eqind,:]
+        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))
+        if sys.mparam['use_chains']:
+            DdX = DdX[:,sys.eqind,:]
         DdX = np.vstack(DdX)
 
         # here we compute the jacobian matrix of the system/input functions as they also depend on
@@ -199,7 +201,10 @@ class CollocationSystem(object):
         # make some stuff local
         ff = sys.ff
         
-        eqind = sys.eqind
+        if sys.mparam['use_chains']:
+            eqind = sys.eqind
+        else:
+            eqind = range(len(sys.x_sym))
         
         cp_len = len(cpts)
         

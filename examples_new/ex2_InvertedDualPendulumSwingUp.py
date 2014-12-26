@@ -1,7 +1,7 @@
 # swing up of the inverted dual pendulum with partial linearization
 
 # import trajectory class and necessary dependencies
-from pytrajectory.trajectory import Trajectory
+from pytrajectory_new import ControlSystem
 from sympy import cos, sin
 import numpy as np
 
@@ -35,14 +35,14 @@ ua = [0.0]
 ub = [0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
+S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # alter some method parameters to increase performance
-T.setParam('su', 10)
-T.setParam('eps', 8e-2)
+S.set_param('su', 10)
+S.set_param('eps', 8e-2)
 
 # run iteration
-T.startIteration()
+S.solve()
 
 
 # the following code provides an animation of the system above
@@ -51,7 +51,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory_new.visualisation import Animation
     
     def draw(xti, image):
         x, phi1, phi2 = xti[0], xti[2], xti[4]
@@ -97,12 +97,12 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(0,'x'),(2,'phi1'),(4,'phi2')], plotinputs=[(0,'u')])
     
-    xmin = np.min(T.sim[1][:,0])
-    xmax = np.max(T.sim[1][:,0])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-0.8,0.8))
     
     A.animate()
-    A.save('ex2_InvertedDualPendulumUpswing.gif')
+    A.save('ex2_InvertedDualPendulumSwingUp.gif')

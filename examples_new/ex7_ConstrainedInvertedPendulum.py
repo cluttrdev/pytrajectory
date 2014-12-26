@@ -3,7 +3,7 @@ This example of the inverted pendulum demonstrates how to handle possible state 
 '''
 
 # import all we need for solving the problem
-from pytrajectory import Trajectory
+from pytrajectory_new import ControlSystem
 import numpy as np
 from sympy import cos, sin
 
@@ -38,10 +38,10 @@ con = { 0 : [-0.8, 0.3],
         1 : [-2.0, 2.0] }
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, kx=5, use_chains=False)
+S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, kx=5, use_chains=False)
 
 # time to run the iteration
-T.startIteration()
+S.solve()
 
 
 # the following code provides an animation of the system above
@@ -50,7 +50,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory_new.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]
@@ -83,11 +83,11 @@ if do_animation:
         return image
     
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                         plotsys=[(0,'x'), (1,'dx')],
                         plotinputs=[(0,'u1')])
-    xmin = np.min(T.sim[1][:,0])
-    xmax = np.max(T.sim[1][:,0])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
     A.animate()
     A.save('ex7_ConstrainedInvertedPendulum.gif')

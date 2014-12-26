@@ -131,7 +131,7 @@ class ControlSystem(object):
         self.chains = chains
         self.eqind = eqind
         
-        # Transform lists of boundary values into dictionary
+        # Transform lists of boundary values into dictionaries
         boundary_values = dict()
         
         for i, xx in enumerate(self.x_sym):
@@ -146,13 +146,15 @@ class ControlSystem(object):
         elif not ua and ub:
             for i, uu in enumerate(self.u_sym):
                 boundary_values[uu] = (None, ub[i])
+        elif not ua and not ub:
+            for i, uu in enumerate(self.u_sym):
+                boundary_values[uu] = (None, None)
         
         self._boundary_values = boundary_values
         
         # Handle system constraints if there are any
-        if constraints:
-            self.constraints = constraints
-            
+        self.constraints = constraints
+        if self.constraints:
             # transform the constrained vectorfield into an unconstrained one
             ff_sym, boundary_values, orig_backup = self.unconstrain()
             
@@ -163,7 +165,7 @@ class ControlSystem(object):
             # we cannot make use of an integrator chain
             # if it contains a constrained variable
             self.mparam['use_chains'] = False
-            # TODO: implement it so that just those chains are not use 
+            # TODO: implement it so that just those chains are not used 
             #       which actually contain a constrained variable
         
         # Now we transform the symbolic function of the vectorfield to
@@ -281,6 +283,11 @@ class ControlSystem(object):
         fi = self.ff_sym(x_sym, u_sym)
 
         chains, eqind = auxiliary.find_integrator_chains(fi, x_sym, u_sym)
+        
+        # if we don't take advantage of the system structure
+        # we need to solve every equation
+        if not self.mparam['use_chains']:
+            eqind = range(len(x_sym))
         
         # get minimal neccessary number of spline parts
         # for the manipulated variables

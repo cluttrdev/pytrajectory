@@ -1,8 +1,3 @@
-##############################################################
-# NEW: HIGHLY EXPERIMENTAL
-
-# DON'T USE THIS BY NOW
-##############################################################
 import numpy as np
 import sympy as sp
 import scipy.sparse as sparse
@@ -44,7 +39,7 @@ class Spline(object):
         If not 0 this spline is the :attr:`deriv_order`-th derivative of another spline.
     
     steady : bool
-        Whether or not to call :meth:`makesteady()` when instanciated.
+        Whether or not to call :meth:`make_steady()` when instanciated.
     
     '''
     
@@ -340,9 +335,10 @@ def derive_spline(S, d=1, new_tag=''):
         new_tag = 'd' + S.tag
     
     if d == 0:
-        return S
+        #return S
+        pass
     elif d > 3:
-        raise Exception
+        raise ValueError('Invalid order of differentiation (%d), maximum is 3.'%(d))
     else:
         # first, get things that the spline and its derivative have in common
         a = S.a
@@ -446,10 +442,10 @@ def make_steady(S):
     h = S._h
 
     # nu represents degree of boundary conditions
-    try:
-        nu = len(S._bc.keys()) - 1
-    except:
-        nu = -1
+    nu = -1
+    for k, v in S._bc.items():
+        if all(item is not None for item in v):
+            nu += 1
     
     # now we determine the free parameters of the spline function
     if (nu == -1):
@@ -496,17 +492,17 @@ def make_steady(S):
         M[3*i:3*(i+1),4*i:4*(i+2)] = block
     
     # add equations for boundary conditions
-    if S._bc.has_key(0):
+    if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
         M[3*(S.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
         M[3*(S.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
         r[3*(S.n-1)] = S._bc[0][0]
         r[3*(S.n-1)+1] = S._bc[0][1]
-    if S._bc.has_key(1):
+    if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
         M[3*(S.n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
         M[3*(S.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
         r[3*(S.n-1)+2] = S._bc[1][0]
         r[3*(S.n-1)+3] = S._bc[1][1]
-    if S._bc.has_key(2):
+    if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
         M[3*(S.n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
         M[3*(S.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
         r[3*(S.n-1)+4] = S._bc[2][0]
@@ -569,6 +565,7 @@ def make_steady(S):
         tmp_coeffs[(j,k)] = tmp2[i]
         tmp_coeffs_abs[(j,k)] = tmp1[i]
 
+    #tmp3 = sparse.identity(len(a)).tolil()
     tmp3 = np.eye(len(a))
     for i,aa in enumerate(a):
         tmp = aa.name.split('_')[-2:]

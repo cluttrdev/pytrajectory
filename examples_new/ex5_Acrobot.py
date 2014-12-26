@@ -1,7 +1,7 @@
 # acrobot
 
 # import trajectory class and necessary dependencies
-from pytrajectory.trajectory import Trajectory
+from pytrajectory_new import ControlSystem
 import numpy as np
 from sympy import cos, sin
 
@@ -48,13 +48,13 @@ ua = [0.0]
 ub = [0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
+S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # alter some method parameters to increase performance
-T.setParam('su', 10)
+S.set_param('su', 10)
 
 # run iteration
-T.startIteration()
+S.solve()
 
 
 # the following code provides an animation of the system above
@@ -63,7 +63,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory_new.visualisation import Animation
     
     def draw(xti, image):
         phi1, phi2 = xti[0], xti[2]
@@ -91,7 +91,7 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(0,'phi1'),(2,'phi2')], plotinputs=[(0,'u')])
     A.set_limits(xlim=(-1.1,1.1), ylim=(-1.1,1.1))
     
