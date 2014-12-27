@@ -43,7 +43,7 @@ class Spline(object):
     
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=5, tag='s', bc=None, poly_order=-1, deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=5, tag='s', bc={}, poly_order=-1, deriv_order=0, steady=False):
         # interval boundaries
         assert a < b
         self.a = a
@@ -308,6 +308,81 @@ class Spline(object):
         self._prov_flag = False
     
 
+class ConstantSpline(Spline):
+    '''
+    This class provides a spline object with piecewise constant polynomials.
+    '''
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
+    
+    def __call__(self, t):
+        if not self._prov_flag:
+            return self._evalf(t)
+        else:
+            i = int(np.floor(t*self.n/(self.b)))
+            if (i == self.n): i-= 1
+            t -= (i+1)*self._h
+            
+            tt = [1.0]
+            return self._prov_evalf(tt, i)
+
+
+class LinearSpline(Spline):
+    '''
+    This class provides a spline object with piecewise linear polynomials.
+    '''
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
+    
+    def __call__(self, t):
+        if not self._prov_flag:
+            return self._evalf(t)
+        else:
+            i = int(np.floor(t*self.n/(self.b)))
+            if (i == self.n): i-= 1
+            t -= (i+1)*self._h
+            
+            tt = [t, 1.0]
+            return self._prov_evalf(tt, i)
+
+
+class QuadraticSpline(Spline):
+    '''
+    This class provides a spline object with piecewise quadratic polynomials.
+    '''
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
+    
+    def __call__(self, t):
+        if not self._prov_flag:
+            return self._evalf(t)
+        else:
+            i = int(np.floor(t*self.n/(self.b)))
+            if (i == self.n): i-= 1
+            t -= (i+1)*self._h
+            
+            tt = [t*t, t, 1.0]
+            return self._prov_evalf(tt, i)
+
+
+class CubicSpline(Spline):
+    '''
+    This class provides a spline object with piecewise cubic polynomials.
+    '''
+    def __init__(self, a=0.0, b=1.0, n=5, tag='', bc=dict(), deriv_order=0, steady=False):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
+    
+    def __call__(self, t):
+        if not self._prov_flag:
+            return self._evalf(t)
+        else:
+            i = int(np.floor(t*self.n/(self.b)))
+            if (i == self.n): i-= 1
+            t = t - (i+1)*self._h
+            
+            tt = [t*t*t, t*t, t, 1.0]
+            return self._prov_evalf(tt, i)
+            
 
 def derive_spline(S, d=1, new_tag=''):
     '''
@@ -435,10 +510,6 @@ def make_steady(S):
     # This should be yet untouched
     assert S._steady_flag == False
     
-    if S.is_constant():
-        IPS()
-        raise NotImplementedError
-    
     coeffs = S._coeffs
     h = S._h
     po = S._poly_order
@@ -463,7 +534,45 @@ def make_steady(S):
     
     # now we build the matrix for the equation system
     # that ensures the smoothness conditions
-
+    
+    # if the spline is piecewise constant it needs special treatment, 
+    # becaus it can't be made 'steady' in this sense
+    if S.is_constant():
+        #raise NotImplementedError
+        
+        tmp_coeffs = np.zeros_like(S._coeffs, dtype=None)
+        tmp_coeffs_abs = np.zeros((S.n,S._poly_order+1))
+        
+        eye = np.eye(len(a))
+        
+        if nu == -1:
+            for i in xrange(S.n):
+                tmp_coeffs[(i,0)] = eye[i]
+        elif nu == 0:
+            for i in xrange(1,S.n-1):
+                tmp_coeffs[(i,0)] = eye[i-1]
+            
+            tmp_coeffs[(0,0)] = np.zeros(len(a))
+            tmp_coeffs[(-1,0)] = np.zeros(len(a))
+            tmp_coeffs_abs[(0,0)] = S._bc[0][0]
+            tmp_coeffs_abs[(-1,0)] = S._bc[0][1]
+        
+        S._prov_S = tmp_coeffs
+        S._prov_S_abs = tmp_coeffs_abs
+    
+        # a is vector of independent spline coeffs (free parameters)
+        S._indep_coeffs = a
+    
+        # now we are done and this can be set to True
+        S._steady_flag = True
+    
+        return S
+        
+    
+    
+    
+    
+    
     # get matrix dimensions --> (3.21) & (3.22)
     N1 = S._poly_order * (S.n - 1) + 2 * (nu + 1)
     N2 = (S._poly_order + 1) * S.n
@@ -577,7 +686,7 @@ def determine_indep_coeffs(S, nu=-1):
         The independent coefficients of the spline function.
     '''
     
-    assert nu < S._poly_order
+    assert nu <= S._poly_order
     
     coeffs = S._coeffs
     
@@ -602,6 +711,11 @@ def determine_indep_coeffs(S, nu=-1):
             a = np.hstack([coeffs[:,0], coeffs[0,1]])
         elif nu == 0:
             a = coeffs[:-1,0]
+    elif S.is_constant():
+        if nu == -1:
+            a = coeffs[:,0]
+        elif nu == 0:
+            a = coeffs[1:-1,0]
     
     return a
 
@@ -677,83 +791,6 @@ def get_smoothness_matrix(S, N1, N2):
     return M, r
     
         
-
-
-class ConstantSpline(Spline):
-    '''
-    This class provides a spline object with piecewise constant polynomials.
-    '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
-    
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [1.0]
-            return self._prov_evalf(tt, i)
-
-
-class LinearSpline(Spline):
-    '''
-    This class provides a spline object with piecewise linear polynomials.
-    '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
-    
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [t, 1.0]
-            return self._prov_evalf(tt, i)
-
-
-class QuadraticSpline(Spline):
-    '''
-    This class provides a spline object with piecewise quadratic polynomials.
-    '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
-    
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [t*t, t, 1.0]
-            return self._prov_evalf(tt, i)
-
-
-class CubicSpline(Spline):
-    '''
-    This class provides a spline object with piecewise cubic polynomials.
-    '''
-    def __init__(self, a=0.0, b=1.0, n=5, tag='', bc=dict(), deriv_order=0, steady=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
-    
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t = t - (i+1)*self._h
-            
-            tt = [t*t*t, t*t, t, 1.0]
-            return self._prov_evalf(tt, i)
-            
 
 
 if __name__=='__main__':

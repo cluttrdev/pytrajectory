@@ -23,7 +23,6 @@ logging.basicConfig(level=lvl, format=fmt, datefmt=dfmt)
 
 # DEBUGGING
 DEBUG = True
-USE_OLD_SPLINES = False
 
 if DEBUG:
     from IPython import embed as IPS
@@ -501,14 +500,9 @@ class ControlSystem(object):
         self.nIt += 1
         
         # Initialise the spline function objects
-        if USE_OLD_SPLINES:
-            self.trajectories.init_old_splines(sx=self.mparam['sx'], su=self.mparam['su'],
-                                           boundary_values=self._boundary_values,
-                                           use_chains=self.mparam['use_chains'])
-        else:
-            self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
-                                           boundary_values=self._boundary_values,
-                                           use_chains=self.mparam['use_chains'])
+        self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
+                                       boundary_values=self._boundary_values,
+                                       use_chains=self.mparam['use_chains'])
         
         # Get a initial value (guess)
         self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 

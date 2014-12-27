@@ -8,7 +8,6 @@ import auxiliary
 
 from IPython import embed as IPS
 
-USE_OLD_SPLINES = False
 
 class Trajectory(object):
     '''
@@ -352,13 +351,8 @@ class Trajectory(object):
                         subs[var] = subs[ic.upper]
         
         # set numerical coefficients for each spline and derivative
-        if USE_OLD_SPLINES:
-            for k, v in self._splines.items():
-                v.set_coeffs(free_coeffs=subs[k])
-        else:
-            #for k, v in self._splines.items() + self._dx_fnc.items():
-            for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
-                v.set_coeffs(free_coeffs=subs[k])
+        for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
+            v.set_coeffs(free_coeffs=subs[k])
         
         # yet another dictionary for solution and coeffs
         coeffs_sol = dict()

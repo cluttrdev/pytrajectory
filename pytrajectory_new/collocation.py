@@ -8,8 +8,6 @@ from solver import Solver
 
 from IPython import embed as IPS
 
-USE_OLD_SPLINES = False
-
 
 class CollocationSystem(object):
     '''
@@ -347,14 +345,9 @@ class CollocationSystem(object):
                     NEW = [None]*len(gpts)
                     NEW_abs = [None]*len(gpts)
                     
-                    if USE_OLD_SPLINES:
-                        for i, p in enumerate(gpts):
-                            OLD[i] = old_splines[k].f(p)
-                            NEW[i], NEW_abs[i] = new_splines[k].f(p)
-                    else:
-                        for i, p in enumerate(gpts):
-                            OLD[i] = old_splines[k](p)
-                            NEW[i], NEW_abs[i] = new_splines[k](p)
+                    for i, p in enumerate(gpts):
+                        OLD[i] = old_splines[k](p)
+                        NEW[i], NEW_abs[i] = new_splines[k](p)
 
                     OLD = np.array(OLD)
                     NEW = np.array(NEW)
