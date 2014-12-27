@@ -435,11 +435,13 @@ def make_steady(S):
     # This should be yet untouched
     assert S._steady_flag == False
     
-    if not S.is_cubic():
+    if S.is_constant():
+        IPS()
         raise NotImplementedError
     
     coeffs = S._coeffs
     h = S._h
+    po = S._poly_order
 
     # nu represents degree of boundary conditions
     nu = -1
@@ -448,17 +450,8 @@ def make_steady(S):
             nu += 1
     
     # now we determine the free parameters of the spline function
-    if (nu == -1):
-        a = coeffs[:,0]
-        a = np.hstack((a,coeffs[0,1:]))
-    if (nu == 0):
-        a = coeffs[:,0]
-        a = np.hstack((a,coeffs[0,2])) #-> [0,3] ?
-    if (nu == 1):
-        a = coeffs[:-1,0]
-    if (nu == 2):
-        a = coeffs[:-3,0]
-    #IPS()
+    a = determine_indep_coeffs(S, nu)
+    
     # b is what is not in a
     coeffs_set = set(coeffs.flatten())
     a_set = set(a)
@@ -472,42 +465,15 @@ def make_steady(S):
     # that ensures the smoothness conditions
 
     # get matrix dimensions --> (3.21) & (3.22)
-    N2 = 4*S.n
-    N1 = 3*(S.n-1) + 2*(nu+1)
+    N1 = S._poly_order * (S.n - 1) + 2 * (nu + 1)
+    N2 = (S._poly_order + 1) * S.n
     
     # the following may cause MemoryError
     # TODO: (optionally) introduce sparse matrix already here
     #M = np.zeros((N1,N2))
     #r = np.zeros(N1)
-    M = sparse.lil_matrix((N1,N2))
-    r = sparse.lil_matrix((N1,1))
+    M, r = get_smoothness_matrix(S, N1, N2)
     
-    # build block band matrix M for smoothness in every joining point
-    #   derivatives from order 0 to 2
-    block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
-                       [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
-                       [0.0, 2.0, 0.0, 0.0,    6*h,  -2.0,  0.0, 0.0]])
-    
-    for i in xrange(S.n-1):
-        M[3*i:3*(i+1),4*i:4*(i+2)] = block
-    
-    # add equations for boundary conditions
-    if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
-        M[3*(S.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
-        M[3*(S.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
-        r[3*(S.n-1)] = S._bc[0][0]
-        r[3*(S.n-1)+1] = S._bc[0][1]
-    if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
-        M[3*(S.n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
-        M[3*(S.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
-        r[3*(S.n-1)+2] = S._bc[1][0]
-        r[3*(S.n-1)+3] = S._bc[1][1]
-    if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
-        M[3*(S.n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
-        M[3*(S.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
-        r[3*(S.n-1)+4] = S._bc[2][0]
-        r[3*(S.n-1)+5] = S._bc[2][1]
-
     # get A and B matrix --> see docu
     #
     #       M*c = r
@@ -525,13 +491,13 @@ def make_steady(S):
         tmp = aa.name.split('_')[-2:]
         j = int(tmp[0])
         k = int(tmp[1])
-        a_mat[4*j+k,i] = 1
+        a_mat[(po+1)*j+k,i] = 1
 
     for i,bb in enumerate(b):
         tmp = bb.name.split('_')[-2:]
         j = int(tmp[0])
         k = int(tmp[1])
-        b_mat[4*j+k,i] = 1
+        b_mat[(po+1)*j+k,i] = 1
     
     M = sparse.csr_matrix(M)
     a_mat = sparse.csr_matrix(a_mat)
@@ -588,6 +554,129 @@ def make_steady(S):
     S._steady_flag = True
     
     return S
+
+
+def determine_indep_coeffs(S, nu=-1):
+    '''
+    Determines the vector of independent coefficients w.r.t. the 
+    degree of boundary conditions `c`.
+    
+    Parameters
+    ----------
+    
+    S : Spline
+        The spline function object to determine the independent coefficients of.
+    
+    nu : int
+        The degree of boundary conditions the spline has to satisfy.
+    
+    Returns
+    -------
+    
+    array_like
+        The independent coefficients of the spline function.
+    '''
+    
+    assert nu < S._poly_order
+    
+    coeffs = S._coeffs
+    
+    if S.is_cubic():
+        if nu == -1:
+            a = np.hstack([coeffs[:,0], coeffs[0,1:]])
+        elif nu == 0:
+            a = np.hstack([coeffs[:,0], coeffs[0,2]]) #-> [0,3] ?
+        elif nu == 1:
+            a = coeffs[:-1,0]
+        elif nu == 2:
+            a = coeffs[:-3,0]
+    elif S.is_quadratic():
+        if nu == -1:
+            a = np.hstack([coeffs[:,0], coeffs[0,1:]])
+        elif nu == 0:
+            a = coeffs[:,0]
+        elif nu == 1:
+            a = coeffs[:-2,0]
+    elif S.is_linear():
+        if nu == -1:
+            a = np.hstack([coeffs[:,0], coeffs[0,1]])
+        elif nu == 0:
+            a = coeffs[:-1,0]
+    
+    return a
+
+
+def get_smoothness_matrix(S, N1, N2):
+    '''
+    Returns the coefficient matrix and right hand site for the 
+    equation system that ensures the spline's smoothness in its 
+    joining points and its compliance with the boundary conditions.
+    
+    Parameters
+    ----------
+    
+    S : Spline
+        The spline function object to get the matrix for.
+    
+    N1 : int
+        First dimension of the matrix.
+    
+    N2 : int
+        Second dimension of the matrix.
+    
+    Returns
+    -------
+    
+    array_like
+        The coefficient matrix for the equation system.
+    
+    array_like
+        The right hand site of the equation system.
+    '''
+    
+    po = S._poly_order
+    n = S.n
+    h = S._h
+    
+    # initialise the matrix and the right hand site
+    M = sparse.lil_matrix((N1,N2))
+    r = sparse.lil_matrix((N1,1))
+    
+    # build block band matrix M for smoothness conditions 
+    # in every joining point
+    if S.is_cubic():
+        block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h,  -1.0],
+                          [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
+                          [0.0, 2.0, 0.0, 0.0,    6*h,  -2.0,  0.0, 0.0]])
+    elif S.is_quadratic():
+        block = np.array([[0.0, 0.0, 1.0, -h**2,  h,  -1.0],
+                          [0.0, 1.0, 0.0,  2*h, -1.0, 0.0]])
+    elif S.is_linear():
+        block = np.array([[0.0, 1.0, h,  -1.0]])
+    
+    for i in xrange(n-1):
+        M[po*i:po*(i+1),(po+1)*i:(po+1)*(i+2)] = block
+    
+    # add equations for boundary conditions
+    if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
+        M[po*(n-1),0:(po+1)] = -1.0 * block[0,-(po+1):] # np.array([-h**3, h**2, -h, 1.0])
+        M[po*(n-1)+1,-(po+1):] = block[0,:(po+1)] # np.array([0.0, 0.0, 0.0, 1.0])
+        r[po*(n-1)] = S._bc[0][0]
+        r[po*(n-1)+1] = S._bc[0][1]
+    if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
+        M[po*(n-1)+2,0:(po+1)] = -1.0 * block[1,-(po+1):] # np.array([3*h**2, -2*h, 1.0, 0.0])
+        M[po*(n-1)+3,-(po+1):] = block[1,:(po+1)] # np.array([0.0, 0.0, 1.0, 0.0])
+        r[po*(n-1)+2] = S._bc[1][0]
+        r[po*(n-1)+3] = S._bc[1][1]
+    if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
+        M[po*(n-1)+4,0:(po+1)] = -1.0 * block[2,-(po+1):] # np.array([-6*h, 2.0, 0.0, 0.0])
+        M[po*(n-1)+5,-(po+1):] = block[2,:(po+1)] # np.array([0.0, 2.0, 0.0, 0.0])
+        r[po*(n-1)+4] = S._bc[2][0]
+        r[po*(n-1)+5] = S._bc[2][1]
+    
+    return M, r
+    
+        
 
 
 class ConstantSpline(Spline):
