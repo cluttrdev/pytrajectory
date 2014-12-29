@@ -1,7 +1,7 @@
 # translation of the inverted pendulum
 
 # import trajectory class and necessary dependencies
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 from sympy import sin, cos
 import numpy as np
 
@@ -53,7 +53,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory_new.visualisation import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xti, image):
         x = xti[0]

@@ -1,7 +1,7 @@
 # swing up of the inverted dual pendulum with partial linearization
 
 # import trajectory class and necessary dependencies
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 from sympy import cos, sin
 import numpy as np
 
@@ -51,7 +51,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory_new.visualisation import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xti, image):
         x, phi1, phi2 = xti[0], xti[2], xti[4]

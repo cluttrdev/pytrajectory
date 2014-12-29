@@ -2,7 +2,7 @@
 This example of the double integrator demonstrates how to pass constraints to PyTrajectory.
 '''
 # imports
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 import numpy as np
 
 # define the vectorfield
@@ -35,7 +35,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory_new.visualisation import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]

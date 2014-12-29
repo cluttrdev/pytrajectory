@@ -3,7 +3,7 @@ This example of the inverted pendulum demonstrates how to handle possible state 
 '''
 
 # import all we need for solving the problem
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 import numpy as np
 from sympy import cos, sin
 
@@ -50,7 +50,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory_new.visualisation import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]

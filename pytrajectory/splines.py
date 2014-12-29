@@ -103,12 +103,12 @@ class Spline(object):
         self._prov_S_abs = np.zeros((self.n,self._poly_order+1))
         
         # steady flag is True if smoothness and boundary conditions are solved
-        # --> makesteady()
+        # --> make_steady()
         self._steady_flag = False
         
         # provisionally flag is True as long as there are no numerical values
         # for the free parameters of the spline
-        # --> set_coeffs()
+        # --> set_coefficients()
         self._prov_flag = True
         
         # calculate joining points of the spline
@@ -125,61 +125,17 @@ class Spline(object):
         return self._S[i]
     
     def __call__(self, t):
-        raise NotImplementedError
-    
-    def _prov_evalf(self, tt, i):
-        '''
-        This function yields a provisionally evaluation of the spline while there are no numerical 
-        values for its free parameters.
-        It returns a two vectors which reflect the dependence of the spline coefficients
-        on its free parameters (independent coefficients).
-        
-        
-        Parameters
-        ----------
-        
-        tt : tuple
-            The vector with the powers of the polynomial spline part evaluated at a some point.
-        
-        i : int
-            The polynomial spline part to evaluate.
-        
-        '''
-        # Get the spline part where t is in
-        #i = int(np.floor(t*self.n/(self.b)))
-        #if (i == self.n): i-= 1
-        
-        #t -= (i+1)*self.h
-        #t -= self.jpts[i]
-        
-        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
-        m0 = self._prov_S_abs[i]
-        
-        return np.dot(tt,M0), np.dot(tt,m0)
-    
-    
-    def _evalf(self, t):
-        '''
-        Returns the value of the spline at :attr:`t`.
-        
-        Parameters
-        ----------
-        
-        t : float
-            The point to evaluate the spline at
-        '''
-        
         # get polynomial part where t is in
         i = int(np.floor(t*self.n/(self.b)))
         # if `t` is equal to the right border, which is the last node, there is no
         # corresponding spline part so we use the one before
-        if (i == self.n): i-= 1
+        #if (i == self.n): i -= 1
+        if (i >= self.n): i = self.n - 1
         
         #t -= (i+1)*self._h
         #t -= self._jpts[i]
-        
         return self._S[i](t-(i+1)*self._h)
-    
+        
     
     def is_constant(self):
         return self._type == 'constant'
@@ -227,7 +183,7 @@ class Spline(object):
     
     def derive(self, d=1, new_tag=''):
         '''
-        Returns the d-th derivative of this spline function object.
+        Returns the `d`-th derivative of this spline function object.
         
         Parameters
         ----------
@@ -237,7 +193,27 @@ class Spline(object):
         '''
         return derive_spline(self, d, new_tag)
     
-    def set_coeffs(self, free_coeffs=None, coeffs=None):
+    
+    def get_dependence_vectors(self, points):
+        '''
+        This method yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the spline coefficients
+        on its free parameters (independent coefficients).
+        
+        
+        Parameters
+        ----------
+        
+        points : float / array_like
+            The points to evaluate the provisionally spline at.
+        
+        '''
+        
+        raise NotImplementedError()
+    
+    
+    def set_coefficients(self, free_coeffs=None, coeffs=None):
         '''
         This function is used to set up numerical values either for all the spline's coefficients
         or its independent ones.
@@ -356,16 +332,43 @@ class ConstantSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
     
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [1.0]
-            return self._prov_evalf(tt, i)
+    def get_dependence_vectors(self, points):
+        '''
+        This method yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the spline coefficients
+        on its free parameters (independent coefficients).
+        
+        
+        Parameters
+        ----------
+        
+        points : float / array_like
+            The points to evaluate the provisionally spline at.
+        
+        '''
+        
+        if np.size(points) > 1:
+            raise NotImplementedError()
+        t = points
+        
+        # determine the spline part to evaluate
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part so we use the one before
+        if (i == self.n): i-= 1
+        
+        t = t - (i+1)*self._h
+        
+        tt = [1.0]
+        
+        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
+        m0 = self._prov_S_abs[i]
+        
+        dep_vec = np.dot(tt,M0)
+        dep_vec_abs = np.dot(tt,m0)
+        
+        return dep_vec, dep_vec_abs
 
 
 class LinearSpline(Spline):
@@ -375,16 +378,43 @@ class LinearSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
     
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [t, 1.0]
-            return self._prov_evalf(tt, i)
+    def get_dependence_vectors(self, points):
+        '''
+        This method yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the spline coefficients
+        on its free parameters (independent coefficients).
+        
+        
+        Parameters
+        ----------
+        
+        points : float / array_like
+            The points to evaluate the provisionally spline at.
+        
+        '''
+        
+        if np.size(points) > 1:
+            raise NotImplementedError()
+        t = points
+        
+        # determine the spline part to evaluate
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part so we use the one before
+        if (i == self.n): i-= 1
+        
+        t = t - (i+1)*self._h
+        
+        tt = [t, 1.0]
+        
+        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
+        m0 = self._prov_S_abs[i]
+        
+        dep_vec = np.dot(tt,M0)
+        dep_vec_abs = np.dot(tt,m0)
+        
+        return dep_vec, dep_vec_abs
 
 
 class QuadraticSpline(Spline):
@@ -394,17 +424,44 @@ class QuadraticSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
     
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t -= (i+1)*self._h
-            
-            tt = [t*t, t, 1.0]
-            return self._prov_evalf(tt, i)
-
+    def get_dependence_vectors(self, points):
+        '''
+        This method yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the spline coefficients
+        on its free parameters (independent coefficients).
+        
+        
+        Parameters
+        ----------
+        
+        points : float / array_like
+            The points to evaluate the provisionally spline at.
+        
+        '''
+        
+        if np.size(points) > 1:
+            raise NotImplementedError()
+        t = points
+        
+        # determine the spline part to evaluate
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part so we use the one before
+        if (i == self.n): i-= 1
+        
+        t = t - (i+1)*self._h
+        
+        tt = [t*t, t, 1.0]
+        
+        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
+        m0 = self._prov_S_abs[i]
+        
+        dep_vec = np.dot(tt,M0)
+        dep_vec_abs = np.dot(tt,m0)
+        
+        return dep_vec, dep_vec_abs
+    
 
 class CubicSpline(Spline):
     '''
@@ -413,16 +470,43 @@ class CubicSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
     
-    def __call__(self, t):
-        if not self._prov_flag:
-            return self._evalf(t)
-        else:
-            i = int(np.floor(t*self.n/(self.b)))
-            if (i == self.n): i-= 1
-            t = t - (i+1)*self._h
-            
-            tt = [t*t*t, t*t, t, 1.0]
-            return self._prov_evalf(tt, i)
+    def get_dependence_vectors(self, points):
+        '''
+        This method yields a provisionally evaluation of the spline while there are no numerical 
+        values for its free parameters.
+        It returns a two vectors which reflect the dependence of the spline coefficients
+        on its free parameters (independent coefficients).
+        
+        
+        Parameters
+        ----------
+        
+        points : float / array_like
+            The points to evaluate the provisionally spline at.
+        
+        '''
+        
+        if np.size(points) > 1:
+            raise NotImplementedError()
+        t = points
+        
+        # determine the spline part to evaluate
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part so we use the one before
+        if (i == self.n): i-= 1
+        
+        t = t - (i+1)*self._h
+        
+        tt = [t*t*t, t*t, t, 1.0]
+        
+        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
+        m0 = self._prov_S_abs[i]
+        
+        dep_vec = np.dot(tt,M0)
+        dep_vec_abs = np.dot(tt,m0)
+        
+        return dep_vec, dep_vec_abs
             
 
 def derive_spline(S, d=1, new_tag=''):
@@ -469,14 +553,15 @@ def derive_spline(S, d=1, new_tag=''):
         
         # create new spline object
         if po == 3:
-            dS = CubicSpline(a=a, b=b, n=n, tag=new_tag, bc=None, deriv_order=do, steady=False)
+            dS = CubicSpline(a=a, b=b, n=n, tag=new_tag, bc=None, steady=False)
         elif po == 2:
-            dS = QuadraticSpline(a=a, b=b, n=n, tag=new_tag, bc=None, deriv_order=do, steady=False)
+            dS = QuadraticSpline(a=a, b=b, n=n, tag=new_tag, bc=None, steady=False)
         elif po == 1:
-            dS = LinearSpline(a=a, b=b, n=n, tag=new_tag, bc=None, deriv_order=do, steady=False)
+            dS = LinearSpline(a=a, b=b, n=n, tag=new_tag, bc=None, steady=False)
         elif po == 0:
-            dS = ConstantSpline(a=a, b=b, n=n, tag=new_tag, bc=None, deriv_order=do, steady=False)
+            dS = ConstantSpline(a=a, b=b, n=n, tag=new_tag, bc=None, steady=False)
         
+        dS._deriv_order = do
         dS._steady_flag = True
         
         
@@ -922,7 +1007,7 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
         
         # create tridiagonal coefficient matrix
         D = sparse.dia_matrix((data, offsets), shape=(S.n+1,S.n+1))
-        IPS()
+        
         # solve the equation system
         sol = sparse.linalg.spsolve(D.tocsr(),r)
         
@@ -936,7 +1021,7 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
                          values[i]]
         
         # set solution
-        S.set_coeffs(coeffs=coeffs)
+        S.set_coefficients(coeffs=coeffs)
     
     return S
     

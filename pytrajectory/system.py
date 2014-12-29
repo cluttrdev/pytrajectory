@@ -691,11 +691,8 @@ if __name__ == '__main__':
     S.set_param('eps', 1e-2)
     S.set_param('ierr', 1e-1)
     S.set_param('use_chains', False)
-    S.set_param('su', 100)
+    S.set_param('su', 20)
     S.set_param('spline_orders', [3,3,1])
-    
-    #print "############### Instanciated System ################"
-    #IPS()
     
     with auxiliary.Timer("Iteration"):
         S.solve()

@@ -130,8 +130,8 @@ class CollocationSystem(object):
 
                 i,j = indic[xx]
 
-                mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
-                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
+                mx[i:j], Mx_abs[eqx] = x_fnc[xx].get_dependence_vectors(p)
+                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].get_dependence_vectors(p)
 
                 Mx[eqx] = mx
                 Mdx[eqx] = mdx
@@ -142,7 +142,7 @@ class CollocationSystem(object):
 
                 i,j = indic[uu]
                 
-                mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
+                mu[i:j], Mu_abs[equ] = u_fnc[uu].get_dependence_vectors(p)
                 
                 Mu[equ] = mu
                 equ += 1
@@ -347,7 +347,7 @@ class CollocationSystem(object):
                     
                     for i, p in enumerate(gpts):
                         OLD[i] = old_splines[k](p)
-                        NEW[i], NEW_abs[i] = new_splines[k](p)
+                        NEW[i], NEW_abs[i] = new_splines[k].get_dependence_vectors(p)
 
                     OLD = np.array(OLD)
                     NEW = np.array(NEW)

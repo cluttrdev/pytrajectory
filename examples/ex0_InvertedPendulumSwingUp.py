@@ -4,14 +4,14 @@ PyTrajectory as well as its visualisation capabilities.
 '''
 
 # import all we need for solving the problem
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 import numpy as np
 from sympy import cos, sin
 from numpy import pi
 
 # the next imports are necessary for the visualisatoin of the system
 import matplotlib as mpl
-from pytrajectory_new.visualisation import Animation
+from pytrajectory.visualisation import Animation
 
 # first, we define the function that returns the vectorfield
 def f(x,u):

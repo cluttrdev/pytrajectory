@@ -3,7 +3,6 @@ import numpy as np
 import logging
 
 from splines import ConstantSpline, LinearSpline, QuadraticSpline, CubicSpline
-import old_splines
 import auxiliary
 
 from IPython import embed as IPS
@@ -81,9 +80,8 @@ class Trajectory(object):
             The time point in (a,b) to evaluate the input variables at.
         '''
         
-        if not self._a <= t <= self._b+0.05:
+        if not self._a <= t <= self._b:
             logging.warning("Time point 't' has to be in (a,b)")
-            arr = None
             arr = np.array([self._u_fnc[uu](self._b) for uu in self._u_sym])
         else:
             arr = np.array([self._u_fnc[uu](t) for uu in self._u_sym])
@@ -102,7 +100,7 @@ class Trajectory(object):
             The time point in (a,b) to evaluate the 1st derivatives at.
         '''
         
-        if not self._a <= t <= self._b+0.05:
+        if not self._a <= t <= self._b:
             logging.warning("Time point 't' has to be in (a,b)")
             arr = None
         else:
@@ -244,7 +242,7 @@ class Trajectory(object):
         
         # set numerical coefficients for each spline and derivative
         for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
-            v.set_coeffs(free_coeffs=subs[k])
+            v.set_coefficients(free_coeffs=subs[k])
         
         # yet another dictionary for solution and coeffs
         coeffs_sol = dict()

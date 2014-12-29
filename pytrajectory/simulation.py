@@ -52,7 +52,7 @@ class Simulator(object):
 
     def rhs(self, t, x):
         '''
-        Retruns the right hand side (vectorfield) of the ode system.
+        Retruns the right hand side (vector field) of the ode system.
         '''
         u = self.u(t)
         dx = self.ff(x, u)

@@ -1,7 +1,7 @@
 # constrained double pendulum
 
 # import all we need for solving the problem
-from pytrajectory_new import ControlSystem
+from pytrajectory import ControlSystem
 import numpy as np
 import sympy as sp
 from sympy import cos, sin, Matrix
@@ -205,7 +205,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory_new.visualisation import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]

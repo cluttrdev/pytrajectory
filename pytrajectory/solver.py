@@ -3,7 +3,6 @@ from numpy.linalg import solve, norm
 import scipy as scp
 import logging
 
-import log
 
 
 class Solver:

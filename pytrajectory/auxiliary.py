@@ -4,8 +4,6 @@ import sympy as sp
 import logging
 import time
 
-import log
-
 from IPython import embed as IPS
 
 
