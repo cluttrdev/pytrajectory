@@ -65,23 +65,24 @@ class ControlSystem(object):
     mparam : dict
         Dictionary with method parameters
         
-        ==========  =============   =======================================================
-        key         default value   meaning
-        ==========  =============   =======================================================
-        sx          5               Initial number of spline parts for the system variables
-        su          5               Initial number of spline parts for the input variables
-        kx          2               Factor for raising the number of spline parts
-        delta       2               Constant for calculation of collocation points
-        maxIt       10              Maximum number of iteration steps
-        eps         1e-2            Tolerance for the solution of the initial value problem
-        ierr        1e-1            Tolerance for the error on the whole interval
-        tol         1e-5            Tolerance for the solver of the equation system
-        method      'leven'         The solver algorithm to use
-        use_chains  True            Whether or not to use integrator chains
-        coll_type    'equidistant'  The type of the collocation points
-        use_sparse  True            Whether or not to use sparse matrices
-        sol_steps   100             Maximum number of iteration steps for the eqs solver
-        ==========  =============   =======================================================
+        ============= =============   ============================================================
+        key           default value   meaning
+        ============= =============   ============================================================
+        sx            5               Initial number of spline parts for the system variables
+        su            5               Initial number of spline parts for the input variables
+        kx            2               Factor for raising the number of spline parts
+        delta         2               Constant for calculation of collocation points
+        maxIt         10              Maximum number of iteration steps
+        eps           1e-2            Tolerance for the solution of the initial value problem
+        ierr          1e-1            Tolerance for the error on the whole interval
+        tol           1e-5            Tolerance for the solver of the equation system
+        method        'leven'         The solver algorithm to use
+        use_chains    True            Whether or not to use integrator chains
+        coll_type     'equidistant'   The type of the collocation points
+        use_sparse    True            Whether or not to use sparse matrices
+        sol_steps     100             Maximum number of iteration steps for the eqs solver
+        spline_orders 3               The order of the polynomial spline parts (possibly iterable)
+        ============= =============   ============================================================
     
     '''
     def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
@@ -105,7 +106,8 @@ class ControlSystem(object):
                         'use_chains' : True,
                         'coll_type' : 'equidistant',
                         'use_sparse' : True,
-                        'sol_steps' : 100}
+                        'sol_steps' : 100,
+                        'spline_order' : [3]}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -170,6 +172,26 @@ class ControlSystem(object):
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
         self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
+        
+        # set order of the polynomial spline parts
+        if kwargs.has_key('spline_orders'):
+            raise NotImplementedError
+            #if type(kwargs['spline_order']) in {list, tuple}:
+            if hasattr(kwargs['spline_orders'], '__iter__'):
+                assert len(kwargs['spline_orders']) == len(self.x_sym + self.u_sym)
+                self.mparam['spline_orders'] = [int(order) for order in kwargs['spline_orders']]
+            elif type(kwargs['spline_orders']) in {dict}:
+                raise NotImplementedError
+            else:
+                try:
+                    order = int(kwargs['spline_orders'])
+                    self.mparam['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
+                except:
+                    logging.warning('Could not set spline orders to `{}`, \
+                                     will use cubic polynomial parts.'.format(kwargs['spline_orders']))
+                    self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
+        else:
+            self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
         
         # Create trajectory and equations system objects
         self.trajectories = Trajectory(self)
@@ -502,7 +524,8 @@ class ControlSystem(object):
         # Initialise the spline function objects
         self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
                                        boundary_values=self._boundary_values,
-                                       use_chains=self.mparam['use_chains'])
+                                       use_chains=self.mparam['use_chains'],
+                                       spline_orders=self.mparam['spline_orders'])
         
         # Get a initial value (guess)
         self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
@@ -530,6 +553,8 @@ class ControlSystem(object):
             x_sym = self.x_sym
         
         self.reached_accuracy = self.trajectories.check_accuracy(self.sim_data, self.ff, x_sym, boundary_values)
+        
+        #IPS()
     
     
     def simulate(self):
@@ -666,6 +691,8 @@ if __name__ == '__main__':
     S.set_param('eps', 1e-2)
     S.set_param('ierr', 1e-1)
     S.set_param('use_chains', False)
+    S.set_param('su', 100)
+    S.set_param('spline_orders', [3,3,1])
     
     #print "############### Instanciated System ################"
     #IPS()

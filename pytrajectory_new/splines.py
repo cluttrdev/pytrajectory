@@ -538,8 +538,6 @@ def make_steady(S):
     # if the spline is piecewise constant it needs special treatment, 
     # becaus it can't be made 'steady' in this sense
     if S.is_constant():
-        #raise NotImplementedError
-        
         tmp_coeffs = np.zeros_like(S._coeffs, dtype=None)
         tmp_coeffs_abs = np.zeros((S.n,S._poly_order+1))
         
@@ -567,11 +565,6 @@ def make_steady(S):
         S._steady_flag = True
     
         return S
-        
-    
-    
-    
-    
     
     # get matrix dimensions --> (3.21) & (3.22)
     N1 = S._poly_order * (S.n - 1) + 2 * (nu + 1)
