@@ -19,7 +19,9 @@ class Trajectory(object):
     ----------
     
     ctrl_sys : system.ControlSystem
-        Instance of a control system.
+        Instance of a control system providing information like
+        vector field function, integrator chains, boundary values
+        and so on.
     '''
     
     def __init__(self, ctrl_sys):

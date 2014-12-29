@@ -35,15 +35,12 @@ class Spline(object):
     poly_order : int
         The order of the polynomial spline parts.
     
-    deriv_order : int
-        If not 0 this spline is the :attr:`deriv_order`-th derivative of another spline.
-    
     steady : bool
         Whether or not to call :meth:`make_steady()` when instanciated.
     
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=5, tag='s', bc={}, poly_order=-1, deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc={}, poly_order=-1, steady=False, tag=''):
         # interval boundaries
         assert a < b
         self.a = a
@@ -77,7 +74,7 @@ class Spline(object):
         # is this spline object are derivative of another one?
         # if not -> 0
         # else   -> the derivation order
-        self._deriv_order = deriv_order
+        self._deriv_order = 0   #deriv_order
         
         # size of the polynomial parts for equidistant nodes
         self._h = (float(self.b)-float(self.a))/float(self.n)
@@ -240,7 +237,7 @@ class Spline(object):
         '''
         return derive_spline(self, d, new_tag)
     
-    def set_coeffs(self, coeffs=None, free_coeffs=None):
+    def set_coeffs(self, free_coeffs=None, coeffs=None):
         '''
         This function is used to set up numerical values either for all the spline's coefficients
         or its independent ones.
@@ -248,15 +245,16 @@ class Spline(object):
         Parameters
         ----------
         
+        free_coeffs : numpy.ndarray
+            Array with numerical values for the free coefficients of the spline.
+        
         coeffs : numpy.ndarray
             Array with coefficients of the polynomial spline parts.
         
-        free_coeffs : numpy.ndarray
-            Array with numerical values for the free coefficients of the spline.
         '''
         
         # deside what to do
-        if coeffs is None  and (free_coeffs is None):
+        if coeffs is None  and free_coeffs is None:
             # nothing to do
             pass
         
@@ -268,10 +266,13 @@ class Spline(object):
                 logging.error('Dimension mismatch in number of spline parts ({}) and \
                             rows in coefficients array ({})'.format(self.n, coeffs.shape[0]))
                 raise ValueError
-            elif not (self._indep_coeffs.size == coeffs.shape[1]):
-                logging.error('Dimension mismatch in number of free coefficients ({}) and \
-                            columns in coefficients array ({})'.format(self._indep_coeffs.size, coeffs.shape[1]))
-                raise ValueError
+            elif not (self._poly_order + 1 == coeffs.shape[1]):
+                logging.error('Dimension mismatch in number of polynomial coefficients ({}) and \
+                            columns in coefficients array ({})'.format(self._poly_order + 1, coeffs.shape[1]))
+            # elif not (self._indep_coeffs.size == coeffs.shape[1]):
+            #     logging.error('Dimension mismatch in number of free coefficients ({}) and \
+            #                 columns in coefficients array ({})'.format(self._indep_coeffs.size, coeffs.shape[1]))
+            #     raise ValueError
             
             # set coefficients
             self._coeffs = coeffs
@@ -292,10 +293,7 @@ class Spline(object):
             
             # update the spline coefficients and polynomial parts
             for k in xrange(self.n):
-                try:
-                    coeffs_k = [row.dot(free_coeffs) + _abs for row, _abs in zip(self._prov_S[k], self._prov_S_abs[k])]
-                except:
-                    IPS()
+                coeffs_k = [row.dot(free_coeffs) + _abs for row, _abs in zip(self._prov_S[k], self._prov_S_abs[k])]
                 
                 self._coeffs[k] = coeffs_k
                 self._S[k] = np.poly1d(coeffs_k)
@@ -307,12 +305,55 @@ class Spline(object):
         # now we have numerical values for the coefficients so we can set this to False
         self._prov_flag = False
     
+    
+    def plot(self, show=True, ret_array=False):
+        '''
+        Plots the spline function or returns an array with its values at
+        some points of the spline interval.
+        
+        Parameters
+        ----------
+        
+        show : bool
+            Whethter to plot the spline's curve or not.
+        
+        ret_array : bool
+            Wheter to return an array with values of the spline at points
+            of the interval.
+            
+        '''
+        
+        if not show and not ret_array:
+            # nothing to do here...
+            return
+        elif S._prov_flag:
+            # spline cannot be plotted, because there are no numeric
+            # values for its polynomial coefficients
+            logging.error("There are no numeric values for the spline's\
+                            polynomial coefficients.")
+            return
+        
+        # create array of values
+        tt = np.linspace(self.a, self.b, 1000, endpoint=True)
+        St = [self(t) for t in tt]
+        
+        if show:
+            try:
+                import matplotlib.pyplot as plt
+                plt.plot(tt,St)
+                plt.show()
+            except ImportError:
+                logging.error('Could not import matplotlib for plotting the curve.')
+        
+        if ret_array:
+            return St
+    
 
 class ConstantSpline(Spline):
     '''
     This class provides a spline object with piecewise constant polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
     
     def __call__(self, t):
@@ -331,7 +372,7 @@ class LinearSpline(Spline):
     '''
     This class provides a spline object with piecewise linear polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
     
     def __call__(self, t):
@@ -350,7 +391,7 @@ class QuadraticSpline(Spline):
     '''
     This class provides a spline object with piecewise quadratic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=dict(), deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
     
     def __call__(self, t):
@@ -369,7 +410,7 @@ class CubicSpline(Spline):
     '''
     This class provides a spline object with piecewise cubic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=5, tag='', bc=dict(), deriv_order=0, steady=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
     
     def __call__(self, t):
@@ -782,42 +823,129 @@ def get_smoothness_matrix(S, N1, N2):
         r[po*(n-1)+5] = S._bc[2][1]
     
     return M, r
+
+
+def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
+    '''
+    Interpolates a given function or dicrete points using a
+    spline function object which will be created if not passed.
+    
+    Parameters
+    ----------
+    
+    S : Spline
+        The spline function object used to interpolate.
+    
+    fnc : callable
+        The function that should be interpolated.
+    
+    points : array_like
+        One or two dimensional array containing interval borders, nodes or 
+        points that should be interpolated.
+    
+    '''
+    
+    if not spline_order == 3:
+        raise NotImplementedError
+    
+    # first check passed arguments
+    if points.ndim == 1:
+        # `points` is assumed to contain either interval borders or interpolation nodes
+        # so `fnc` has to be given and callable
+        assert callable(fnc)
+        
+        if len(points) == 2:
+            # `points` is assumed to contain interval borders so the interpolation nodes
+            # have to be generated
+            a, b = points
+            nodes = np.linspace(a, b, n_nodes, endpoint=True)
+        elif len(points) > 2:
+            # `points` is assumed to contain interpolation nodes
+            a = points[0]
+            b = points[-1]
+            nodes = points.copy()
+        else:
+            raise ValueError
+        
+        # get values at the nodes
+        values = np.array([fnc(node) for node in nodes])
+        
+        # make sure `fnc` has the right dimension
+        assert values.ndim == 1
+    elif points.ndim == 2:
+        # `points` is assumed to contain the interpolation nodes and values
+        # so `fnc` should not be callable
+        assert not callable(fnc)
+        
+        # get nodes and values
+        shape = points.shape
+        if shape[0] >= shape[1]:
+            nodes = points[:,0]
+            values = points[:,1]
+        else:
+            nodes = points[0,:]
+            values = points[1,:]
+    
+    # create spline function object if not given
+    if not S:
+        S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)#, poly_order=spline_order)
+    else:
+        # check attributes of the given spline function
+        assert S.n == nodes.size - 1
+    
+    # make sure that the spline has not already been made steady (and smooth)
+    assert not S._steady_flag
+    
+    if S.is_cubic():
+        # create vector of step sizes
+        h = np.array([nodes[k+1] - nodes[k] for k in xrange(nodes.size-1)])
+        
+        # create diagonals for the coefficient matrix of the equation system
+        l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(nodes.size-2)])
+        d = 2.0*np.ones(nodes.size-2)
+        u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(nodes.size-2)])
+        
+        # right hand site of the equation system
+        r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
+                        for k in xrange(nodes.size-2)])
+        
+        # add conditions for unique solution
+        # 
+        # natural spline
+        l = np.hstack([l, 1.0, 0.0])
+        d = np.hstack([2.0, d, 2.0])
+        u = np.hstack([0.0, 1.0, u])
+        r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
+        
+        data = [l,d,u]
+        offsets = [-1, 0, 1]
+        
+        # create tridiagonal coefficient matrix
+        D = sparse.dia_matrix((data, offsets), shape=(S.n+1,S.n+1))
+        IPS()
+        # solve the equation system
+        sol = sparse.linalg.spsolve(D.tocsr(),r)
+        
+        # calculate the coefficients
+        coeffs = np.zeros((S.n, 4))
+        
+        for i in xrange(S.n):
+            coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
+                         3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
+                         sol[i],
+                         values[i]]
+        
+        # set solution
+        S.set_coeffs(coeffs=coeffs)
+    
+    return S
     
         
 
 
 if __name__=='__main__':
-    S = Spline()
     CS = CubicSpline()
     
-#     x1, x2 = sp.symbols('x1, x2')
-#     u1 = sp.Symbol('u1')
-#
-#     x_sym = [x1, x2]
-#     u_sym = [u1]
-#
-#
-#     xbc = {x1 : [0.0,1.0],
-#             x2 : [0.0, 0.0]}
-#     ubc = {u1 : [0.0, 0.0]}
-#
-#     a = 0.0
-#     b = 2.0
-#
-#     initSplines(a=a, b=b, xbc=xbc, ubc=ubc, x_sym=x_sym, u_sym=u_sym)
-#
-#     if 0:
-#         def f(x,u):
-#             x1, x2 = x
-#             u1, = u
-#
-#             ff = np.array([ x2,
-#                             u1])
-#             return ff
-#         xa = [0.0, 0.0]
-#         xb = [1.0, 0.0]
-#         g = [0.0,0.0]
-#         T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, sx=5, su=5, kx=3, g=g, use_chains=False)
-    
+    S = interpolate(fnc=np.sin, points=np.linspace(0,2*np.pi,100,endpoint=True))
     
     IPS()
