@@ -7,7 +7,7 @@ import time
 from IPython import embed as IPS
 
 
-class Timer():
+class Timer(object):
     '''
     Provides a context manager that takes the time of a code block.
     
@@ -87,7 +87,7 @@ class IntegChain(object):
 def find_integrator_chains(fi, x_sym, u_sym):
     '''
     Searches for integrator chains in given vector field matrix `fi`,
-    i.e. equations of the form :math:`\dot{x}_i = x_j, i \neq j`.
+    i.e. equations of the form :math:`\dot{x}_i = x_j`.
     
     Parameters
     ----------

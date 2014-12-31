@@ -323,7 +323,7 @@ class ControlSystem(object):
     
     def unconstrain(self):
         '''
-        This method is used to enable compliance with the desired box constraints.
+        This method is used to enable compliance with desired box constraints given by the user.
         It transforms the vectorfield by projecting the constrained state variables on
         new unconstrained ones.
         '''
@@ -510,12 +510,12 @@ class ControlSystem(object):
         end of an integrator chain.
 
         Then, a start value for the solver is determined and the equation
-        system is build.
+        system is set up.
 
         Next, the equation system is solved and the resulting numerical values
         for the free parameters are applied to the corresponding splines.
 
-        As a last, the initial value problem is simulated.
+        As a last, the resulting initial value problem is simulated.
         '''
         
         # Increase iteration number
@@ -625,7 +625,7 @@ class ControlSystem(object):
     
     def save(self):
         '''
-        Save data to using the module :py:mod:`pickle`.
+        Save data using the module :py:mod:`pickle`.
         
         Currently only saves simulation data.
         '''
@@ -691,7 +691,7 @@ if __name__ == '__main__':
     S.set_param('eps', 1e-2)
     S.set_param('ierr', 1e-1)
     S.set_param('use_chains', False)
-    S.set_param('su', 20)
+    S.set_param('su', 10)
     S.set_param('spline_orders', [3,3,1])
     
     with auxiliary.Timer("Iteration"):

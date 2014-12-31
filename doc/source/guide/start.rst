@@ -148,21 +148,22 @@ and end ::
 
 The boundary values for the input variable are
 
-   >>> uab = [0.0, 0.0]
+   >>> ua = [0.0]
+   >>> ub = [0.0]
 
 because we want :math:`u(0) = u(T) = 0`.
 
 Now we import all we need from PyTrajectory ::
 
-   >>> from pytrajectory import Trajectory
+   >>> from pytrajectory import ControlSystem
 
 and pass our parameters. ::
 
-   >>> T = Trajectory(f, a, b, xa, xb, uab)
+   >>> S = ControlSystem(f, a, b, xa, xb, ua, ub)
 
 All we have to do now to solve our problem is ::
 
-   >>> x, u = T.startIteration()
+   >>> x, u = S.solve()
 
 After the iteration has finished `x(t)` and `u(t)` are returned as callable 
 functions for the system and input variables, where t has to be in (a,b).
@@ -174,11 +175,11 @@ performance by altering some of its method parameters.
 
 For example if we increase the factor for raising the spline parts (default: 2) ::
 
-   >>> T.setParam('kx', 5)
+   >>> S.set_param('kx', 5)
 
 and don't take advantage of the system structure (integrator chains) ::
 
-   >>> T.setParam('use_chains', False)
+   >>> S.set_param('use_chains', False)
 
 we get a solution after 3 steps with 125 spline parts.
 
@@ -186,7 +187,7 @@ There are more method parameters you can change to speed things up, i.e. the typ
 collocation points to use or the number of spline parts for the input variables. 
 To do so, just type::
 
-   >>> T.setParam('<param>', <value>)
+   >>> S.set_param('<param>', <value>)
 
 Please have a look at the :ref:`reference` for more information.
 
@@ -207,7 +208,7 @@ of the system according to given simulation data.
 First we import what we need by::
 
    >>> import matplotlib as mpl
-   >>> from pytrajectory.utilities import Animation
+   >>> from pytrajectory.visualisation import Animation
 
 Then we define our function that takes simulation data `x`  of a 
 specific time and an instance `image` of `Animation.Image` which is just 

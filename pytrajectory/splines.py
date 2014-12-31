@@ -82,12 +82,6 @@ class Spline(object):
         # create array of symbolic coefficients
         self._coeffs = sp.symarray('c'+tag, (self.n, self._poly_order+1))
         
-        # reverse the order of the symbols in every column
-        #for i in xrange(int((self._poly_order+1)/2)):
-        #    tmp = self._coeffs[:,i].copy()
-        #    self._coeffs[:,i] = self._coeffs[:,self._poly_order-i]
-        #    self._coeffs[:,self._poly_order-i] = tmp
-        
         # the polynomial spline parts
         #   key: spline part
         #   value: corresponding polynomial
@@ -97,10 +91,13 @@ class Spline(object):
             #   S_i(t)= c_i_3*t^3 + c_i_2*t^2 + c_i_1*t + c_i_0
             self._S[i] = np.poly1d(self._coeffs[i])
         
-        # create matrices for provisionally evaluation of the spline
+        # initialise array for provisionally evaluation of the spline
         # if there are no values for its free parameters
-        self._prov_S = np.zeros_like(self._coeffs)
-        self._prov_S_abs = np.zeros((self.n,self._poly_order+1))
+        # 
+        # they show how the spline coefficients depend on its free
+        # coefficients
+        self._dep_array = None
+        self._dep_array_abs = None
         
         # steady flag is True if smoothness and boundary conditions are solved
         # --> make_steady()
@@ -132,8 +129,18 @@ class Spline(object):
         #if (i == self.n): i -= 1
         if (i >= self.n): i = self.n - 1
         
-        #t -= (i+1)*self._h
+        t1 = t - (i+1)*self._h
+        t2 = t - self._jpts[i+1]
+        if t1 != t2:
+            print "t1 != t2, i = {} t = {}, t1 = {}, t2 = {}".format(i,float(t),float(t1),float(t2))
+            IPS()
+            1/0
+        return self._S[i](t1)
+        
         #t -= self._jpts[i]
+        #return self._S[i](t-self._jpts[i])
+        
+        t -= (i+1)*self._h
         return self._S[i](t-(i+1)*self._h)
         
     
@@ -210,7 +217,29 @@ class Spline(object):
         
         '''
         
-        raise NotImplementedError()
+        #IPS()
+        if np.size(points) > 1:
+            raise NotImplementedError()
+        t = points
+        
+        # determine the spline part to evaluate
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part so we use the one before
+        if (i == self.n): i-= 1
+        
+        t = t - (i+1)*self._h
+        #t = t - self._jpts[i]
+        
+        tt = [t*t*t, t*t, t, 1.0][-(self._poly_order + 1):]
+        
+        M0 = self._dep_array[i]
+        m0 = self._dep_array_abs[i]
+        
+        dep_vec = np.dot(tt,M0)
+        dep_vec_abs = np.dot(tt,m0)
+        
+        return dep_vec, dep_vec_abs
     
     
     def set_coefficients(self, free_coeffs=None, coeffs=None):
@@ -269,8 +298,7 @@ class Spline(object):
             
             # update the spline coefficients and polynomial parts
             for k in xrange(self.n):
-                coeffs_k = [row.dot(free_coeffs) + _abs for row, _abs in zip(self._prov_S[k], self._prov_S_abs[k])]
-                
+                coeffs_k = self._dep_array[k].dot(free_coeffs) + self._dep_array_abs[k]
                 self._coeffs[k] = coeffs_k
                 self._S[k] = np.poly1d(coeffs_k)
         else:
@@ -332,7 +360,7 @@ class ConstantSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
     
-    def get_dependence_vectors(self, points):
+    def _get_dependence_vectors(self, points):
         '''
         This method yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -378,7 +406,7 @@ class LinearSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
     
-    def get_dependence_vectors(self, points):
+    def _get_dependence_vectors(self, points):
         '''
         This method yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -424,7 +452,7 @@ class QuadraticSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
     
-    def get_dependence_vectors(self, points):
+    def _get_dependence_vectors(self, points):
         '''
         This method yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -470,7 +498,7 @@ class CubicSpline(Spline):
     def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
         Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
     
-    def get_dependence_vectors(self, points):
+    def _get_dependence_vectors(self, points):
         '''
         This method yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -485,7 +513,7 @@ class CubicSpline(Spline):
             The points to evaluate the provisionally spline at.
         
         '''
-        
+        #IPS()
         if np.size(points) > 1:
             raise NotImplementedError()
         t = points
@@ -500,8 +528,10 @@ class CubicSpline(Spline):
         
         tt = [t*t*t, t*t, t, 1.0]
         
-        M0 = np.array([m for m in self._prov_S[i]], dtype=float)
-        m0 = self._prov_S_abs[i]
+        #M0 = np.array([m for m in self._prov_S[i]], dtype=float)
+        #m0 = self._prov_S_abs[i]
+        M0 = self._dep_array[i]
+        m0 = self._dep_array_abs[i]
         
         dep_vec = np.dot(tt,M0)
         dep_vec_abs = np.dot(tt,m0)
@@ -534,10 +564,10 @@ def derive_spline(S, d=1, new_tag=''):
     if new_tag == '':
         new_tag = 'd' + S.tag
     
-    if d == 0:
-        #return S
-        pass
-    elif d > 3:
+    # if d == 0:
+    #     #return S
+    #     pass
+    if d > 3:
         raise ValueError('Invalid order of differentiation (%d), maximum is 3.'%(d))
     else:
         # first, get things that the spline and its derivative have in common
@@ -564,13 +594,12 @@ def derive_spline(S, d=1, new_tag=''):
         dS._deriv_order = do
         dS._steady_flag = True
         
-        
         # determine the coefficients of the new derivative
         coeffs = S._coeffs.copy()[:,:(po + 1)]
         
         # get the matrices for provisionally evaluation of the spline
-        prov_S = S._prov_S.copy()[:,:(po + 1)]
-        prov_S_abs = S._prov_S_abs.copy()[:,:(po + 1)]
+        dep_array = S._dep_array.copy()[:,:(po + 1)]
+        dep_array_abs = S._dep_array_abs.copy()[:,:(po + 1)]
         
         # now consider factors that result from differentiation
         if S.is_cubic():
@@ -578,33 +607,33 @@ def derive_spline(S, d=1, new_tag=''):
                 coeffs[:,0] *= 3
                 coeffs[:,1] *= 2
                 
-                prov_S[:,0] *= 3
-                prov_S[:,1] *= 2
-                prov_S_abs[:,0] *= 3
-                prov_S_abs[:,1] *= 2
+                dep_array[:,0] *= 3
+                dep_array[:,1] *= 2
+                dep_array_abs[:,0] *= 3
+                dep_array_abs[:,1] *= 2
             elif d == 2:
                 coeffs[:,0] *= 6
                 coeffs[:,1] *= 2
                 
-                prov_S[:,0] *= 6
-                prov_S[:,1] *= 2
-                prov_S_abs[:,0] *= 6
-                prov_S_abs[:,1] *= 2
+                dep_array[:,0] *= 6
+                dep_array[:,1] *= 2
+                dep_array_abs[:,0] *= 6
+                dep_array_abs[:,1] *= 2
             elif d == 3:
                 coeffs[:,0] *= 6
                 
-                prov_S[:,0] *= 6
-                prov_S_abs[:,0] *= 6
+                dep_array[:0] *= 6
+                dep_array_abs[:,0] *= 6
         elif S.is_quadratic():
             if d == 1:
                 coeffs[:,0] *= 2
                 
-                prov_S[:,0] *= 2
-                prov_S_abs[:,0] *= 2
+                dep_array[:,0] *= 2
+                dep_array_abs[:,0] *= 2
         
         dS._coeffs = coeffs
-        dS._prov_S = prov_S
-        dS._prov_S_abs = prov_S_abs
+        dS._dep_array = dep_array
+        dS._dep_array_abs = dep_array_abs
         
         # they have their independent coefficients in common
         dS._indep_coeffs = S._indep_coeffs
@@ -748,32 +777,27 @@ def make_steady(S):
     if sparse.issparse(tmp2):
         tmp2 = tmp2.toarray()
     
-    tmp_coeffs = np.zeros_like(S._coeffs, dtype=None)
-    tmp_coeffs_abs = np.zeros((S.n,S._poly_order+1))
-
+    dep_array = np.zeros((coeffs.shape[0],coeffs.shape[1],a.size))
+    dep_array_abs = np.zeros_like(coeffs, dtype=float)
+    
     for i,bb in enumerate(b):
         tmp = bb.name.split('_')[-2:]
         j = int(tmp[0])
         k = int(tmp[1])
 
-        tmp_coeffs[(j,k)] = tmp2[i]
-        tmp_coeffs_abs[(j,k)] = tmp1[i]
+        dep_array[j,k,:] = tmp2[i]
+        dep_array_abs[j,k] = tmp1[i]
 
-    #tmp3 = sparse.identity(len(a)).tolil()
     tmp3 = np.eye(len(a))
     for i,aa in enumerate(a):
         tmp = aa.name.split('_')[-2:]
         j = int(tmp[0])
         k = int(tmp[1])
 
-        tmp_coeffs[(j,k)] = tmp3[i]
+        dep_array[j,k,:] = tmp3[i]
     
-    #for i in xrange(S.n):
-    #    S._prov_S[i] = tmp_coeffs[i]
-    #    S._prov_S_abs[i] = tmp_coeffs_abs[i]
-    
-    S._prov_S = tmp_coeffs
-    S._prov_S_abs = tmp_coeffs_abs
+    S._dep_array = dep_array
+    S._dep_array_abs = dep_array_abs
     
     # a is vector of independent spline coeffs (free parameters)
     S._indep_coeffs = a
@@ -787,7 +811,7 @@ def make_steady(S):
 def determine_indep_coeffs(S, nu=-1):
     '''
     Determines the vector of independent coefficients w.r.t. the 
-    degree of boundary conditions `c`.
+    degree of boundary conditions `nu`.
     
     Parameters
     ----------
@@ -930,7 +954,7 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
     
     '''
     
-    if not spline_order == 3:
+    if not spline_order in {1,3}:
         raise NotImplementedError
     
     # first check passed arguments
@@ -973,7 +997,12 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
     
     # create spline function object if not given
     if not S:
-        S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)#, poly_order=spline_order)
+        if spline_order == 1:
+            S = LinearSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
+        elif spline_order == 2:
+            S = QuadraticSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
+        elif spline_order == 3:
+            S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
     else:
         # check attributes of the given spline function
         assert S.n == nodes.size - 1
@@ -1019,9 +1048,16 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
                          3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
                          sol[i],
                          values[i]]
+    elif S.is_linear():
+        coeffs = np.zeros((S.n, 2))
         
-        # set solution
-        S.set_coefficients(coeffs=coeffs)
+        for i in xrange(S.n):
+            coeffs[i,0] = (values[i+1] - values[i]) / (nodes[i+1] - nodes[i])
+        coeffs[:,1] = values[:-1]
+    
+    
+    # set solution
+    S.set_coefficients(coeffs=coeffs)
     
     return S
     
@@ -1031,6 +1067,10 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
 if __name__=='__main__':
     CS = CubicSpline()
     
-    S = interpolate(fnc=np.sin, points=np.linspace(0,2*np.pi,100,endpoint=True))
+    if 1:
+        S = interpolate(fnc=np.sin, points=np.linspace(0,2*np.pi,10,endpoint=True), spline_order=3)
+        tt = np.linspace(0,2*np.pi,1000)
+        St = [S(t) for t in tt]
+        sint = [np.sin(t) for t in tt]
     
     IPS()

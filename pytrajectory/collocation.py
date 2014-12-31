@@ -59,7 +59,7 @@ class CollocationSystem(object):
         
         '''
 
-        logging.debug("  Building Equation System")
+        logging.debug("Building Equation System")
         
         # make functions local
         x_fnc = traj._x_fnc
@@ -217,7 +217,7 @@ class CollocationSystem(object):
 
             X = np.array(X).reshape((-1,x_len))
             U = np.array(U).reshape((-1,u_len))
-
+            
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
             # other equations need not to be solved
@@ -230,6 +230,10 @@ class CollocationSystem(object):
             dX = np.array(dX).reshape((-1,x_len))[:,eqind]
         
             G = F - dX
+            
+            #if sys.mparam['sx'] == 40:
+            #    print "G: sx=40 nan"
+            #    IPS()
             
             return G.ravel()
         
@@ -276,7 +280,9 @@ class CollocationSystem(object):
             
             return DG
         
-        #IPS()
+        #if sys.mparam['sx'] == 40:
+        #    print "G: sx=40 nan"
+        #    IPS()
         
         # return the callable functions
         return G, DG
