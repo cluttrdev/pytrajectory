@@ -88,13 +88,15 @@ class Solver:
 
         reltol = self.reltol
         
-        Fx = self.F(x)
+        # New
+        Fx, X, U = self.F(x)
         
         while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
             #if (i-1)%4 == 0:
-            DFx = self.DF(x)
+            # New
+            DFx = self.DF(x, X, U)
             DFx = scp.sparse.csr_matrix(DFx)
             
             while (roh < b0):                
@@ -106,7 +108,8 @@ class Solver:
 
                 xs = x + np.array(s).flatten()
                 
-                Fxs = self.F(xs)
+                # New
+                Fxs, X, U = self.F(xs)
 
                 normFx = norm(Fx)
                 normFxs = norm(Fxs)
@@ -133,8 +136,8 @@ class Solver:
             log.info("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            #if res<1.0:
-            #    reltol = 1e-3
+            if res<1.0:
+                reltol = 1e-4
 
         self.sol = x
     

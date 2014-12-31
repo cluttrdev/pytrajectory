@@ -183,7 +183,7 @@ f = solve_motion_equations(M, B, state_vars, input_vars)
 a = 0.0
 xa = [0.0, 0.0, pi, 0.0, pi, 0.0]
 
-b = 4.0
+b = 5.0
 xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 ua = [0.0]
@@ -191,7 +191,7 @@ ub = [0.0]
 
 # here we specify the constraints for the velocity of the car
 con = {0 : [-1.0, 1.0],
-        1 : [-5.0, 5.0]}
+        1 : [-2.0, 2.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
 T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
@@ -199,9 +199,12 @@ T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, 
 # time to run the iteration
 x, u = T.startIteration()
 
+from IPython import embed as IPS
+IPS()
+
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+do_animation = True
 
 if do_animation:
     import matplotlib as mpl

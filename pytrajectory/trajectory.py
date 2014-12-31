@@ -1154,10 +1154,10 @@ class Trajectory():
         
             G = F - dX
             
-            return G.flatten()
+            return G.flatten(), X, U
         
         # and its jacobian
-        def DG(c):
+        def DG(c, X, U):
             '''
             Returns the jacobian matrix of the collocation system w.r.t. the
             independent parameters evaluated at :attr:`c`.
@@ -1165,10 +1165,10 @@ class Trajectory():
             
             # first we calculate the x and u values in all collocation points
             # with the current numerical values of the free parameters
-            X = Mx.dot(c) + Mx_abs
-            X = np.array(X).reshape((-1,x_len)) # one column for every state component
-            U = Mu.dot(c) + Mu_abs
-            U = np.array(U).reshape((-1,u_len)) # one column for every input component
+            #X = Mx.dot(c) + Mx_abs
+            #X = np.array(X).reshape((-1,x_len)) # one column for every state component
+            #U = Mu.dot(c) + Mu_abs
+            #U = np.array(U).reshape((-1,u_len)) # one column for every input component
             
             # now we iterate over every row
             # (one for every collocation point)
