@@ -81,7 +81,7 @@ class ControlSystem(object):
         coll_type     'equidistant'   The type of the collocation points
         use_sparse    True            Whether or not to use sparse matrices
         sol_steps     100             Maximum number of iteration steps for the eqs solver
-        spline_orders 3               The order of the polynomial spline parts (possibly iterable)
+        spline_orders [3]             The order of the polynomial spline parts
         ============= =============   ============================================================
     
     '''
@@ -175,8 +175,8 @@ class ControlSystem(object):
         
         # set order of the polynomial spline parts
         if kwargs.has_key('spline_orders'):
-            raise NotImplementedError
-            #if type(kwargs['spline_order']) in {list, tuple}:
+            raise NotImplementedError()
+            
             if hasattr(kwargs['spline_orders'], '__iter__'):
                 assert len(kwargs['spline_orders']) == len(self.x_sym + self.u_sym)
                 self.mparam['spline_orders'] = [int(order) for order in kwargs['spline_orders']]
@@ -225,6 +225,9 @@ class ControlSystem(object):
         # check if current and new value have the same type
         # --> should they always?
         assert type(val) == type(self.mparam[param])
+        
+        if param == 'spline_orders':
+            raise NotImplementedError()
         
         self.mparam[param] = val
     
@@ -616,11 +619,11 @@ class ControlSystem(object):
             H[i] = error[:,i]
 
         # call utilities.plotsim()
-        #plotsim(self.sim_data, H)
-        t = self.sim_data[0]
-        xt = np.array([self.trajectories.x(tt) for tt in t])
-        ut = self.sim_data[2]
-        visualisation.plot_simulation([t,xt,ut], H)
+        visualisation.plot_simulation(self.sim_data, H)
+        # t = self.sim_data[0]
+        # xt = np.array([self.trajectories.x(tt) for tt in t])
+        # ut = self.sim_data[2]
+        # visualisation.plot_simulation([t,xt,ut], H)
     
     
     def save(self):
@@ -691,8 +694,8 @@ if __name__ == '__main__':
     S.set_param('eps', 1e-2)
     S.set_param('ierr', 1e-1)
     S.set_param('use_chains', False)
-    S.set_param('su', 10)
-    S.set_param('spline_orders', [3,3,1])
+    #S.set_param('su', 10)
+    #S.set_param('spline_orders', [3,3,1])
     
     with auxiliary.Timer("Iteration"):
         S.solve()

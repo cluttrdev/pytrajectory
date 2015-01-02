@@ -23,18 +23,18 @@ class Trajectory(object):
         and so on.
     '''
     
-    def __init__(self, ctrl_sys):
+    def __init__(self, sys):
         # Save the control system instance
         # TODO: get rid of this need
-        self.sys = ctrl_sys
+        self.sys = sys
         
         # Save some information about the control system
-        self._a = ctrl_sys.a
-        self._b = ctrl_sys.b
-        self._x_sym = ctrl_sys.x_sym
-        self._u_sym = ctrl_sys.u_sym
-        self._chains = ctrl_sys.chains
-        self._spline_orders = ctrl_sys.mparam['spline_order']
+        self._a = sys.a
+        self._b = sys.b
+        self._x_sym = sys.x_sym
+        self._u_sym = sys.u_sym
+        self._chains = sys.chains
+        self._spline_orders = sys.mparam['spline_order']
         
         # Initialise dictionaries as containers for all
         # spline functions that will be created
@@ -44,6 +44,7 @@ class Trajectory(object):
         self._dx_fnc = dict()
         
         # This will be the free parameters of the control problem
+        # (list of all independent spline coefficients)
         self.indep_coeffs = []
         
         self._old_splines = None
