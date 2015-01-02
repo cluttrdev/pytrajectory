@@ -11,8 +11,35 @@ from matplotlib.gridspec import GridSpec
 from IPython import embed as IPS
 
 import os
+import time
+import logging
 
-class IntegChain():
+
+class Timer(object):
+    '''
+    Provides a context manager that takes the time of a code block.
+    
+    Parameters
+    ----------
+    
+    label : str
+        The 'name' of the code block which is timed
+    
+    verb : int
+        Level of verbosity
+    '''
+    def __init__(self, label="~"):
+        self.label = label
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, *args):
+        self.delta = time.time() - self.start
+        logging.debug("---> [{} elapsed {} s]".format(self.label, self.delta))
+
+
+class IntegChain(object):
     '''
     This class provides a representation of an integrator chain consisting of sympy symbols.
     

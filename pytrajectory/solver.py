@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import solve, norm
 import scipy as scp
 
-import log
+import logging
 
 
 class Solver:
@@ -51,14 +51,14 @@ class Solver:
         '''
         
         if (self.method == 'leven'):
-            log.info("    Run Levenberg-Marquardt method")
+            logging.debug("Run Levenberg-Marquardt method")
             self.leven()
         elif (self.method == 'new_leven'):
             self.alternate_levenberg_marquardt()
         
         
         if (self.sol == None):
-            log.warn("Wrong solver, returning initial value.")
+            logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:
             return self.sol
@@ -118,12 +118,12 @@ class Solver:
                 
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
-                #log.info("  roh= %f    mu= %f"%(roh,mu))
+                #logging.debug("  roh= %f    mu= %f"%(roh,mu))
                 
                 # the following was believed to be some kind of bug, hence the warning
                 # but that was not the case...
                 #if (roh < 0.0):
-                    #log.warn("Parameter roh in LM-method became negative", verb=3)
+                    #logging.warning("Parameter roh in LM-method became negative")
                     #from IPython import embed as IPS
                     #IPS()
             
@@ -133,7 +133,7 @@ class Solver:
             roh = 0.0
             res_alt = res
             res = normFx
-            log.info("      nIt= %d    res= %f"%(i,res))
+            logging.debug("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
             if res<1.0:
@@ -203,7 +203,7 @@ class Solver:
                     mu = mu * nu
                     nu = 2.0 * nu
             
-            log.info("      nIt= %d    res= %f"%(i,norm(g, np.inf)))
+            logging.debug("      nIt= %d    res= %f"%(i,norm(g, np.inf)))
         
         self.sol = x
 
