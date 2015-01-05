@@ -6,6 +6,8 @@ import logging
 
 from solver import Solver
 
+from splines import interpolate
+
 from IPython import embed as IPS
 
 
@@ -30,6 +32,7 @@ class CollocationSystem(object):
         # Save some information
         self._coll_type = ctrl_sys.mparam['coll_type']
         self._use_sparse = ctrl_sys.mparam['use_sparse']
+        self.sol = 0
     
     
     def build(self, sys, traj):
@@ -333,41 +336,58 @@ class CollocationSystem(object):
 
                 if (new_splines[k].type == 'x'):
                     logging.debug("Get new guess for spline %s"%k.name)
-
-                    # how many unknown coefficients does the new spline have
-                    nn = len(free_coeffs[k])
-
-                    # and this will be the points to evaluate the old spline in
-                    #   but we don't want to use the borders because they got
-                    #   the boundary values already
-                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = False)[1:]
-                    #gpts = np.linspace(self.a,self.b,(nn+1),endpoint = True)
-                    gpts = np.linspace(self.sys.a,self.sys.b,nn,endpoint = True)
-
-                    # evaluate the old and new spline at all points in gpts
-                    #   they should be equal in these points
-
-                    OLD = [None]*len(gpts)
-                    NEW = [None]*len(gpts)
-                    NEW_abs = [None]*len(gpts)
                     
-                    for i, p in enumerate(gpts):
-                        OLD[i] = old_splines[k](p)
-                        NEW[i], NEW_abs[i] = new_splines[k].get_dependence_vectors(p)
-
-                    OLD = np.array(OLD)
-                    NEW = np.array(NEW)
-                    NEW_abs = np.array(NEW_abs)
-
-                    #TT = np.linalg.solve(NEW,OLD-NEW_abs)
-                    TT = np.linalg.lstsq(NEW,OLD-NEW_abs)[0]
-                
-                    guess = np.hstack((guess,TT))
+                    s_new = new_splines[k]
+                    s_old = old_splines[k]
+                    s_interp = interpolate(fnc=s_old, points=s_new.nodes)
+                    
+                    # get indices of new independent coefficients
+                    idx = [(int(i),int(j)) for i,j in [coeff.name.split('_')[-2:] for coeff in s_new._indep_coeffs]]
+                    
+                    # get values for them from the interpolant
+                    interp_guess = np.array([s_interp._coeffs[ij] for ij in idx])
+                    
+                    guess = np.hstack((guess,interp_guess))
                 else:
                     # if it is a input variable, just take the old solution
                     #guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
                     guess = np.hstack((guess, old_splines[k]._indep_coeffs))
-
+        
+        if 1:
+            
+            try:
+                import matplotlib.pyplot as plt
+            
+                tt = np.linspace(self.sys.a, self.sys.b, 1000)
+                xt_old = np.zeros((1000,len(self.sys.x_sym)))
+            
+                for i, x in enumerate(self.sys.x_sym):
+                    fx = old_splines[x]
+                    xt_old[:,i] = [fx(t) for t in tt]
+            
+                sol_bak = 1.0*self.sol
+                splines_bak = new_splines.copy()
+            
+                self.sys.trajectories.set_coeffs(guess, False)
+                xt_new = np.zeros((1000,len(self.sys.x_sym)))
+                
+                for i, x in enumerate(self.sys.x_sym):
+                    fx = new_splines[x]
+                    xt_new[:,i] = [fx(t) for t in tt]
+                
+                
+                print np.abs(xt_old-xt_new).max()
+                IPS()
+                
+                self.sol = sol_bak
+                new_splines = splines_bak
+                for s in new_splines.values():
+                    s._prov_flag = True
+                
+            except Exception as err:
+                IPS()
+                pass
+        
         # the new guess
         self.guess = guess
     

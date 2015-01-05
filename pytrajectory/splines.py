@@ -43,7 +43,7 @@ class Spline(object):
     
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=10, bc={}, poly_order=-1, node_type='equidistant', steady=False, tag=''):
+    def __init__(self, a=0.0, b=1.0, n=10, bc={}, poly_order=-1, nodes_type='equidistant', steady=False, tag=''):
         # interval boundaries
         assert a < b
         self.a = a
@@ -83,7 +83,7 @@ class Spline(object):
         self._coeffs = sp.symarray('c'+tag, (self.n, self._poly_order+1))
         
         # calculate nodes of the spline
-        self.nodes = get_spline_nodes(self.a, self.b, self.n+1)
+        self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type)
         
         ##############
         # NEW
@@ -110,8 +110,8 @@ class Spline(object):
         # 
         # they show how the spline coefficients depend on its free
         # coefficients
-        self._dep_array = np.array([])
-        self._dep_array_abs = np.array([])
+        self._dep_array = None  #np.array([])
+        self._dep_array_abs = None  #np.array([])
         
         # steady flag is True if smoothness and boundary conditions are solved
         # --> make_steady()
@@ -133,21 +133,9 @@ class Spline(object):
         return self._S[key]
     
     def __call__(self, t):
-        # # get polynomial part where t is in
-        # i = int(np.floor(t*self.n/self.b))
-        # # if `t` is equal to the right border, which is the last node, there is no
-        # # corresponding spline part so we use the one before
-        # #if (i == self.n): i -= 1
-        # if (i >= self.n): i = self.n - 1
-        #
-        # return self._S[i](t - self.nodes[i])
-        
-        ##############
-        # NEW
+        # get polynomial part where t is in
         i = self._nodes_dict[t]
         return self._S[i](t - self.nodes[i])
-        ##############
-        
         
     
     def is_constant(self):
@@ -204,7 +192,7 @@ class Spline(object):
         d : int
             The derivation order.
         '''
-        return derive_spline(self, d, new_tag)
+        return differentiate(self, d, new_tag)
     
     
     def get_dependence_vectors(self, points):
@@ -228,18 +216,9 @@ class Spline(object):
             raise NotImplementedError()
         t = points
         
-        # # determine the spline part to evaluate
-        # i = int(np.floor(t*self.n/(self.b)))
-        # # if `t` is equal to the right border, which is the last node, there is no
-        # # corresponding spline part so we use the one before
-        # if (i == self.n): i-= 1
-        
-        #############
-        # NEW
+        # determine the spline part to evaluate
         i = self._nodes_dict[t]
-        #############
         
-        #t = t - (i+1)*self._h
         t = t - self.nodes[i]
         
         tt = [t*t*t, t*t, t, 1.0][-(self._poly_order + 1):]
@@ -341,7 +320,7 @@ class Spline(object):
         if not show and not ret_array:
             # nothing to do here...
             return
-        elif S._prov_flag:
+        elif self._prov_flag:
             # spline cannot be plotted, because there are no numeric
             # values for its polynomial coefficients
             logging.error("There are no numeric values for the spline's\
@@ -368,31 +347,31 @@ class ConstantSpline(Spline):
     '''
     This class provides a spline object with piecewise constant polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, nodes_type=nodes_type, steady=steady)
 
 class LinearSpline(Spline):
     '''
     This class provides a spline object with piecewise linear polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, nodes_type=nodes_type, steady=steady)
 
 
 class QuadraticSpline(Spline):
     '''
     This class provides a spline object with piecewise quadratic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, nodes_type=nodes_type, steady=steady)
 
 
 class CubicSpline(Spline):
     '''
     This class provides a spline object with piecewise cubic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, nodes_type=nodes_type, steady=steady)
             
 
 def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
@@ -418,13 +397,27 @@ def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
     
     if nodes_type == 'equidistant':
         nodes = np.linspace(a, b, n, endpoint=True)
+    elif nodes_type == 'chebychev':
+        # determine rank of chebychev polynomial
+        # of which to calculate zero points
+        nc = int(n) - 2
+
+        # calculate zero points of chebychev polynomial --> in [-1,1]
+        cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
+        cheb_cpts.sort()
+
+        # transfer chebychev nodes from [-1,1] to our interval [a,b]
+        chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
+
+        # add left and right borders
+        nodes = np.hstack((a, chpts, b))
     else:
         raise NotImplementedError()
     
     return nodes
     
     
-def derive_spline(S, d=1, new_tag=''):
+def differentiate(S, d=1, new_tag=''):
     '''
     Returns the :attr:`d`-th derivative of the given spline function object :attr:`S`.
     
@@ -523,6 +516,9 @@ def derive_spline(S, d=1, new_tag=''):
         # they have their independent coefficients in common
         dS._indep_coeffs = S._indep_coeffs
         
+        dS.nodes = S.nodes#.copy()
+        dS._nodes_dict = S._nodes_dict#.copy()
+        
         # set polynomial parts
         for k in xrange(dS.n):
             dS._S[k] = np.poly1d(dS._coeffs[k])
@@ -580,25 +576,26 @@ def make_steady(S):
     # if the spline is piecewise constant it needs special treatment, 
     # becaus it can't be made 'steady' in this sense
     if S.is_constant():
-        tmp_coeffs = np.zeros_like(S._coeffs, dtype=None)
-        tmp_coeffs_abs = np.zeros((S.n,S._poly_order+1))
+        dep_array = np.zeros((coeffs.shape[0],coeffs.shape[1],a.size))
+        dep_array_abs = np.zeros_like(coeffs, dtype=float)
+        
         
         eye = np.eye(len(a))
         
         if nu == -1:
             for i in xrange(S.n):
-                tmp_coeffs[(i,0)] = eye[i]
+                dep_array[i,0,:] = eye[i]
         elif nu == 0:
             for i in xrange(1,S.n-1):
-                tmp_coeffs[(i,0)] = eye[i-1]
+                dep_array[i,0,:] = eye[i-1]
             
-            tmp_coeffs[(0,0)] = np.zeros(len(a))
-            tmp_coeffs[(-1,0)] = np.zeros(len(a))
-            tmp_coeffs_abs[(0,0)] = S._bc[0][0]
-            tmp_coeffs_abs[(-1,0)] = S._bc[0][1]
+            dep_array[0,0,:] = np.zeros(len(a))
+            dep_array[-1,0,:] = np.zeros(len(a))
+            dep_array_abs[0,0] = S._bc[0][0]
+            dep_array_abs[-1,0] = S._bc[0][1]
         
-        S._prov_S = tmp_coeffs
-        S._prov_S_abs = tmp_coeffs_abs
+        S._dep_array = dep_array
+        S._dep_array_abs = dep_array_abs
     
         # a is vector of independent spline coeffs (free parameters)
         S._indep_coeffs = a
@@ -826,7 +823,7 @@ def get_smoothness_matrix(S, N1, N2):
     return M, r
 
 
-def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
+def interpolate(S=None, fnc=None, points=None, n_nodes=100, nodes_type='equidistant', spline_order=3):
     '''
     Interpolates a given function or dicrete points using a
     spline function object which will be created if not passed.
@@ -842,12 +839,22 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
     
     points : array_like
         One or two dimensional array containing interval borders, nodes or 
-        points that should be interpolated.
+        2d-points that should be interpolated.
+    
+    n_nodes : int
+        The number of nodes that the interpolating spline should have
+        (if the interpolant `S` is not given).
+    
+    nodes_type : str
+        The type of the spline nodes (if the interpolant `S` is not given).
+    
+    spline_order : int
+        The polynomial order of the spline parts (if the interpolant `S` is not given).
     
     '''
     
-    if not spline_order in {1,3}:
-        raise NotImplementedError
+    if not spline_order in {0,1,3}:
+        raise NotImplementedError()
     
     # first check passed arguments
     if points.ndim == 1:
@@ -866,13 +873,14 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
             b = points[-1]
             nodes = points.copy()
         else:
-            raise ValueError
+            raise ValueError('Input argument `points` must at least containt interval borders.')
         
         # get values at the nodes
-        values = np.array([fnc(node) for node in nodes])
+        values = np.array([fnc(node) for node in nodes]).ravel()
         
         # make sure `fnc` has the right dimension
-        assert values.ndim == 1
+        if not values.ndim == 1:
+            raise ValueError('Can only interpolate 1-dimensional function, not {}-dimensional.'.format(vaues.ndim))
     elif points.ndim == 2:
         # `points` is assumed to contain the interpolation nodes and values
         # so `fnc` should not be callable
@@ -889,18 +897,27 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
     
     # create spline function object if not given
     if not S:
-        if spline_order == 1:
-            S = LinearSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
+        if spline_order == 0:
+            S = ConstantSpline(a=nodes[0], b=nodes[-1], n=nodes.size, nodes_type=nodes_type)
+        elif spline_order == 1:
+            S = LinearSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, nodes_type=nodes_type)
         elif spline_order == 2:
-            S = QuadraticSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
+            S = QuadraticSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, nodes_type=nodes_type)
         elif spline_order == 3:
-            S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
+            S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, nodes_type=nodes_type)
     else:
         # check attributes of the given spline function
-        assert S.n == nodes.size - 1
+        if S.is_constant():
+            assert S.n == nodes.size
+        else:
+            assert S.n == nodes.size - 1
+        
+        assert S.a == nodes[0] and S.b == nodes[-1]
     
     # make sure that the spline has not already been made steady (and smooth)
-    assert not S._steady_flag
+    if S._steady_flag:
+        logging.error('Spline should not have been made steady for interpolation.')
+        raise NotImplementedError('Spline should not have been made steady for interpolation.')
     
     if S.is_cubic():
         # create vector of step sizes
@@ -947,6 +964,30 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
             coeffs[i,0] = (values[i+1] - values[i]) / (nodes[i+1] - nodes[i])
         coeffs[:,1] = values[:-1]
     
+    elif S.is_constant():
+        # to get a constant interpolant we use the nearest neighbor interpolation
+        # 
+        # therefore we have to recalculate the spline nodes
+        # as the midpoints of the current interval parts
+        # 
+        # to keep the interval borders we have to add a node
+        # (and therefore a spline part in the initialisation above)
+        new_nodes = np.zeros(nodes.size + 1)
+        new_nodes[0] = nodes[0]
+        new_nodes[-1] = nodes[-1]
+        for i in xrange(1, nodes.size):
+            new_nodes[i] = 0.5 * (nodes[i-1] + nodes[i])
+        
+        # change spline nodes manually
+        S.nodes = new_nodes
+        S._nodes_dict = BetweenDict()
+        for i in xrange(S.n):
+            key = (new_nodes[i], new_nodes[i+1])
+            S._nodes_dict[key] = i
+        S._nodes_dict[(new_nodes[-1], np.inf)] = S.n - 1
+        
+        coeffs = np.zeros((S.n, 1))
+        coeffs[:,0] = values[:]
     
     # set solution
     S.set_coefficients(coeffs=coeffs)
@@ -959,10 +1000,11 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, spline_order=3):
 if __name__=='__main__':
     CS = CubicSpline()
     
-    if 0:
+    if 1:
         S = interpolate(fnc=np.sin, points=np.linspace(0,2*np.pi,10,endpoint=True), spline_order=3)
         tt = np.linspace(0,2*np.pi,1000)
         St = [S(t) for t in tt]
         sint = [np.sin(t) for t in tt]
-    
+        
+        idx = [(int(p[-3]),int(p[-1])) for p in str(CS._indep_coeffs)[1:-1].split(' ')]
     IPS()

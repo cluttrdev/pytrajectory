@@ -34,7 +34,7 @@ class Timer(object):
 class BetweenDict(dict):
     def __init__(self, d = {}):
         for k, v in d.iteritems():
-            self[k] = v
+            self[(k[0], k[1])] = v
 
     def __getitem__(self, key):
         for k, v in self.iteritems():
@@ -64,6 +64,22 @@ class BetweenDict(dict):
             return bool(self[key]) or True
         except KeyError:
             return False
+    
+    def __str__(self):
+        s = '{{ {} }}'
+        rep = ''
+        for k, v in sorted(self.iteritems(), key=lambda item: item[0]):
+            rep += '{} : {}, '.format(k, v)
+        
+        return s.format(rep[:-1])
+    
+    def __repr__(self):
+        rep = ''
+        for k, v in sorted(self.iteritems(), key=lambda item: item[0]):
+            rep += '{} : {},\n'.format(k, v)
+        
+        print '{' + rep + '}'
+        return
 
 
 class IntegChain(object):

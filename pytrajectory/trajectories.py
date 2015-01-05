@@ -35,6 +35,7 @@ class Trajectory(object):
         self._u_sym = sys.u_sym
         self._chains = sys.chains
         self._spline_orders = sys.mparam['spline_order']
+        self._nodes_type = sys.mparam['nodes_type']
         
         # Initialise dictionaries as containers for all
         # spline functions that will be created
@@ -111,7 +112,7 @@ class Trajectory(object):
     
     
     
-    def init_splines(self, sx, su, boundary_values, use_chains, spline_orders):
+    def init_splines(self, sx, su, boundary_values, use_chains, spline_orders, nodes_type):
         '''
         This method is used to create the necessary spline function objects.
         
@@ -129,6 +130,12 @@ class Trajectory(object):
         
         use_chains : bool
             Whether or not to make use of system structure (integrator chains).
+        
+        spline_orders : iterable
+            The polynomial orders of the spline parts for each spline.
+        
+        nodes_type : str
+            The type of the spline nodes.
         
         '''
         logging.debug("Initialise Splines")
@@ -153,10 +160,12 @@ class Trajectory(object):
                 # here we just create a spline object for the upper ends of every chain
                 # w.r.t. its lower end (whether it is an input variable or not)
                 if chain.lower.name.startswith('x'):
-                    splines[upper] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[upper]}, tag=upper.name)
+                    splines[upper] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[upper]}, tag=upper.name,
+                                                 nodes_type=nodes_type)
                     splines[upper].type = 'x'
                 elif chain.lower.name.startswith('u'):
-                    splines[upper] = CubicSpline(self._a, self._b, n=su, bc={0:bv[lower]}, tag=upper.name)
+                    splines[upper] = CubicSpline(self._a, self._b, n=su, bc={0:bv[lower]}, tag=upper.name,
+                                                 nodes_type=nodes_type)
                     splines[upper].type = 'u'
         
                 # search for boundary values to satisfy
@@ -181,7 +190,8 @@ class Trajectory(object):
             if (not x_fnc.has_key(xx)):
                 #splines[xx] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True)
                 SplineClass = spline_classes[spline_orders[i]]
-                splines[xx] = SplineClass(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True)
+                splines[xx] = SplineClass(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True,
+                                          nodes_type=nodes_type)
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx]
         
@@ -190,7 +200,8 @@ class Trajectory(object):
             if (not u_fnc.has_key(uu)):
                 #splines[uu] = CubicSpline(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True)
                 SplineClass = spline_classes[spline_orders[offset+j]]
-                splines[uu] = SplineClass(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True)
+                splines[uu] = SplineClass(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True,
+                                          nodes_type=nodes_type)
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu]
     

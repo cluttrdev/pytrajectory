@@ -82,6 +82,7 @@ class ControlSystem(object):
         use_sparse    True            Whether or not to use sparse matrices
         sol_steps     100             Maximum number of iteration steps for the eqs solver
         spline_orders [3]             The order of the polynomial spline parts
+        nodes_type    'equidistant'   The type of the spline nodes
         ============= =============   ============================================================
     
     '''
@@ -107,7 +108,8 @@ class ControlSystem(object):
                         'coll_type' : 'equidistant',
                         'use_sparse' : True,
                         'sol_steps' : 100,
-                        'spline_order' : [3]}
+                        'spline_order' : [3],
+                        'nodes_type' : 'equidistant'}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -177,23 +179,24 @@ class ControlSystem(object):
         if kwargs.has_key('spline_orders'):
             raise NotImplementedError()
             
-            if hasattr(kwargs['spline_orders'], '__iter__'):
-                assert len(kwargs['spline_orders']) == len(self.x_sym + self.u_sym)
-                self.mparam['spline_orders'] = [int(order) for order in kwargs['spline_orders']]
-            elif type(kwargs['spline_orders']) in {dict}:
+            orders = kwargs['spline_orders']
+            if hasattr(orders, '__iter__'):
+                assert len(orders) == len(self.x_sym + self.u_sym)
+                self.mparam['spline_orders'] = [int(order) for order in orders]
+            elif type(orders) in {dict}:
                 raise NotImplementedError
             else:
                 try:
-                    order = int(kwargs['spline_orders'])
+                    order = int(orders)
                     self.mparam['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
                 except:
                     logging.warning('Could not set spline orders to `{}`, \
-                                     will use cubic polynomial parts.'.format(kwargs['spline_orders']))
+                                     will use cubic polynomial parts.'.format(orders))
                     self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
         else:
             self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
         
-        # Create trajectory and equations system objects
+        # Create trajectory and equation system objects
         self.trajectories = Trajectory(self)
         self.eqs = CollocationSystem(self)
         
@@ -528,7 +531,8 @@ class ControlSystem(object):
         self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
                                        boundary_values=self._boundary_values,
                                        use_chains=self.mparam['use_chains'],
-                                       spline_orders=self.mparam['spline_orders'])
+                                       spline_orders=self.mparam['spline_orders'],
+                                       nodes_type=self.mparam['nodes_type'])
         
         # Get a initial value (guess)
         self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
@@ -696,6 +700,7 @@ if __name__ == '__main__':
     S.set_param('use_chains', False)
     #S.set_param('su', 10)
     #S.set_param('spline_orders', [3,3,1])
+    #S.set_param('nodes_type', 'chebychev')
     
     with auxiliary.Timer("Iteration"):
         S.solve()
