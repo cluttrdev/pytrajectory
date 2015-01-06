@@ -11,7 +11,7 @@ from IPython import embed as IPS
 # NEW
 from auxiliary import BetweenDict
 
-
+NEW = False
 
 class Spline(object):
     '''
@@ -37,6 +37,9 @@ class Spline(object):
     
     poly_order : int
         The order of the polynomial spline parts.
+    
+    nodes_type : str
+        The type of the spline nodes (equidistant/chebychev).
     
     steady : bool
         Whether or not to call :meth:`make_steady()` when instanciated.
@@ -84,6 +87,7 @@ class Spline(object):
         
         # calculate nodes of the spline
         self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type)
+        self._nodes_type = nodes_type
         
         ##############
         # NEW
@@ -135,7 +139,11 @@ class Spline(object):
     def __call__(self, t):
         # get polynomial part where t is in
         i = self._nodes_dict[t]
-        return self._S[i](t - self.nodes[i])
+        
+        if NEW:
+            return self._S[i](t - self.nodes[i])
+        else:
+            return self._S[i](t - self.nodes[i+1])
         
     
     def is_constant(self):
@@ -219,7 +227,10 @@ class Spline(object):
         # determine the spline part to evaluate
         i = self._nodes_dict[t]
         
-        t = t - self.nodes[i]
+        if NEW:
+            t = t - self.nodes[i]
+        else:
+            t = t - self.nodes[i+1]
         
         tt = [t*t*t, t*t, t, 1.0][-(self._poly_order + 1):]
         
@@ -786,39 +797,69 @@ def get_smoothness_matrix(S, N1, N2):
     # build block band matrix M for smoothness conditions 
     # in every joining point
     
-    # NEW: possiby not equidistant nodes
-    if not S.is_cubic():
+    if S.is_constant():
         raise NotImplementedError()
     
-    for k in xrange(n-1):
-        if S.is_cubic():
-            block = np.array([[  h[k]**3, h[k]**2,  h[k], 1.0, 0.0, 0.0, 0.0, -1.0],
-                              [3*h[k]**2,  2*h[k],  1.0,  0.0, 0.0, 0.0, -1.0, 0.0],
-                              [  6*h[k],    2.0,    0.0,  0.0, 0.0, -2.0, 0.0, 0.0]])
-        elif S.is_quadratic():
-            block = np.array([[h[k]**2, h[k], 1.0, 0.0, 0.0, -1.0],
-                              [ 2*h[k],  1.0, 0.0, 0.0, -1.0, 0.0]])
-        elif S.is_linear():
-            block = np.array([[h[k], 1.0, 0.0, -1.0]])
+    if NEW:
+        for k in xrange(n-1):
+            if S.is_cubic():
+                block = np.array([[  h[k]**3, h[k]**2,  h[k], 1.0, 0.0, 0.0, 0.0, -1.0],
+                                  [3*h[k]**2,  2*h[k],  1.0,  0.0, 0.0, 0.0, -1.0, 0.0],
+                                  [  6*h[k],    2.0,    0.0,  0.0, 0.0, -2.0, 0.0, 0.0]])
+            elif S.is_quadratic():
+                block = np.array([[h[k]**2, h[k], 1.0, 0.0, 0.0, -1.0],
+                                  [ 2*h[k],  1.0, 0.0, 0.0, -1.0, 0.0]])
+            elif S.is_linear():
+                block = np.array([[h[k], 1.0, 0.0, -1.0]])
         
-        M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
+            M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
     
-    # add equations for boundary conditions
-    if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
-        M[po*(n-1),0:(po+1)] =   np.array([   0.0,       0.0,     0.0,   1.0])
-        M[po*(n-1)+1,-(po+1):] = np.array([h[n-1]**3, h[n-1]**2, h[n-1], 1.0])
-        r[po*(n-1)] = S._bc[0][0]
-        r[po*(n-1)+1] = S._bc[0][1]
-    if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
-        M[po*(n-1)+2,0:(po+1)] = np.array([    0.0,       0.0,    1.0, 0.0])
-        M[po*(n-1)+3,-(po+1):] = np.array([3*h[n-1]**2, 2*h[n-1], 1.0, 0.0])
-        r[po*(n-1)+2] = S._bc[1][0]
-        r[po*(n-1)+3] = S._bc[1][1]
-    if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
-        M[po*(n-1)+4,0:(po+1)] = np.array([  0.0,    2.0, 0.0, 0.0])
-        M[po*(n-1)+5,-(po+1):] = np.array([6*h[n-1], 2.0, 0.0, 0.0])
-        r[po*(n-1)+4] = S._bc[2][0]
-        r[po*(n-1)+5] = S._bc[2][1]
+        # add equations for boundary conditions
+        if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
+            M[po*(n-1),0:(po+1)] =   np.array([   0.0,       0.0,     0.0,   1.0])
+            M[po*(n-1)+1,-(po+1):] = np.array([h[n-1]**3, h[n-1]**2, h[n-1], 1.0])
+            r[po*(n-1)] = S._bc[0][0]
+            r[po*(n-1)+1] = S._bc[0][1]
+        if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
+            M[po*(n-1)+2,0:(po+1)] = np.array([    0.0,       0.0,    1.0, 0.0])
+            M[po*(n-1)+3,-(po+1):] = np.array([3*h[n-1]**2, 2*h[n-1], 1.0, 0.0])
+            r[po*(n-1)+2] = S._bc[1][0]
+            r[po*(n-1)+3] = S._bc[1][1]
+        if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
+            M[po*(n-1)+4,0:(po+1)] = np.array([  0.0,    2.0, 0.0, 0.0])
+            M[po*(n-1)+5,-(po+1):] = np.array([6*h[n-1], 2.0, 0.0, 0.0])
+            r[po*(n-1)+4] = S._bc[2][0]
+            r[po*(n-1)+5] = S._bc[2][1]
+    else:
+        for k in xrange(n-1):
+            if S.is_cubic():
+                block = np.array([[0.0, 0.0, 0.0, 1.0,   h[k]**3, -h[k]**2, h[k], -1.0],
+                                  [0.0, 0.0, 1.0, 0.0, -3*h[k]**2,  2*h[k], -1.0,  0.0],
+                                  [0.0, 2.0, 0.0, 0.0,   6*h[k],    -2.0,    0.0,  0.0]])
+            elif S.is_quadratic():
+                block = np.array([[0.0, 0.0, 1.0, -h[k]**2, h[k], -1.0],
+                                  [0.0, 1.0, 0.0,  2*h[k],  -1.0, 0.0]])
+            elif S.is_linear():
+                block = np.array([[0.0, 1.0, h[k], -1.0]])
+        
+            M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
+        
+        # add equations for boundary conditions
+        if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
+            M[po*(n-1),0:(po+1)] =   np.array([-h[n-1]**3, h[n-1]**2, -h[n-1], 1.0])
+            M[po*(n-1)+1,-(po+1):] = np.array([    0.0,        0.0,     0.0,   1.0])
+            r[po*(n-1)] = S._bc[0][0]
+            r[po*(n-1)+1] = S._bc[0][1]
+        if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
+            M[po*(n-1)+2,0:(po+1)] = np.array([3*h[n-1]**2, -2*h[n-1], 1.0, 0.0])
+            M[po*(n-1)+3,-(po+1):] = np.array([    0.0,        0.0,    1.0, 0.0])
+            r[po*(n-1)+2] = S._bc[1][0]
+            r[po*(n-1)+3] = S._bc[1][1]
+        if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
+            M[po*(n-1)+4,0:(po+1)] = np.array([-6*h[n-1], 2.0, 0.0, 0.0])
+            M[po*(n-1)+5,-(po+1):] = np.array([   0.0,    2.0, 0.0, 0.0])
+            r[po*(n-1)+4] = S._bc[2][0]
+            r[po*(n-1)+5] = S._bc[2][1]
     
     return M, r
 
@@ -947,7 +988,11 @@ def interpolate(S=None, fnc=None, points=None, n_nodes=100, nodes_type='equidist
         D = sparse.dia_matrix((data, offsets), shape=(S.n+1,S.n+1))
         
         # solve the equation system
-        sol = sparse.linalg.spsolve(D.tocsr(),r)
+        try:
+            sol = sparse.linalg.spsolve(D.tocsr(),r)
+        except:
+            print "SOL ERROR"
+            IPS()
         
         # calculate the coefficients
         coeffs = np.zeros((S.n, 4))
@@ -1006,5 +1051,5 @@ if __name__=='__main__':
         St = [S(t) for t in tt]
         sint = [np.sin(t) for t in tt]
         
-        idx = [(int(p[-3]),int(p[-1])) for p in str(CS._indep_coeffs)[1:-1].split(' ')]
+        #idx = [(int(p[-3]),int(p[-1])) for p in str(CS._indep_coeffs)[1:-1].split(' ')]
     IPS()

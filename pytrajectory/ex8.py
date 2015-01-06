@@ -190,18 +190,18 @@ ua = [0.0]
 ub = [0.0]
 
 # here we specify the constraints for the velocity of the car
-con = {0 : [-1.0, 1.0],
-        1 : [-5.0, 5.0]}
+con = {0 : [-2.0, 2.0],
+        1 : [-2.0, 2.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=5, use_chains=False)
+S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
 
 # time to run the iteration
 x, u = S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+do_animation = True
 
 if do_animation:
     import matplotlib as mpl
@@ -259,4 +259,4 @@ if do_animation:
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-1.2,1.2))
     
     A.animate()
-    A.save('ex8_ConstrainedDoublePendulum.gif')
+    A.save('ex8.gif')

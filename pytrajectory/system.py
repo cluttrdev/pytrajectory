@@ -229,7 +229,7 @@ class ControlSystem(object):
         # --> should they always?
         assert type(val) == type(self.mparam[param])
         
-        if param == 'spline_orders':
+        if param in {'spline_orders', 'nodes_type'}:
             raise NotImplementedError()
         
         self.mparam[param] = val
@@ -483,18 +483,12 @@ class ControlSystem(object):
         # this was the first iteration
         # now we are getting into the loop
         while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
-            # raise the number of spline parts
-            self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
-            
             if self.nIt == 1:
                 logging.info("2nd Iteration: %d spline parts"%self.mparam['sx'])
             elif self.nIt == 2:
                 logging.info("3rd Iteration: %d spline parts"%self.mparam['sx'])
             elif self.nIt >= 3:
                 logging.info("%dth Iteration: %d spline parts"%(self.nIt+1, self.mparam['sx']))
-
-            # store the old spline to calculate the guess later
-            self.trajectories._old_splines = self.trajectories._splines
 
             # start next iteration step
             self._iterate()
@@ -526,6 +520,9 @@ class ControlSystem(object):
         
         # Increase iteration number
         self.nIt += 1
+        
+        # raise the number of spline parts
+        self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
         
         # Initialise the spline function objects
         self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],

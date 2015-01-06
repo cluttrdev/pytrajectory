@@ -6,7 +6,7 @@ import logging
 
 from solver import Solver
 
-from splines import interpolate
+from splines import interpolate, NEW
 
 from IPython import embed as IPS
 
@@ -122,8 +122,9 @@ class CollocationSystem(object):
         # spline created for x1 and so on...
 
         # total number of independent coefficients
-        c_len = len(self.c_list)
-
+        free_param = np.hstack(sorted(traj.indep_coeffs.values(), key=lambda arr: arr[0].name))
+        c_len = free_param.size
+        
         eqx = 0
         equ = 0
         for p in cpts:
@@ -168,7 +169,7 @@ class CollocationSystem(object):
 
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
-        DdX = Mdx.reshape((len(cpts),-1,len(self.c_list)))
+        DdX = Mdx.reshape((len(cpts),-1,free_param.size))
         if sys.mparam['use_chains']:
             DdX = DdX[:,sys.eqind,:]
         DdX = np.vstack(DdX)
@@ -234,10 +235,6 @@ class CollocationSystem(object):
         
             G = F - dX
             
-            #if sys.mparam['sx'] == 40:
-            #    print "G: sx=40 nan"
-            #    IPS()
-            
             return G.ravel()
         
         # and its jacobian
@@ -283,10 +280,6 @@ class CollocationSystem(object):
             
             return DG
         
-        #if sys.mparam['sx'] == 40:
-        #    print "G: sx=40 nan"
-        #    IPS()
-        
         # return the callable functions
         return G, DG
     
@@ -297,7 +290,7 @@ class CollocationSystem(object):
         solver of the collocation equation system.
 
         If it is the first iteration step, then a vector with the same length as
-        the vector of the free parameters with arbitrarily values is returned.
+        the vector of the free parameters with arbitrary values is returned.
 
         Else, for every variable a spline has been created for, the old spline
         of the iteration before and the new spline are evaluated at specific
@@ -319,41 +312,56 @@ class CollocationSystem(object):
             The newly initialised splines of the current iteration step.
         
         '''
-        if (old_splines == None):
-            self.c_list = np.empty(0)
-
-            for k, v in sorted(free_coeffs.items(), key = lambda (k, v): k.name):
-                self.c_list = np.hstack((self.c_list, v))
-            guess = 0.1*np.ones(len(self.c_list))
+        if not old_splines:
+            free_coeffs_all = np.hstack(free_coeffs.values())
+            guess = 0.1 * np.ones(free_coeffs_all.size)
         else:
             guess = np.empty(0)
-            self.c_list = np.empty(0)
-
+            
             # get new guess for every independent variable
-            #for k, v in sorted(self.sys.trajectories.coeffs_sol.items(), key = lambda (k, v): k.name):
             for k, v in sorted(free_coeffs.items(), key = lambda (k, v): k.name):
-                self.c_list = np.hstack((self.c_list, free_coeffs[k]))
-
                 if (new_splines[k].type == 'x'):
                     logging.debug("Get new guess for spline %s"%k.name)
                     
                     s_new = new_splines[k]
                     s_old = old_splines[k]
-                    s_interp = interpolate(fnc=s_old, points=s_new.nodes)
                     
-                    # get indices of new independent coefficients
-                    idx = [(int(i),int(j)) for i,j in [coeff.name.split('_')[-2:] for coeff in s_new._indep_coeffs]]
+                    if NEW:
+                        s_interp = interpolate(fnc=s_old, points=s_new.nodes, nodes_type=s_old._nodes_type)
                     
-                    # get values for them from the interpolant
-                    interp_guess = np.array([s_interp._coeffs[ij] for ij in idx])
+                        # get indices of new independent coefficients
+                        idx = [(int(i),int(j)) for i,j in [coeff.name.split('_')[-2:] for coeff in s_new._indep_coeffs]]
                     
-                    guess = np.hstack((guess,interp_guess))
+                        # get values for them from the interpolant
+                        interp_guess = np.array([s_interp._coeffs[ij] for ij in idx])
+                    
+                        guess = np.hstack((guess,interp_guess))
+                    else:
+                        # how many independent coefficients does the spline have
+                        coeffs_size = s_new._indep_coeffs.size
+                        
+                        # generate points to evaluate the old spline at
+                        # (new and old spline should be equal in these)
+                        #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=False)
+                        guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
+                        
+                        # evaluate the splines
+                        s_old_t = np.array([s_old(t) for t in guess_points])
+                        
+                        dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
+                        s_new_t = np.array([vec[0] for vec in dep_vecs])
+                        s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
+                        
+                        #old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
+                        old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
+                        
+                        guess = np.hstack((guess, old_style_guess))
+                        
                 else:
                     # if it is a input variable, just take the old solution
-                    #guess = np.hstack((guess, self.sys.trajectories.coeffs_sol[k]))
                     guess = np.hstack((guess, old_splines[k]._indep_coeffs))
         
-        if 1:
+        if 0:
             
             try:
                 import matplotlib.pyplot as plt
@@ -385,6 +393,7 @@ class CollocationSystem(object):
                     s._prov_flag = True
                 
             except Exception as err:
+                print "guess plot error"
                 IPS()
                 pass
         

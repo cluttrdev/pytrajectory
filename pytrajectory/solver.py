@@ -37,7 +37,7 @@ class Solver:
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = 1e-5
+        self.reltol = 1e-4
         self.maxIt = maxIt
         self.method = method
         

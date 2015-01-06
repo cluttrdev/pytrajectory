@@ -278,10 +278,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     # Create a wrapper as the actual function due to the behaviour
     # of lambdify()
     def f_num(x, u):
-        try:
-            xu = np.hstack((x, u))
-        except:
-            IPS()
+        xu = np.hstack((x, u))
         return np.array(_f_num(*xu))
     
     return f_num

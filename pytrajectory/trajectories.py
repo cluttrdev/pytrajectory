@@ -140,6 +140,9 @@ class Trajectory(object):
         '''
         logging.debug("Initialise Splines")
         
+        # store the old splines to calculate the guess later
+        self._old_splines = self._splines.copy()
+        
         bv = boundary_values
         
         # dictionaries for splines and callable solution function for x,u and dx
@@ -234,8 +237,10 @@ class Trajectory(object):
         sol : numpy.ndarray
             The solution vector for the free parameters, i.e. the independent coefficients.
         
+        use_chains : bool
+            Whether or not the system structure has been used.
         '''
-        
+        # TODO: look for bugs here!
         logging.debug("Set spline coefficients")
         
         sol_bak = sol.copy()
@@ -253,8 +258,16 @@ class Trajectory(object):
                         subs[var] = subs[ic.upper]
         
         # set numerical coefficients for each spline and derivative
-        for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
-            v.set_coefficients(free_coeffs=subs[k])
+        #for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
+            #v.set_coefficients(free_coeffs=subs[k])
+        for k in self._x_fnc.keys():
+            self._x_fnc[k].set_coefficients(free_coeffs=subs[k])
+        for k in self._u_fnc.keys():
+            self._u_fnc[k].set_coefficients(free_coeffs=subs[k])
+        for k in self._dx_fnc.keys():
+            self._dx_fnc[k].set_coefficients(free_coeffs=subs[k])
+        for k in self._splines.keys():
+            self._splines[k].set_coefficients(free_coeffs=subs[k])
         
         # yet another dictionary for solution and coeffs
         coeffs_sol = dict()
