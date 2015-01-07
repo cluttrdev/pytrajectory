@@ -239,7 +239,7 @@ def find_integrator_chains(fi, x_sym, u_sym):
     return chains, eqind
 
 
-def sym2num_vectorfield(f_sym, x_sym, u_sym):
+def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     '''
     This function takes a callable vector field of a control system that is to be evaluated with symbols
     for the state and input variables and returns a corresponding function that can be evaluated with
@@ -248,7 +248,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     Parameters
     ----------
     
-    f_sym : callable
+    f_sym : callable or array_like
         The callable ("symbolic") vector field of the control system.
     
     x_sym : iterable
@@ -256,6 +256,9 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     
     u_sym : iterable
         The symbols for the input variables of the control system.
+    
+    vectorized : bool
+        Whether or not to return a vectorized function.
     
     Returns
     -------
@@ -265,21 +268,38 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym):
     '''
     
     # get a sympy.Matrix representation of the vectorfield
-    F = sp.Matrix(f_sym(x_sym, u_sym))
-    if F.T == F.vec():
-        F = F.tolist()[0]
+    if callable(f_sym):
+        F = sp.Matrix(f_sym(x_sym, u_sym))
+        if F.T == F.vec():
+            F = F.tolist()[0]
+        else:
+            F = F.T.tolist()[0]
     else:
-        F = F.T.tolist()[0]
+        try:
+            F = sp.Matrix(f_sym)
+        except:
+            print "ERROR: array_like f_sym to sp.Matrix failed!"
+            IPS()
     
-    # Use lambdify to replace sympy functions in the vectorfield with
-    # numpy equivalents
-    _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
-    
-    # Create a wrapper as the actual function due to the behaviour
-    # of lambdify()
-    def f_num(x, u):
-        xu = np.hstack((x, u))
-        return np.array(_f_num(*xu))
+    if not vectorized:
+        # Use lambdify to replace sympy functions in the vectorfield with
+        # numpy equivalents
+        _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
+        
+        # Create a wrapper as the actual function due to the behaviour
+        # of lambdify()
+        def f_num(x, u):
+            xu = np.hstack((x, u))
+            return np.array(_f_num(*xu))
+    else:
+        f_str = repr(np.array(F).ravel()).replace(', dtype=object', '')
+        _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
+        
+        # Create a wrapper as the actual function due to the behaviour
+        # of lambdify()
+        def f_num(x, u):
+            xu = np.vstack((x, u))
+            return np.array(_f_num(*xu))
     
     return f_num
 
@@ -397,4 +417,29 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500, return_error_ar
     else:
         return max_con_err
 
+
+if __name__ == '__main__':
+    from sympy import sin, cos, exp
     
+    def f_sym(x,u):
+        x1, x2 = x
+        u1, = u
+
+        ff = np.array([ sin(x2),
+                        exp(-u1)])
+        return ff
+    
+    def Df_sym(x, u):
+        x1, x2 = x
+        u1, = u
+        
+        df = np.array([[0.0, cos(x2),   0.0  ],
+                       [0.0,   0.0,  -exp(u1)]])
+        
+        return df
+    
+    x_sym = list(sp.symbols('x1, x2'))
+    u_sym = list(sp.symbols('u1,'))
+    
+    # PROBLEM: fails if some element of vector field of jacobian is constant...
+    IPS()

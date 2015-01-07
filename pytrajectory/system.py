@@ -173,7 +173,7 @@ class ControlSystem(object):
         
         # Now we transform the symbolic function of the vectorfield to
         # a numeric one for faster evaluation
-        self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym)
+        self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, False)
         
         # set order of the polynomial spline parts
         if kwargs.has_key('spline_orders'):

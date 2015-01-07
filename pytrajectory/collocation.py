@@ -8,6 +8,8 @@ from solver import Solver
 
 from splines import interpolate, NEW
 
+from auxiliary import sym2num_vectorfield
+
 from IPython import embed as IPS
 
 
@@ -200,8 +202,9 @@ class CollocationSystem(object):
         # now we are going to create a callable function for the equation system
         # and its jacobian
             
-        # make some stuff local
-        ff = sys.ff
+        # create vectorized function of the control system's vecor field
+        # for faster evaluation of G
+        ff_vec = sym2num_vectorfield(sys.ff_sym, sys.x_sym, sys.u_sym, True)
         
         if sys.mparam['use_chains']:
             eqind = sys.eqind
@@ -219,16 +222,18 @@ class CollocationSystem(object):
             X = Mx.dot(c) + Mx_abs
             U = Mu.dot(c) + Mu_abs
 
-            X = np.array(X).reshape((-1,x_len))
-            U = np.array(U).reshape((-1,u_len))
+            X = np.array(X).reshape((-1, x_len)).T
+            U = np.array(U).reshape((-1, u_len)).T
             
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
             # other equations need not to be solved
             #F = np.empty((cp_len, len(eqind)))
             
-            for i in xrange(cp_len):
-                F[i,:] = ff(X[i], U[i])[eqind]
+            #for i in xrange(cp_len):
+            #    F[i,:] = ff(X[i], U[i])[eqind]
+            
+            F = ff_vec(X, U)[eqind].T
             
             dX = Mdx.dot(c) + Mdx_abs
             dX = np.array(dX).reshape((-1,x_len))[:,eqind]
