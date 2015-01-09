@@ -8,27 +8,11 @@ import pickle
 from spline import CubicSpline, fdiff
 from solver import Solver
 from simulation import Simulation
-from utilities import IntegChain, plotsim, Timer
 import utilities
 
-# DEBUGGING
-DEBUG = True
+from utilities import IntegChain, plotsim
+from log import logging, Timer
 
-# LOGGING
-import logging
-# message format
-fmt = '%(asctime)s %(levelname)s: \t %(message)s'
-# date/time format
-dfmt = '%d-%m-%Y %H:%M:%S'
-# loglevel
-lvl = logging.DEBUG
-# file
-import sys
-import time
-fname = sys.argv[0].split('.')[0]+"_"+time.strftime('%y%m%d-%H%M%S')+".log"
-# configure
-logging.basicConfig(level=lvl, format=fmt, datefmt=dfmt, filename=fname)
-logging.getLogger().addHandler(logging.StreamHandler())
 
 def sym2num_vectorfield(f_sym, x_sym, u_sym):
     '''
@@ -369,7 +353,7 @@ class Trajectory():
             Initial values of the state variables (for determining the system dimensions)
         '''
 
-        logging.info("Analysing System Structure")
+        logging.debug("Analysing System Structure")
         
         # first, determine system dimensions
         logging.debug("Determine system/input dimensions")
@@ -747,27 +731,27 @@ class Trajectory():
         self.nIt += 1
         
         # initialise splines
-        with utilities.Timer("initSplines()"):
+        with Timer("initSplines()"):
             self.initSplines()
 
         # Get first guess for solver
-        with utilities.Timer("getGuess()"):
+        with Timer("getGuess()"):
             self.getGuess()
 
         # create equation system
-        with utilities.Timer("buildEQS()"):
+        with Timer("buildEQS()"):
             G, DG = self.buildEQS()
 
         # solve it
-        with utilities.Timer("solveEQS()"):
+        with Timer("solveEQS()"):
             self.solveEQS(G, DG)
 
         # write back the coefficients
-        with utilities.Timer("setCoeff()"):
+        with Timer("setCoeff()"):
             self.setCoeff()
         
         # solve the initial value problem
-        with utilities.Timer("simulateIVP()"):
+        with Timer("simulateIVP()"):
             self.simulateIVP()
     
     
@@ -843,33 +827,6 @@ class Trajectory():
 
         # the new guess
         self.guess = guess
-        
-#         #################################
-#         if DEBUG and self.nIt > 1 and 0:
-#             import matplotlib.pyplot as plt
-#
-#             tt = np.linspace(self.a, self.b, 1000)
-#             xt_old = np.zeros((1000,len(self.x_sym)))
-#             for i,x in enumerate(self.x_sym):
-#                 fx = old_splines[x]
-#                 xt = np.array([fx.f(t) for t in tt])
-#
-#                 xt_old[:,i] = xt
-#
-#             sol_bak = 1.0*self.sol
-#             splines_bak = self.splines.copy()
-#
-#             self.sol = self.guess
-#             self.setCoeff()
-#             xt_new = np.array([self.x(t) for t in tt])
-#
-#             IPS()
-#
-#             self.sol = sol_bak
-#             self.splines = splines_bak
-#             for s in self.splines.values():
-#                 s.prov_flag = True
-#          #################################
 
 
     def initSplines(self):
@@ -940,7 +897,7 @@ class Trajectory():
         
         # solve smoothness conditions of each spline
         for ss in splines:
-            with utilities.Timer("makesteady()"):
+            with Timer("makesteady()"):
                 splines[ss].makesteady()
 
         for xx in self.x_sym:
@@ -1235,10 +1192,6 @@ class Trajectory():
         # solve the equation system
         self.sol = solver.solve()
         
-        #from scipy import optimize as op
-        #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
-        #IPS()
-    
     
     def setCoeff(self):
         '''
@@ -1354,7 +1307,7 @@ class Trajectory():
             # just check if tolerance for the boundary values is satisfied
             self.reached_accuracy = max(err) < self.mparam['eps']
         
-        if self.reached_accuracy:
+        if self.reached_accuracy or self.nIt == self.mparam['maxIt']:
             logging.info("  --> reached desired accuracy: "+str(self.reached_accuracy))
         else:
             logging.debug("  --> reached desired accuracy: "+str(self.reached_accuracy))
@@ -1392,7 +1345,7 @@ class Trajectory():
         '''
         
         if not self.a <= t <= self.b+0.05:
-            logging.warning("Time point 't' has to be in (a,b)")
+            #logging.warning("Time point 't' has to be in (a,b)")
             arr = None
             arr = np.array([self.u_fnc[uu](self.b) for uu in self.u_sym])
         else:
@@ -1500,41 +1453,3 @@ class Trajectory():
         except:
             pass
 
-
-
-if __name__ == '__main__':
-    # test example: double integrator
-    
-    def f(x,u):
-        x1, x2 = x
-        u1, = u
-
-        ff = np.array([ x2,
-                        u1])
-        return ff
-
-    xa = [0.0, 0.0]
-    xb = [1.0, 0.0]
-    
-    a = 0.0
-    b = 2.0
-    ua = [0.0]
-    ub = [0.0]
-    constraints = { 1:[-0.1, 0.65]}
-    #constraints = dict()
-
-    T = Trajectory(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
-    
-    T.setParam('kx', 3)
-    T.setParam('maxIt', 5)
-    T.setParam('eps', 1e-2)
-    T.setParam('ierr', 1e-2)
-    T.setParam('use_chains', False)
-    
-    
-    with Timer("Iteration"):
-        T.startIteration()
-    
-    if DEBUG:
-        from IPython import embed as IPS
-        IPS()

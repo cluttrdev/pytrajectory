@@ -2,9 +2,8 @@ import numpy as np
 import sympy as sp
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
-import logging
 
-from utilities import Timer
+from log import logging, Timer
 
 # DEBUG
 from IPython import embed as IPS
@@ -375,18 +374,6 @@ class CubicSpline():
 
         self.steady_flag = True
     
-    ################################################################
-    # NEW
-    #def interpolate(self, fun=None, points=[]):
-    #    '''
-    #    Set polynomial coefficients by interpolating another function.
-    #    
-    #    TODO: implement this
-    #    '''
-    #    pass
-    #
-    #
-    ################################################################
     
     def set_coeffs(self, c_sol):
         '''
