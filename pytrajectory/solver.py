@@ -53,9 +53,6 @@ class Solver:
         if (self.method == 'leven'):
             logging.debug("Run Levenberg-Marquardt method")
             self.leven()
-        elif (self.method == 'new_leven'):
-            self.alternate_levenberg_marquardt()
-        
         
         if (self.sol == None):
             logging.warning("Wrong solver, returning initial value.")
@@ -88,15 +85,12 @@ class Solver:
 
         reltol = self.reltol
         
-        # New
-        Fx, X, U = self.F(x)
+        Fx = self.F(x)
         
         while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
-            #if (i-1)%4 == 0:
-            # New
-            DFx = self.DF(x, X, U)
+            DFx = self.DF(x)
             DFx = scp.sparse.csr_matrix(DFx)
             
             while (roh < b0):                
@@ -108,8 +102,7 @@ class Solver:
 
                 xs = x + np.array(s).flatten()
                 
-                # New
-                Fxs, X, U = self.F(xs)
+                Fxs = self.F(xs)
 
                 normFx = norm(Fx)
                 normFxs = norm(Fxs)
@@ -139,71 +132,5 @@ class Solver:
             if res<1.0:
                 reltol = 1e-4
 
-        self.sol = x
-    
-    
-    def alternate_levenberg_marquardt(self):
-        '''
-        This is an alternative implementation of the Levenberg-Marquardt method
-        due to some bugs, probably, in the one used so far.
-        '''
-        
-        from IPython import embed as IPS
-        
-        eps1 = self.tol
-        eps2 = self.reltol
-        
-        nu = 2.0
-        x = self.x0
-        
-        Fx = self.F(x)
-        
-        DFx = self.DF(x)
-        DFx = scp.sparse.csr_matrix(DFx)
-        
-        A = DFx.T.dot(DFx)
-        g = DFx.T.dot(Fx)
-        
-        tau = 1e-6
-        mu = tau * A.max()
-        
-        I = scp.sparse.identity(len(x))
-        
-        found = (norm(g, np.inf) <= eps1)
-        
-        for i in xrange(self.maxIt):
-            if found:
-                break
-            
-            Q = A+mu*I
-            d = scp.sparse.linalg.spsolve(Q, -g)
-            
-            if norm(d) <= eps2*(norm(x) + eps2):
-                found = True
-            else:
-                x_new = x + d
-                Fx_new = self.F(x_new)
-                
-                roh = (norm(Fx) - norm(Fx_new)) / (0.5*(d.T.dot(mu*d-g)))
-                
-                if roh > 0.0:
-                    x = x_new
-                    
-                    DFx = self.DF(x)
-                    DFx = scp.sparse.csr_matrix(DFx)
-                    
-                    A = DFx.T.dot(DFx)
-                    g = DFx.T.dot(Fx_new)
-                    
-                    found = (norm(g, np.inf) <= eps1)
-                    
-                    mu = mu * max(1/3.0, 1.0 - (2.0*roh - 1.0)**3)
-                    nu = 2.0
-                else:
-                    mu = mu * nu
-                    nu = 2.0 * nu
-            
-            logging.debug("      nIt= %d    res= %f"%(i,norm(g, np.inf)))
-        
         self.sol = x
 
