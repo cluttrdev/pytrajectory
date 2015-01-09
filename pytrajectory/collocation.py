@@ -162,10 +162,13 @@ class CollocationSystem(object):
         
         # here we create a callable function for the jacobian matrix of the vectorfield
         # w.r.t. to the system and input variables
-        f = sys.ff_sym(x_sym,u_sym)
+        f = sys.ff_sym(x_sym, u_sym)
         Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
         Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
-
+        
+        # create vectorized version of jacobian function
+        Df_vec = sym2num_vectorfield(Df_mat, x_sym, u_sym, True)
+        
         # the following would be created with every call to self.DG but it is possible to
         # only do it once. So we do it here to speed things up.
 
@@ -213,6 +216,9 @@ class CollocationSystem(object):
         
         cp_len = len(cpts)
         
+        # NEW
+        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx%x_len in eqind])
+        
         # templates
         F = np.empty((cp_len, len(eqind)))
         DF = sparse.dok_matrix( (cp_len*x_len, xu_len*cp_len) )
@@ -228,11 +234,6 @@ class CollocationSystem(object):
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
             # other equations need not to be solved
-            #F = np.empty((cp_len, len(eqind)))
-            
-            #for i in xrange(cp_len):
-            #    F[i,:] = ff(X[i], U[i])[eqind]
-            
             F = ff_vec(X, U)[eqind].T
             
             dX = Mdx.dot(c) + Mdx_abs
@@ -256,30 +257,21 @@ class CollocationSystem(object):
             U = Mu.dot(c) + Mu_abs
             U = np.array(U).reshape((-1,u_len)) # one column for every input component
             
-            # now we iterate over every row
-            # (one for every collocation point)
-            for i in xrange(X.shape[0]):
-                # concatenate the values so that they can be unpacked at once
-                tmp_xu = np.hstack((X[i], U[i]))
-                
-                # calculate one block of the jacobian
-                DF_block = Df(*tmp_xu).tolist()
-                
-                # the sparse format (dok) only allows us to add multiple values
-                # in one dimension, so we cannot add the block at once but
-                # have to iterate over its rows
-                for j in xrange(x_len):
-                    DF[x_len*i+j, xu_len*i:xu_len*(i+1)] = DF_block[j]
+            # get the jacobian blocks and turn them into the right shape
+            DF_blocks = Df_vec(X.T,U.T).swapaxes(0,2).swapaxes(1,2)
+
+            # build a block diagonal matrix from the blocks
+            DF_csr = sparse.block_diag(DF_blocks, format='csr').dot(DXU)
             
-            # now transform it into another sparse format that is more suitable
-            # for calculating matrix products,
-            # and then do so with `DXU`
-            DF_csr = sparse.csr_matrix(DF).dot(DXU)
-            
-            # TODO: explain the following code
+            # if we make use of the system structure
+            # we have to select those rows which correspond to the equations
+            # that have to be solved
             if sys.mparam['use_chains']:
-                DF_csr = [row for idx,row in enumerate(DF_csr.toarray()[:]) if idx%x_len in eqind]
-                DF_csr = sparse.csr_matrix(DF_csr)
+                DF_csr = sparse.csr_matrix(DF_csr.toarray().take(take_indices, axis=0))
+                # TODO: is the performance gain that results from not having to solve
+                #       some equations (use integrator chains) greater than
+                #       the performance loss that results from transfering the
+                #       sparse matrix to a full numpy array and back to a sparse matrix?
             
             DG = DF_csr - DdX
             

@@ -270,16 +270,24 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     # get a sympy.Matrix representation of the vectorfield
     if callable(f_sym):
         F = sp.Matrix(f_sym(x_sym, u_sym))
-        if F.T == F.vec():
-            F = F.tolist()[0]
-        else:
-            F = F.T.tolist()[0]
     else:
         try:
             F = sp.Matrix(f_sym)
         except:
             print "ERROR: array_like f_sym to sp.Matrix failed!"
             IPS()
+    
+    # chack if it is a vector or matrix
+    if min(F.shape) == 1:
+        # it is a vector...
+        # turn it into right shape
+        if F.T == F.vec():
+            F = F#.tolist()[0]
+        else:
+            F = F.T#.tolist()[0]
+    else:
+        # it is a matrix
+        assert len(F.shape) == 2
     
     if not vectorized:
         # Use lambdify to replace sympy functions in the vectorfield with
@@ -292,7 +300,27 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
             xu = np.hstack((x, u))
             return np.array(_f_num(*xu))
     else:
-        f_str = repr(np.array(F).ravel()).replace(', dtype=object', '')
+        # first, check if there are any constants
+        # 
+        # if there are elements which are constant numbers we have to use some
+        # trick to achieve the vectorization (as far as the developers know ;-) ) 
+        for i in xrange(F.shape[0]):
+            for j in xrange(F.shape[1]):
+                if F[i,j].is_Number:
+                    # we add an expression which evaluates to zero, but enables us 
+                    # to put an array into the matrix where there is now a single number
+                    # 
+                    # we just take an arbitrary input, multiply it with 0 and add it
+                    # to the current element (constant)
+                    expr = sp.Mul(0.0, x_sym[0], evaluate=False)
+                    F[i,j] = sp.Add(F[i,j], expr, evaluate=False)
+        
+        # if it is a vector, squeeze it
+        if min(F.shape) == 1:
+            F = np.array(F).ravel()
+        else:
+            F = np.array(F)
+        f_str = repr(F).replace(', dtype=object', '')
         _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
         
         # Create a wrapper as the actual function due to the behaviour
@@ -425,16 +453,16 @@ if __name__ == '__main__':
         x1, x2 = x
         u1, = u
 
-        ff = np.array([ sin(x2),
-                        exp(-u1)])
+        ff = np.array([ x1 + sin(x2),
+                        exp(-u1) - 2*x2])
         return ff
     
     def Df_sym(x, u):
         x1, x2 = x
         u1, = u
         
-        df = np.array([[0.0, cos(x2),   0.0  ],
-                       [0.0,   0.0,  -exp(u1)]])
+        df = np.array([[1.0, cos(x2),   0.0  ],
+                       [0.0,   -2.0,  -exp(u1)]])
         
         return df
     
