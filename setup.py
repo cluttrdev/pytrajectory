@@ -9,7 +9,7 @@ setup(name='PyTrajectory',
     packages=['pytrajectory'],
     requires=['numpy (>=1.8.1)',
                 'sympy (>=0.7.5)',
-                'scipy (>=0.13.3)',
+                'scipy (>=0.13.0)',
                 'matplotlib'],
     
     # metadata
