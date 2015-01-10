@@ -2,11 +2,11 @@
 import numpy as np
 import sympy as sp
 from scipy import sparse
-import logging
 
+from log import logging
 from solver import Solver
 
-from splines import interpolate, NEW
+from splines import interpolate
 
 from auxiliary import sym2num_vectorfield
 
@@ -82,16 +82,6 @@ class CollocationSystem(object):
         # now we generate the collocation points
         cpts = collocation_nodes(a=a, b=b, npts=(sys.mparam['sx']*delta+1), coll_type=sys.mparam['coll_type'])
         
-        lx = len(cpts)*len(x_sym)
-        lu = len(cpts)*len(u_sym)
-
-        Mx = [None]*lx
-        Mx_abs = [None]*lx
-        Mdx = [None]*lx
-        Mdx_abs = [None]*lx
-        Mu = [None]*lu
-        Mu_abs = [None]*lu
-
         # here we do something that will be explained after we've done it  ;-)
         indic = dict()
         i = 0
@@ -127,6 +117,16 @@ class CollocationSystem(object):
         free_param = np.hstack(sorted(traj.indep_coeffs.values(), key=lambda arr: arr[0].name))
         c_len = free_param.size
         
+        lx = len(cpts)*len(x_sym)
+        lu = len(cpts)*len(u_sym)
+
+        Mx = [None]*lx
+        Mx_abs = [None]*lx
+        Mdx = [None]*lx
+        Mdx_abs = [None]*lx
+        Mu = [None]*lu
+        Mu_abs = [None]*lu
+
         eqx = 0
         equ = 0
         for p in cpts:
@@ -166,7 +166,7 @@ class CollocationSystem(object):
         Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
         Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
         
-        # create vectorized version of jacobian function
+        # create vectorized version of the jacobian function
         Df_vec = sym2num_vectorfield(Df_mat, x_sym, u_sym, True)
         
         # the following would be created with every call to self.DG but it is possible to
@@ -323,7 +323,7 @@ class CollocationSystem(object):
                     s_new = new_splines[k]
                     s_old = old_splines[k]
                     
-                    if NEW:
+                    if s_new._use_std_def:
                         s_interp = interpolate(fnc=s_old, points=s_new.nodes, nodes_type=s_old._nodes_type)
                     
                         # get indices of new independent coefficients

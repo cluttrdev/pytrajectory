@@ -1,8 +1,8 @@
 # IMPORTS
 import numpy as np
-import logging
 
 from splines import ConstantSpline, LinearSpline, QuadraticSpline, CubicSpline
+from log import logging
 import auxiliary
 
 from IPython import embed as IPS

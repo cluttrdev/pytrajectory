@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.linalg import solve, norm
 import scipy as scp
-import logging
+
+from log import logging
 
 
 

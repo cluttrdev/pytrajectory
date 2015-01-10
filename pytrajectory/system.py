@@ -9,23 +9,9 @@ from collocation import CollocationSystem
 from simulation import Simulator
 import auxiliary
 import visualisation
+from log import logging
 
-# LOGGING
-import logging
-# message format
-fmt = '%(asctime)s %(levelname)s: \t %(message)s'
-# date/time format
-dfmt = '%d-%m-%Y %H:%M:%S'
-# log level
-lvl = logging.DEBUG
-# configure
-logging.basicConfig(level=lvl, format=fmt, datefmt=dfmt)
-
-# DEBUGGING
-DEBUG = True
-
-if DEBUG:
-    from IPython import embed as IPS
+from IPython import embed as IPS
 
 
 class ControlSystem(object):
@@ -663,45 +649,3 @@ class ControlSystem(object):
         with open(fname, 'wb') as dumpfile:
             pickle.dump(save, dumpfile)
         
-
-
-
-
-if __name__ == '__main__':
-    # test example: double integrator
-    
-    def f(x,u):
-        x1, x2 = x
-        u1, = u
-
-        ff = np.array([ x2,
-                        u1])
-        return ff
-
-    xa = [0.0, 0.0]
-    xb = [1.0, 0.0]
-    
-    a = 0.0
-    b = 2.0
-    ua = [0.0]
-    ub = [0.0]
-    constraints = { 1:[-0.1, 0.65]}
-    #constraints = dict()
-
-    S = ControlSystem(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)
-    
-    #S.set_param('kx', 3)
-    #S.set_param('maxIt', 5)
-    S.set_param('eps', 1e-2)
-    S.set_param('ierr', 1e-1)
-    S.set_param('use_chains', False)
-    #S.set_param('su', 10)
-    #S.set_param('spline_orders', [3,3,1])
-    #S.set_param('nodes_type', 'chebychev')
-    
-    with auxiliary.Timer("Iteration"):
-        S.solve()
-    
-    if DEBUG:
-        from IPython import embed as IPS
-        IPS()

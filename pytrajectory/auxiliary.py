@@ -1,34 +1,11 @@
 # IMPORTS
 import numpy as np
 import sympy as sp
-import logging
 import time
 
+from log import logging, Timer
+
 from IPython import embed as IPS
-
-
-class Timer(object):
-    '''
-    Provides a context manager that takes the time of a code block.
-    
-    Parameters
-    ----------
-    
-    label : str
-        The 'name' of the code block which is timed
-    
-    verb : int
-        Level of verbosity
-    '''
-    def __init__(self, label="~"):
-        self.label = label
-
-    def __enter__(self):
-        self.start = time.time()
-
-    def __exit__(self, *args):
-        self.delta = time.time() - self.start
-        logging.debug("--> [%s elapsed %f s]"%(self.label, self.delta))
 
 
 class BetweenDict(dict):
