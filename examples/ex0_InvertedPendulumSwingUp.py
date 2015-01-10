@@ -13,7 +13,6 @@ from numpy import pi
 import matplotlib as mpl
 from pytrajectory.utilities import Animation
 
-
 # first, we define the function that returns the vectorfield
 def f(x,u):
     x1, x2, x3, x4 = x  # system variables
@@ -37,20 +36,20 @@ xa = [0.0, 0.0, pi, 0.0]
 b = 2.0
 xb = [0.0, 0.0, 0.0, 0.0]
 
-uab = [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, uab, kx=5, use_chains=False)
+T = Trajectory(f, a, b, xa, xb, ua, ub, kx=5, use_chains=False)
 
 # time to run the iteration
 T.startIteration()
 
 
-
 # now that we (hopefully) have found a solution,
 # we can visualise our systems dynamic
 
-# therefor we define a fnuction that draws a image of the system
+# therefore we define a function that draws a image of the system
 # according to the given simulation data
 
 def draw(xt, image):
@@ -105,18 +104,22 @@ def draw(xt, image):
     # and return the image
     return image
 
-
 # now we can create an instance of the `Animation` class 
 # with our draw function and the simulation results
-A = Animation(drawfnc=draw, simdata=T.sim)
+#
+# to plot the curves of some trajectories along with the picture
+# we also pass the appropriate lists as arguments (see documentation)
+A = Animation(drawfnc=draw, simdata=T.sim, 
+              plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
 
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
-A.set_limits(xlim=(-1.2,0.3), ylim=(-0.6,0.6))
+xmin = np.min(T.sim[1][:,0]); xmax = np.max(T.sim[1][:,0])
+A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation
 # (might take some while)
 A.animate()
 
 # then we can save the animation as a `mp4` video file or as an animated `gif` file
-A.save('simple_example.mp4')
+A.save('ex0_InvertedPendulum.gif')

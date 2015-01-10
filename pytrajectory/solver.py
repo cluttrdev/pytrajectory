@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import solve, norm
 import scipy as scp
 
-import log
+from log import logging
 
 
 class Solver:
@@ -25,22 +25,21 @@ class Solver:
     tol : float
         The (absolute) tolerance of the solver
     
-    maxx : int
+    maxIt : int
         The maximum number of iterations of the solver
     
-    algo : str
+    method : str
         The solver to use
     '''
     
-    def __init__(self, F, DF, x0, tol=1e-2, maxx=10, algo='leven'):
+    def __init__(self, F, DF, x0, tol=1e-2, maxIt=100, method='leven'):
         self.F = F
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = tol
-        #self.reltol = 1e-2
-        self.maxx = maxx
-        self.algo = algo
+        self.reltol = 1e-5
+        self.maxIt = maxIt
+        self.method = method
         
         self.sol = None
     
@@ -51,23 +50,12 @@ class Solver:
         collocation equation system.
         '''
         
-        if (self.algo == 'newton'):
-            #log.info( "Run Newton solver")
-            #self.newton()
-            log.warn('Not yet implemented. Please use "leven"-algorithm!')
+        if (self.method == 'leven'):
+            logging.debug("Run Levenberg-Marquardt method")
             self.leven()
-        elif (self.algo == 'gauss'):
-            #log.info( "Run Gauss solver")
-            #self.gauss()
-            log.warn('Not yet implemented. Please use "leven"-algorithm!')
-            self.leven()
-        elif (self.algo == 'leven'):
-            log.info("    Run Levenberg-Marquardt method")
-            self.leven()
-            
         
         if (self.sol == None):
-            log.warn("Wrong solver, returning initial value.")
+            logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:
             return self.sol
@@ -85,10 +73,10 @@ class Solver:
         res = 1
         res_alt = 1e10
         
-        eye = np.eye(len(self.x0))
+        eye = scp.sparse.identity(len(self.x0))
 
         mu = 0.1
-
+        
         # borders for convergence-control
         b0 = 0.2
         b1 = 0.8
@@ -96,24 +84,21 @@ class Solver:
         roh = 0.0
 
         reltol = self.reltol
-        while((res > self.tol) and (self.maxx > i) and (abs(res-res_alt) > reltol)):
+        
+        Fx = self.F(x)
+        
+        while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
-            Fx = self.F(x)
             DFx = self.DF(x)
-            
-            # NEW -experimental
-            if res >= 1:
-                DFx = self.DF(x)
-            
-            # SPARSE
             DFx = scp.sparse.csr_matrix(DFx)
             
             while (roh < b0):                
                 A = DFx.T.dot(DFx) + mu**2*eye
                 b = DFx.T.dot(Fx)
                 
-                s = -solve(A, b)
+                #s = -solve(A, b)
+                s = -scp.sparse.linalg.spsolve(A,b)
 
                 xs = x + np.array(s).flatten()
                 
@@ -126,58 +111,26 @@ class Solver:
                 
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
-                #log.info("  roh= %f    mu= %f"%(roh,mu))
-
+                #logging.debug("  roh= %f    mu= %f"%(roh,mu))
+                
+                # the following was believed to be some kind of bug, hence the warning
+                # but that was not the case...
+                #if (roh < 0.0):
+                    #logging.warning("Parameter roh in LM-method became negative")
+                    #from IPython import embed as IPS
+                    #IPS()
+            
+            Fx = Fxs
+            x = xs
+            
             roh = 0.0
-            x = x + np.array(s).flatten()
             res_alt = res
             res = normFx
-            log.info("      nIt= %d    res= %f"%(i,res))
+            logging.debug("      nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            #if res<1.0:
-            #    reltol = 1e-3
+            if res<1.0:
+                reltol = 1e-4
 
         self.sol = x
-    
-    
-    def gauss(self):
-        i = 0
-        x = self.x0
-        res = 1
-        res_alt = 10e10
-        while((res>self.tol) and (self.maxx>i) and (abs(res-res_alt)>self.tol)):
-            i += 1
-            r = self.F(x)
 
-            D = self.DF(x)
-            DD = np.linalg.solve(D.T*D,D.T*r.T) 
-
-            x = np.matrix(x).T - DD
-            x = np.array(x.flatten())[0]
-            res_alt = res
-            res = norm(r)
-            print i,': ',res
-
-        self.sol = x
-    
-    
-    def newton(self):
-        res = 1
-        i = 0
-        x = self.x0
-        Fx = self.F(x)
-        
-        while(res>self.tol and self.maxx>i):
-            i += 1
-            DFx = self.DF(x)
-
-            h=np.array(np.linalg.solve(DFx,Fx.T).flatten())[0] 
-
-            x -= h
-
-            Fx = np.matrix(self.F(x))
-            res = np.linalg.norm(Fx)
-            print i,': ',res
-        
-        self.sol = x

@@ -67,6 +67,7 @@ or ::
 
 provided that you have the Python modules `pip` or `setuptools` installed on your system.
 
+.. _usage:
 
 Usage
 =====
@@ -222,14 +223,37 @@ a container for the image. In the considered example `xt` is of the form
 
 and `image` is just a container for the drawn image.
 
-.. literalinclude:: /../../animations/simple_example.py
-   :lines: 56-122
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 55-105
+
+Next, we create an instance of the :py:class:`Animation` class and
+pass our :py:func:`draw` function, the simulation data and some
+lists that specify what trajectory curves to plot along with the
+picture.
+
+To set the limits correctly we calculate the minimum and maximum
+value of the cart's movement along the `x`-axis.
+
+Finally, we can start the animation.
+
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 112-122
+
+The animation can be saved either as animated .gif file or as a 
+.mp4 video file. 
+
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 125
+
+If saved as an animated .gif file you can view 
+single frames using for example `gifview` (GNU/Linux) or the 
+standard Preview app (OSX).
 
 .. only:: html
 
-   .. image:: /../pic/inv_pendulum_osc.gif
+   .. image:: /../pic/inv_pend_swing.gif
 
 .. only:: latex
 
-  .. image:: /../pic/inv_pendulum_osc.png
+  .. image:: /../pic/inv_pend_swing.png
 

@@ -5,11 +5,11 @@ This file is part of PyTrajectory.
 from distutils.core import setup
 
 setup(name='PyTrajectory',
-    version='0.3.4',
+    version='0.4.0',
     packages=['pytrajectory'],
     requires=['numpy (>=1.8.1)',
                 'sympy (>=0.7.5)',
-                'scipy (>=0.13.3)',
+                'scipy (>=0.13.0)',
                 'matplotlib'],
     
     # metadata

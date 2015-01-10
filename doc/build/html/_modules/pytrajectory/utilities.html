@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pytrajectory.utilities &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>pytrajectory.utilities &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body>
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -48,33 +48,35 @@
             
   <h1>Source code for pytrajectory.utilities</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="kn">as</span> <span class="nn">sp</span>
 <span class="kn">from</span> <span class="nn">sympy.core.symbol</span> <span class="kn">import</span> <span class="n">Symbol</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&#39;TKAgg&#39;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">animation</span>
 <span class="kn">from</span> <span class="nn">matplotlib.gridspec</span> <span class="kn">import</span> <span class="n">GridSpec</span>
 
 <span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">embed</span> <span class="k">as</span> <span class="n">IPS</span>
 
-<span class="c"># for import of PyMbs motion equations</span>
-<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
-<div class="viewcode-block" id="IntegChain"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.IntegChain">[docs]</a><span class="k">class</span> <span class="nc">IntegChain</span><span class="p">():</span>
+<span class="kn">from</span> <span class="nn">log</span> <span class="kn">import</span> <span class="n">logging</span>
+
+
+<div class="viewcode-block" id="IntegChain"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.IntegChain">[docs]</a><span class="k">class</span> <span class="nc">IntegChain</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    This class provides a representation of a integrator chain consisting of sympy symbols.</span>
+<span class="sd">    This class provides a representation of an integrator chain consisting of sympy symbols.</span>
 <span class="sd">    </span>
 <span class="sd">    For the elements :math:`(x_i)_{i=1,...,n}` the relation</span>
-<span class="sd">    :math:`\dot{x}_i = x_{i+1}` applies:</span>
-<span class="sd">    </span>
+<span class="sd">    :math:`\dot{x}_i = x_{i+1}` applies.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    </span>
 <span class="sd">    lst : list</span>
 <span class="sd">        Ordered list of elements for the integrator chain</span>
-<span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -157,7 +159,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">drawfnc</span>
         
         <span class="c"># enable LaTeX text rendering --&gt; slow</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="c">#plt.rc(&#39;text&#39;, usetex=True)</span>
     
     
 <div class="viewcode-block" id="Animation.Image"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Animation.Image">[docs]</a>    <span class="k">class</span> <span class="nc">Image</span><span class="p">():</span>
@@ -232,12 +234,34 @@
         <span class="n">xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xt</span>
         <span class="n">ut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ut</span>
         
-        <span class="n">tt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="c"># NEW: try to repeat first and last frame</span>
+        <span class="n">pause_time</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c">#[s]</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c"># how many frames will be plotted per second of system time</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="o">/</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="c"># add so many frames that they fill the `pause`</span>
+        <span class="n">add_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">pause_time</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">add_frames</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">t</span><span class="p">,</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">xt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">xt</span><span class="p">,</span><span class="n">xt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">ut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ut</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ut</span><span class="p">,</span><span class="n">ut</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        
+        
+        <span class="c">#tt = np.linspace(0,len(t)-1,self.nframes,endpoint=True)</span>
+        <span class="n">tt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">xt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="p">,</span><span class="n">endpoint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">tt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">tt</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="n">add_frames</span><span class="p">,</span><span class="n">tt</span><span class="p">,[</span><span class="n">tt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="n">add_frames</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pause_time</span>
+        
+        <span class="c"># raise number of frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">add_frames</span>
+        
+        <span class="c">#IPS()</span>
         
         <span class="c"># set axis limits and labels of system curves</span>
-        <span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pause_time</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idxlabel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plotsys</span><span class="p">):</span>
             <span class="n">idx</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">idxlabel</span>
             
@@ -263,7 +287,7 @@
         
         <span class="k">def</span> <span class="nf">_animate</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">tt</span><span class="p">[</span><span class="n">frame</span><span class="p">]</span>
-            <span class="k">print</span> <span class="n">frame</span>
+            <span class="k">print</span> <span class="s">&quot;frame = {f}, t = {t}, x = {x}, u = {u}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">u</span><span class="o">=</span><span class="n">ut</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
             
             <span class="c"># draw picture</span>
             <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
@@ -288,10 +312,6 @@
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">image</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
                 <span class="n">ax_img</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
             
-            <span class="c"># automatically set limits --&gt; does not work as wanted</span>
-            <span class="c">#ax_img.relim()</span>
-            <span class="c">#ax_img.autoscale_view()</span>
-            
             <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">image</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="s">&#39;ax_img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_img</span>
             
@@ -313,7 +333,8 @@
             
             <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">,</span> <span class="n">_animate</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">,</span> <span class="n">_animate</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="p">,</span> 
+                                            <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     
     </div>
 <div class="viewcode-block" id="Animation.save"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.Animation.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
@@ -321,19 +342,19 @@
 <span class="sd">        Saves the animation as a video file or animated gif.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fps</span><span class="p">:</span>
-            <span class="n">fps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">fps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nframes</span><span class="o">/</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>  <span class="c"># add pause_time here?</span>
         
         <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;gif&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="s">&#39;imagemagick&#39;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+            <span class="n">FFWriter</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FFMpegFileWriter</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="s">&#39;mencoder&#39;</span><span class="p">)</span>
 
 </div></div>
 <div class="viewcode-block" id="plotsim"><a class="viewcode-back" href="../../pytrajectory.html#pytrajectory.utilities.plotsim">[docs]</a><span class="k">def</span> <span class="nf">plotsim</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This method provides graphics for each system variable, manipulated</span>
 <span class="sd">    variable and error function and plots the solution of the simulation.</span>
-<span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -449,13 +470,13 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

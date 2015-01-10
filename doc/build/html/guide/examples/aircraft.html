@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Aircraft &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>Aircraft &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,10 +23,10 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../../index.html" />
     <link rel="up" title="Examples" href="index.html" />
     <link rel="next" title="Underactuated Manipulator" href="uact_manipulator.html" />
-    <link rel="prev" title="Swing up of the inverted double pendulum" href="inv_double_pendulum_swing.html" /> 
+    <link rel="prev" title="Swing up of the inverted dual pendulum" href="inv_dual_pendulum_swing.html" /> 
   </head>
   <body>
     <div class="related">
@@ -42,9 +42,9 @@
           <a href="uact_manipulator.html" title="Underactuated Manipulator"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+          <a href="inv_dual_pendulum_swing.html" title="Swing up of the inverted dual pendulum"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
       </ul>
@@ -68,7 +68,7 @@ inertial system are denoted by <img class="math" src="../../_images/math/92c25fa
 time, the point is the origin of the plane coordinate system. The
 aircraft axes are rotated by the angle <img class="math" src="../../_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/> with respect to
 the <img class="math" src="../../_images/math/223e963ad95ab6098315774006a2d46397fb5f93.png" alt="z_2"/>-axis.</p>
-<a class="reference internal image-reference" href="../../_images/aircraft.png"><img alt="../../_images/aircraft.png" src="../../_images/aircraft.png" style="width: 291.2px; height: 232.8px;" /></a>
+<a class="reference internal image-reference" href="../../_images/aircraft.png"><img alt="../../_images/aircraft.png" src="../../_images/aircraft.png" /></a>
 <p>Through the establishment of the momentum balances for the model one
 obtains the equations</p>
 <div class="math">
@@ -146,11 +146,11 @@ yield the boundary conditions for the inputs.</p>
 <span class="n">xb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values for the inputs</span>
-<span class="n">g</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">)),</span>
-     <span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))]</span>
+<span class="n">ua</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))]</span>
+<span class="n">ub</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="o">*</span><span class="mf">9.81</span><span class="o">*</span><span class="mf">50.0</span><span class="o">/</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mf">360.0</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">))]</span>
 
 <span class="c"># create trajectory object</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">ua</span><span class="o">=</span><span class="n">ua</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">)</span>
 
 <span class="c"># don&#39;t take advantage of the system structure (integrator chains)</span>
 <span class="c"># (this will result in a faster solution here)</span>
@@ -182,8 +182,8 @@ yield the boundary conditions for the inputs.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="inv_double_pendulum_swing.html"
-                        title="previous chapter">Swing up of the inverted double pendulum</a></p>
+  <p class="topless"><a href="inv_dual_pendulum_swing.html"
+                        title="previous chapter">Swing up of the inverted dual pendulum</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="uact_manipulator.html"
                         title="next chapter">Underactuated Manipulator</a></p>
@@ -222,16 +222,16 @@ yield the boundary conditions for the inputs.</p>
           <a href="uact_manipulator.html" title="Underactuated Manipulator"
              >next</a> |</li>
         <li class="right" >
-          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+          <a href="inv_dual_pendulum_swing.html" title="Swing up of the inverted dual pendulum"
              >previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" >Examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

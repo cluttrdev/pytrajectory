@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Background &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>Background &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../index.html" />
     <link rel="up" title="PyTrajectory User’s Guide" href="index.html" />
     <link rel="next" title="Examples" href="examples/index.html" />
     <link rel="prev" title="Getting Started" href="start.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="start.html" title="Getting Started"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>  
@@ -61,19 +61,36 @@ background that is the basis of PyTrajectory.</p>
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#collocation-method" id="id3">Collocation Method</a></li>
-<li><a class="reference internal" href="#candidate-functions" id="id4">Candidate Functions</a><ul>
-<li><a class="reference internal" href="#use-of-the-system-structure" id="id5">Use of the system structure</a></li>
+<li><a class="reference internal" href="#trajectory-planning-with-bvp-s" id="id8">Trajectory planning with BVP&#8217;s</a></li>
+<li><a class="reference internal" href="#collocation-method" id="id9">Collocation Method</a></li>
+<li><a class="reference internal" href="#candidate-functions" id="id10">Candidate Functions</a><ul>
+<li><a class="reference internal" href="#use-of-the-system-structure" id="id11">Use of the system structure</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#levenberg-marquardt-method" id="id6">Levenberg-Marquardt Method</a><ul>
-<li><a class="reference internal" href="#control-of-the-parameter" id="id7">Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></a></li>
+<li><a class="reference internal" href="#levenberg-marquardt-method" id="id12">Levenberg-Marquardt Method</a><ul>
+<li><a class="reference internal" href="#control-of-the-parameter" id="id13">Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#handling-constraints" id="id14">Handling constraints</a><ul>
+<li><a class="reference internal" href="#choice-of-the-saturation-functions" id="id15">Choice of the saturation functions</a></li>
+<li><a class="reference internal" href="#an-example" id="id16">An example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references" id="id17">References</a></li>
 </ul>
 </div>
+<div class="section" id="trajectory-planning-with-bvp-s">
+<h2>Trajectory planning with BVP&#8217;s<a class="headerlink" href="#trajectory-planning-with-bvp-s" title="Permalink to this headline">¶</a></h2>
+<p>The task in the field of trajectory planning PyTrajectory is intended
+to perform, is the transition of a control system between desired states.
+A possible way to solve such a problem is to treat it as a two-point
+boundary value problem with free parameters. This approach has been
+presented for example by K. Graichen and M. Zeitz (<a class="reference internal" href="#graichen06" id="id1">[Graichen06]</a>) and was
+picked up by O. Schnabel (<a class="reference internal" href="#schnabel13" id="id2">[Schnabel13]</a>)  in the project thesis from which
+PyTrajectory emerged.</p>
+</div>
 <div class="section" id="collocation-method">
-<span id="id1"></span><h2>Collocation Method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2>Collocation Method<a class="headerlink" href="#collocation-method" title="Permalink to this headline">¶</a></h2>
 <p>Given a system of autonomous differential equations</p>
 <div class="math">
 <p><img src="../_images/math/1c28844e7ae844232419c9962aeaf65f44ca2733.png" alt="\dot{x}_1(t) = f_1(x_1(t),...,x_n(t))
@@ -119,7 +136,7 @@ of <img class="math" src="../_images/math/ea0446ff6185bc88bddd71f99ec82764e0b4e2
 parameters that result from the candidate functions.</p>
 </div>
 <div class="section" id="candidate-functions">
-<span id="id2"></span><h2>Candidate Functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
+<span id="id4"></span><h2>Candidate Functions<a class="headerlink" href="#candidate-functions" title="Permalink to this headline">¶</a></h2>
 <p>PyTrajectory uses cubic spline functions as candidates for the approximation of the
 solution. Splines are piecewise polynomials with a global differentiability.
 The connection points <img class="math" src="../_images/math/1b7033268c91a0319bea4e1af255a3843a6df667.png" alt="\tau_k"/> between the polynomial sections are equidistantly
@@ -278,6 +295,81 @@ with <img class="math" src="../_images/math/876d050d4e6da94fd52edf3d2960ce403af0
 </ul>
 </div>
 </div>
+<div class="section" id="handling-constraints">
+<span id="id5"></span><h2>Handling constraints<a class="headerlink" href="#handling-constraints" title="Permalink to this headline">¶</a></h2>
+<p>In practical situations it is often desired or necessary that the system state variables comply with certain limits.
+To achieve this PyTrajectory uses an approach similar to the one presented by K. Graichen and M. Zeitz in <a class="reference internal" href="#graichen06" id="id6">[Graichen06]</a>.</p>
+<p>The basic idea is to transform the dynamical system into a new one that satisfies the constraints. This is done
+by projecting the constrained state variables on new unconstrained coordinates using socalled <em>saturation functions</em>.</p>
+<p>Suppose the state <img class="math" src="../_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> should be bounded by <img class="math" src="../_images/math/a604d73eb878a1bfbc3b8761c5834c86b5a5a2a9.png" alt="x_0,x_1"/> such that <img class="math" src="../_images/math/17e27b4e326fcced8712adb0b60751a681f9a8e6.png" alt="x_0 \leq x(t) \leq x_1"/> for all <img class="math" src="../_images/math/31bd8867031ba0d2c1137e9a2c9832cfe472d99b.png" alt="t \in [a,b]"/>.
+To do so the following saturation function is introduced</p>
+<div class="math">
+<p><img src="../_images/math/9b8dd9728df1f6b14b9610a69dd60dbd6db29c04.png" alt="\begin{equation*}
+   x = \psi(y,y^{\pm})
+\end{equation*}"/></p>
+</div><p>that depends on the new unbounded variable <img class="math" src="../_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> and satisfies the <em>saturation limits</em> <img class="math" src="../_images/math/2f4dfe69a4f5cf5c1b9953860e065afbf841eda3.png" alt="y^-,y^+"/>, i.e. <img class="math" src="../_images/math/3138eef371fcea0479ea745fc17b6e92ee7a6c2c.png" alt="y^- \leq \psi(y(t),y^{\pm}) \leq y^+"/> for all <img class="math" src="../_images/math/ef9270877405055756d345facd044e4ab297f858.png" alt="t"/>. It is assumed that the limits
+are asymptotically and <img class="math" src="../_images/math/d9b990aa7d626ba097f54b8d07adbc07251c5de4.png" alt="\psi(\cdot,y^{\pm})"/> is strictly increasing , that is <img class="math" src="../_images/math/2e58dcaa0e451ac9643d52bebf0554e9c16fee0b.png" alt="\frac{\partial \psi}{\partial y} &gt; 0"/>.
+For the constraints <img class="math" src="../_images/math/1063c2328a7654f2dd6219947f98440d9e3da666.png" alt="x \in [x_0,x_1]"/> to hold it is obvious that <img class="math" src="../_images/math/af8eceefc8a6d9af3176df3b483baf21f5abf4b3.png" alt="y^- = x_0"/> and <img class="math" src="../_images/math/f22d04061c74ad75cbb40f6b784f3db190bd1ac2.png" alt="y^+ = x_1"/>. Thus the constrained
+variable <img class="math" src="../_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> is projected on the new unconstrained varialbe <img class="math" src="../_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/>.</p>
+<p>By differentiating the equation above one can replace <img class="math" src="../_images/math/211e63ee2f6c720fe31aaabbcfcb5c330591a879.png" alt="\dot{x}"/> in the vectorfield with a new term for <img class="math" src="../_images/math/c9748c2156f2e6157edda153e20679761192a145.png" alt="\dot{y}"/>.</p>
+<div class="math">
+<p><img src="../_images/math/339f71c5598c388fc71e3c1d847f47048bb684f7.png" alt="\begin{equation*}
+   \dot{x} = \frac{\partial}{\partial y} \psi(y,y^{\pm}) \dot{y} \qquad
+   \Leftrightarrow\qquad \dot{y} = \frac{\dot{x}}{\frac{\partial}{\partial y} \psi(y,y^{\pm})}
+\end{equation*}"/></p>
+</div><p>Next, one has to calculate new boundary values <img class="math" src="../_images/math/4e3bbe723c284b49b5049b90d758e70977a4d090.png" alt="y_a = y(a)"/> and <img class="math" src="../_images/math/23a2b4f69b0dbb5128ce06d69e2dd4df95b218dd.png" alt="y_b = y(b)"/> for the variable <img class="math" src="../_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> from those,
+<img class="math" src="../_images/math/49686de3e1cd7d5e5d56531a01caad2117c1d011.png" alt="x_a = x(a)"/> and <img class="math" src="../_images/math/e527b21e2a12a442e5223a294e4190ad497a9ba9.png" alt="x_b = x(b)"/>, of <img class="math" src="../_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/>.
+This is simply done by</p>
+<div class="math">
+<p><img src="../_images/math/489009f60f27e5d735bbcc56d7ab44f3896896a6.png" alt="\begin{equation*}
+   y_a = \psi^{-1}(x_a, y^{\pm}) \qquad y_b = \psi^{-1}(x_b, y^{\pm})
+\end{equation*}"/></p>
+</div><p>Now, the transformed dynamical system can be solved where all state variables are unconstrained. At the end a solution for the original state
+variable <img class="math" src="../_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> is obtained via a composition of the calculated solution <img class="math" src="../_images/math/6ef4611104bb98b4035f37ce6bbafb0ec7a38a60.png" alt="y(t)"/> and the saturation function <img class="math" src="../_images/math/d9b990aa7d626ba097f54b8d07adbc07251c5de4.png" alt="\psi(\cdot,y^{\pm})"/>.</p>
+<p>There are some aspects to take into consideration when dealing with constraints:</p>
+<ul class="simple">
+<li>The boundary values of a constrained variable have to be strictly  within the saturation limits</li>
+<li>It is not possible to make use of an integrator chain that contains a constrained variable</li>
+</ul>
+<div class="section" id="choice-of-the-saturation-functions">
+<h3>Choice of the saturation functions<a class="headerlink" href="#choice-of-the-saturation-functions" title="Permalink to this headline">¶</a></h3>
+<p>As mentioned before the saturation functions should be continuously differentiable and strictly increasing. A possible approach for such
+functions is the following.</p>
+<div class="math">
+<p><img src="../_images/math/43702c2076933e9c07674768928c0b5303173979.png" alt="\begin{equation*}
+   \psi(y,y^{\pm}) = y^+ - \frac{y^+ - y^-}{1 + exp(m y)}
+\end{equation*}"/></p>
+</div><p>The parameter <img class="math" src="../_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/> affects the slope of the function at <img class="math" src="../_images/math/ab01ccd293cc8d3ff4b48423a8d7669b219c3f9e.png" alt="y = 0"/> and is chosen such that
+<img class="math" src="../_images/math/b45d8bd2475ec474d3a6b9ec77ba41678b18544d.png" alt="\frac{\partial}{\partial y}\psi(0,y^{\pm}) = 1"/>, i.e.</p>
+<div class="math">
+<p><img src="../_images/math/1090e23a5e3f2aa4ccbd20d026b00c9a7e199a79.png" alt="\begin{equation*}
+   m = \frac{4}{y^+ - y^-}
+\end{equation*}"/></p>
+</div></div>
+<div class="section" id="an-example">
+<h3>An example<a class="headerlink" href="#an-example" title="Permalink to this headline">¶</a></h3>
+<p>For examples on how to handle constraints with PyTrajectory please have a
+look at the <a class="reference internal" href="examples/index.html#examples"><em>Examples</em></a> section, e.g. the <a class="reference internal" href="examples/con_double_integrator.html#constrained-double-integrator"><em>Constrained double integrator</em></a>
+or the <a class="reference internal" href="examples/con_inv_pendulum_swing.html#constrained-inverted-pendulum"><em>Constrained swing up of the inverted pundulum</em></a>.</p>
+</div>
+</div>
+<div class="section" id="references">
+<span id="id7"></span><h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="graichen06" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Graichen06]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id6">2</a>)</em> Graichen, K. and Zeitz, M. &#8220;Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen
+(Inversion-Based Feedforward Control Design under Input and Output Constraints)&#8221; at - <em>Automatisierungstechnik</em>, 54.4/2006: 187-199</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="schnabel13" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Schnabel13]</a></td><td>Schnabel, O. &#8220;Untersuchungen zur Trajektorienplanung durch Lösung eines Randwertproblems&#8221;
+Technische Universität Dresden, Institut für Regelungs- und Steuerungstheorie, 2013</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -289,6 +381,7 @@ with <img class="math" src="../_images/math/876d050d4e6da94fd52edf3d2960ce403af0
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Background</a><ul>
+<li><a class="reference internal" href="#trajectory-planning-with-bvp-s">Trajectory planning with BVP&#8217;s</a></li>
 <li><a class="reference internal" href="#collocation-method">Collocation Method</a></li>
 <li><a class="reference internal" href="#candidate-functions">Candidate Functions</a><ul>
 <li><a class="reference internal" href="#use-of-the-system-structure">Use of the system structure</a></li>
@@ -298,6 +391,12 @@ with <img class="math" src="../_images/math/876d050d4e6da94fd52edf3d2960ce403af0
 <li><a class="reference internal" href="#control-of-the-parameter">Control of the parameter <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#handling-constraints">Handling constraints</a><ul>
+<li><a class="reference internal" href="#choice-of-the-saturation-functions">Choice of the saturation functions</a></li>
+<li><a class="reference internal" href="#an-example">An example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
 </ul>
@@ -345,13 +444,13 @@ with <img class="math" src="../_images/math/876d050d4e6da94fd52edf3d2960ce403af0
         <li class="right" >
           <a href="start.html" title="Getting Started"
              >previous</a> |</li>
-        <li><a href="../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

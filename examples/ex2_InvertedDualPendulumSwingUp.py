@@ -1,10 +1,9 @@
-# oscillation of the inverted double pendulum with partial linearization
+# swing up of the inverted dual pendulum with partial linearization
 
 # import trajectory class and necessary dependencies
 from pytrajectory.trajectory import Trajectory
 from sympy import cos, sin
 import numpy as np
-from numpy import pi
 
 # define the function that returns the vectorfield
 def f(x,u):
@@ -28,14 +27,15 @@ def f(x,u):
 	return ff
 
 # system state boundary values for a = 0.0 [s] and b = 2.0 [s]
-xa = [0.0, 0.0,  pi, 0.0,  pi, 0.0]
+xa = [0.0, 0.0,  np.pi, 0.0,  np.pi, 0.0]
 xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 # boundary values for the input
-uab= [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, g=uab)
+T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # alter some method parameters to increase performance
 T.setParam('su', 10)
@@ -97,8 +97,12 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
-    A.set_limits(xlim=(-1.0,0.8), ylim=(-0.8,0.8))
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'x'),(2,'phi1'),(4,'phi2')], plotinputs=[(0,'u')])
+    
+    xmin = np.min(T.sim[1][:,0])
+    xmax = np.max(T.sim[1][:,0])
+    A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-0.8,0.8))
     
     A.animate()
-    A.save('ex2_InvertedDoublePendulumUpswing.mp4')
+    A.save('ex2_InvertedDualPendulumUpswing.gif')

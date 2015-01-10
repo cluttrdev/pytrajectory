@@ -9,6 +9,18 @@ background that is the basis of PyTrajectory.
    :backlinks: none
 
 
+Trajectory planning with BVP's
+------------------------------
+
+The task in the field of trajectory planning PyTrajectory is intended
+to perform, is the transition of a control system between desired states.
+A possible way to solve such a problem is to treat it as a two-point
+boundary value problem with free parameters. This approach has been
+presented for example by K. Graichen and M. Zeitz ([Graichen06]_) and was
+picked up by O. Schnabel ([Schnabel13]_)  in the project thesis from which 
+PyTrajectory emerged.
+
+
 .. _collocation_method:
 
 Collocation Method
@@ -301,3 +313,103 @@ with :math:`0 < b_0 < b_1 < 1` and for :math:`b_0 = 0.2, b_1 = 0.8` we use the f
 * :math:`\rho \leq b_0 \qquad\quad :` :math:`\mu` is doubled and :math:`s_k` is recalculated
 * :math:`b_0 < \rho < b_1 \quad :` in the next step :math:`\mu` is maintained and :math:`s_k` is used
 * :math:`\rho \geq b_1 \qquad\quad :` :math:`s_k` is accepted and :math:`\mu` is halved during the next iteration
+
+
+.. _handling_constraints:
+
+Handling constraints
+--------------------
+
+In practical situations it is often desired or necessary that the system state variables comply with certain limits.
+To achieve this PyTrajectory uses an approach similar to the one presented by K. Graichen and M. Zeitz in [Graichen06]_.
+
+The basic idea is to transform the dynamical system into a new one that satisfies the constraints. This is done
+by projecting the constrained state variables on new unconstrained coordinates using socalled *saturation functions*.
+
+Suppose the state :math:`x` should be bounded by :math:`x_0,x_1` such that :math:`x_0 \leq x(t) \leq x_1` for all :math:`t \in [a,b]`.
+To do so the following saturation function is introduced
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      x = \psi(y,y^{\pm})
+   \end{equation*}
+
+that depends on the new unbounded variable :math:`y` and satisfies the *saturation limits* :math:`y^-,y^+`, i.e. :math:`y^- \leq \psi(y(t),y^{\pm}) \leq y^+` for all :math:`t`. It is assumed that the limits
+are asymptotically and :math:`\psi(\cdot,y^{\pm})` is strictly increasing , that is :math:`\frac{\partial \psi}{\partial y} > 0`.
+For the constraints :math:`x \in [x_0,x_1]` to hold it is obvious that :math:`y^- = x_0` and :math:`y^+ = x_1`. Thus the constrained 
+variable :math:`x` is projected on the new unconstrained varialbe :math:`y`.
+
+By differentiating the equation above one can replace :math:`\dot{x}` in the vectorfield with a new term for :math:`\dot{y}`.
+
+.. math::
+   :nowrap:
+   
+   \begin{equation*}
+      \dot{x} = \frac{\partial}{\partial y} \psi(y,y^{\pm}) \dot{y} \qquad
+      \Leftrightarrow\qquad \dot{y} = \frac{\dot{x}}{\frac{\partial}{\partial y} \psi(y,y^{\pm})}
+   \end{equation*}
+
+Next, one has to calculate new boundary values :math:`y_a = y(a)` and :math:`y_b = y(b)` for the variable :math:`y` from those,
+:math:`x_a = x(a)` and :math:`x_b = x(b)`, of :math:`x`. 
+This is simply done by
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      y_a = \psi^{-1}(x_a, y^{\pm}) \qquad y_b = \psi^{-1}(x_b, y^{\pm})
+   \end{equation*}
+
+Now, the transformed dynamical system can be solved where all state variables are unconstrained. At the end a solution for the original state 
+variable :math:`x` is obtained via a composition of the calculated solution :math:`y(t)` and the saturation function :math:`\psi(\cdot,y^{\pm})`.
+
+There are some aspects to take into consideration when dealing with constraints:
+
+* The boundary values of a constrained variable have to be strictly  within the saturation limits
+* It is not possible to make use of an integrator chain that contains a constrained variable
+
+Choice of the saturation functions
+++++++++++++++++++++++++++++++++++
+
+As mentioned before the saturation functions should be continuously differentiable and strictly increasing. A possible approach for such
+functions is the following.
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      \psi(y,y^{\pm}) = y^+ - \frac{y^+ - y^-}{1 + exp(m y)}
+   \end{equation*}
+
+The parameter :math:`m` affects the slope of the function at :math:`y = 0` and is chosen such that 
+:math:`\frac{\partial}{\partial y}\psi(0,y^{\pm}) = 1`, i.e.
+
+.. math::
+   :nowrap:
+
+   \begin{equation*}
+      m = \frac{4}{y^+ - y^-}
+   \end{equation*}
+
+
+An example
+++++++++++
+
+For examples on how to handle constraints with PyTrajectory please have a
+look at the :ref:`examples` section, e.g. the :ref:`constrained_double_integrator`
+or the :ref:`constrained_inverted_pendulum`.
+
+.. _references:
+
+References
+----------
+
+.. [Graichen06] 
+   Graichen, K. and Zeitz, M. "Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen 
+   (Inversion-Based Feedforward Control Design under Input and Output Constraints)" at - *Automatisierungstechnik*, 54.4/2006: 187-199
+
+.. [Schnabel13]
+   Schnabel, O. "Untersuchungen zur Trajektorienplanung durch Lösung eines Randwertproblems"
+   Technische Universität Dresden, Institut für Regelungs- und Steuerungstheorie, 2013

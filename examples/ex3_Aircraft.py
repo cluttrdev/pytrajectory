@@ -41,11 +41,11 @@ xa = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 xb = [10.0, 0.0, 5.0, 0.0, 0.0, 0.0]
 
 # boundary values for the inputs
-g = [0.5*9.81*50.0/(cos(5/360.0*2*pi)),
-     0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ua = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ub = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, g=g)
+T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # don't take advantage of the system structure (integrator chains)
 # (this will result in a faster solution here)
@@ -88,8 +88,9 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(4,'theta')], plotinputs=[(0,'F1'),(1,'F2')])
     A.set_limits(xlim=(-1,11), ylim=(-1,7))
     
     A.animate()
-    A.save('ex3_Aircraft.mp4')
+    A.save('ex3_Aircraft.gif')

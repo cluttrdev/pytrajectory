@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Underactuated Manipulator &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>Underactuated Manipulator &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../../index.html" />
     <link rel="up" title="Examples" href="index.html" />
     <link rel="next" title="Acrobot" href="acrobot.html" />
     <link rel="prev" title="Aircraft" href="aircraft.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="aircraft.html" title="Aircraft"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
       </ul>
@@ -67,7 +67,7 @@ In the joint <img class="math" src="../../_images/math/7fb876996f317119f4a67c585
 bars have the moments of inertia <img class="math" src="../../_images/math/7faea3676be480f5a9b0f57f034612ce40452ec1.png" alt="I_1"/> and <img class="math" src="../../_images/math/a49bba0c178e3d0f060efc77a0d301ac8e18c9ac.png" alt="I_2"/>. The
 distances between the centers of mass to the joints are <img class="math" src="../../_images/math/42d634ae86a348fc78845c235bdc1975c171419b.png" alt="r_1"/> and
 <img class="math" src="../../_images/math/6eb13335cdf47bdb48c4520e9b32b53e35e4b895.png" alt="r_2"/>.</p>
-<a class="reference internal image-reference" href="../../_images/uact_manipulator.png"><img alt="../../_images/uact_manipulator.png" src="../../_images/uact_manipulator.png" style="width: 252.0px; height: 182.4px;" /></a>
+<a class="reference internal image-reference" href="../../_images/uact_manipulator.png"><img alt="../../_images/uact_manipulator.png" src="../../_images/uact_manipulator.png" /></a>
 <p>The modeling was taken from the thesis of Carsten Knoll
 (April, 2009) where in addition the inertia parameter <img class="math" src="../../_images/math/9172efc523d7488d4c3ed299d0be813de01503b8.png" alt="\eta"/> was
 introduced.</p>
@@ -106,7 +106,6 @@ to the equilibrium positions (<img class="math" src="../../_images/math/449d3b6e
 <span class="kn">from</span> <span class="nn">pytrajectory.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
 
 <span class="c"># define the function that returns the vectorfield</span>
 <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
@@ -129,19 +128,20 @@ to the equilibrium positions (<img class="math" src="../../_images/math/449d3b6e
 <span class="c"># system state boundary values for a = 0.0 [s] and b = 1.8 [s]</span>
 <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="mf">0.4</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
-<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.2</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="mf">0.2</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values for the inputs</span>
-<span class="n">uab</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+<span class="n">ua</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
+<span class="n">ub</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># create trajectory object</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">uab</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">ua</span><span class="o">=</span><span class="n">ua</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">)</span>
 
 <span class="c"># also alter some method parameters to increase performance</span>
 <span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;su&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
@@ -212,14 +212,14 @@ to the equilibrium positions (<img class="math" src="../../_images/math/449d3b6e
         <li class="right" >
           <a href="aircraft.html" title="Aircraft"
              >previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" >Examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
