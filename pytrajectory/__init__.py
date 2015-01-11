@@ -14,8 +14,8 @@ from simulation import Simulator
 from visualisation import Animation
 from log import logging
 
-__version__ = '0.1'
-__release__ = '0.1.0'
+__version__ = '1.0'
+__release__ = '1.0.0'
 
 # check versions of dependencies
 import numpy

@@ -3,7 +3,7 @@ import numpy as np
 import sympy as sp
 from scipy import sparse
 
-from log import logging
+from log import logging, Timer
 from solver import Solver
 
 from splines import interpolate
@@ -35,7 +35,15 @@ class CollocationSystem(object):
         self._coll_type = ctrl_sys.mparam['coll_type']
         self._use_sparse = ctrl_sys.mparam['use_sparse']
         self.sol = 0
-    
+        
+        # create vectorized versions of the control system's vector field
+        # and its jacobian for the faster evaluation of the collocation equation system `G`
+        # and its jacobian `DG` (--> see self.build())
+        f = ctrl_sys.ff_sym(ctrl_sys.x_sym, ctrl_sys.u_sym)
+        Df = sp.Matrix(f).jacobian(ctrl_sys.x_sym+ctrl_sys.u_sym)
+        
+        self._ff_vectorized = sym2num_vectorfield(f, ctrl_sys.x_sym, ctrl_sys.u_sym, vectorized=True)
+        self._Df_vectorized = sym2num_vectorfield(Df, ctrl_sys.x_sym, ctrl_sys.u_sym, vectorized=True)
     
     def build(self, sys, traj):
         '''
@@ -81,19 +89,19 @@ class CollocationSystem(object):
 
         # now we generate the collocation points
         cpts = collocation_nodes(a=a, b=b, npts=(sys.mparam['sx']*delta+1), coll_type=sys.mparam['coll_type'])
-        
+    
         # here we do something that will be explained after we've done it  ;-)
         indic = dict()
         i = 0
         j = 0
-        
+    
         # iterate over spline quantities
         for k, v in sorted(sys.trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
             i = j
-        
+    
         # iterate over all quantities including inputs
         # and take care of integrator chain elements
         if sys.mparam['use_chains']:
@@ -101,7 +109,7 @@ class CollocationSystem(object):
                 for ic in sys.chains:
                     if sq in ic:
                         indic[sq] = indic[ic.upper]
-        
+    
         # as promised: here comes the explanation
         #
         # now, the dictionary 'indic' looks something like
@@ -117,57 +125,49 @@ class CollocationSystem(object):
         free_param = np.hstack(sorted(traj.indep_coeffs.values(), key=lambda arr: arr[0].name))
         c_len = free_param.size
         
-        lx = len(cpts)*len(x_sym)
-        lu = len(cpts)*len(u_sym)
+        with Timer('Building M-matrices'):
+            lx = len(cpts)*len(x_sym)
+            lu = len(cpts)*len(u_sym)
 
-        Mx = [None]*lx
-        Mx_abs = [None]*lx
-        Mdx = [None]*lx
-        Mdx_abs = [None]*lx
-        Mu = [None]*lu
-        Mu_abs = [None]*lu
+            Mx = [None]*lx
+            Mx_abs = [None]*lx
+            Mdx = [None]*lx
+            Mdx_abs = [None]*lx
+            Mu = [None]*lu
+            Mu_abs = [None]*lu
 
-        eqx = 0
-        equ = 0
-        for p in cpts:
-            for xx in x_sym:
-                mx = np.zeros(c_len)
-                mdx = np.zeros(c_len)
+            eqx = 0
+            equ = 0
+            for p in cpts:
+                for xx in x_sym:
+                    mx = np.zeros(c_len)
+                    mdx = np.zeros(c_len)
 
-                i,j = indic[xx]
+                    i,j = indic[xx]
 
-                mx[i:j], Mx_abs[eqx] = x_fnc[xx].get_dependence_vectors(p)
-                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].get_dependence_vectors(p)
+                    mx[i:j], Mx_abs[eqx] = x_fnc[xx].get_dependence_vectors(p)
+                    mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].get_dependence_vectors(p)
 
-                Mx[eqx] = mx
-                Mdx[eqx] = mdx
-                eqx += 1
+                    Mx[eqx] = mx
+                    Mdx[eqx] = mdx
+                    eqx += 1
 
-            for uu in u_sym:
-                mu = np.zeros(c_len)
+                for uu in u_sym:
+                    mu = np.zeros(c_len)
 
-                i,j = indic[uu]
+                    i,j = indic[uu]
                 
-                mu[i:j], Mu_abs[equ] = u_fnc[uu].get_dependence_vectors(p)
+                    mu[i:j], Mu_abs[equ] = u_fnc[uu].get_dependence_vectors(p)
                 
-                Mu[equ] = mu
-                equ += 1
+                    Mu[equ] = mu
+                    equ += 1
 
-        Mx = np.array(Mx)
-        Mx_abs = np.array(Mx_abs)
-        Mdx = np.array(Mdx)
-        Mdx_abs = np.array(Mdx_abs)
-        Mu = np.array(Mu)
-        Mu_abs = np.array(Mu_abs)
-        
-        # here we create a callable function for the jacobian matrix of the vectorfield
-        # w.r.t. to the system and input variables
-        f = sys.ff_sym(x_sym, u_sym)
-        Df_mat = sp.Matrix(f).jacobian(x_sym+u_sym)
-        Df = sp.lambdify(x_sym+u_sym, Df_mat, modules='numpy')
-        
-        # create vectorized version of the jacobian function
-        Df_vec = sym2num_vectorfield(Df_mat, x_sym, u_sym, True)
+            Mx = np.array(Mx)
+            Mx_abs = np.array(Mx_abs)
+            Mdx = np.array(Mdx)
+            Mdx_abs = np.array(Mdx_abs)
+            Mu = np.array(Mu)
+            Mu_abs = np.array(Mu_abs)
         
         # the following would be created with every call to self.DG but it is possible to
         # only do it once. So we do it here to speed things up.
@@ -202,67 +202,76 @@ class CollocationSystem(object):
             DdX = sparse.csr_matrix(DdX)
             DXU = sparse.csr_matrix(DXU)
         
-        # now we are going to create a callable function for the equation system
-        # and its jacobian
-            
-        # create vectorized function of the control system's vecor field
-        # for faster evaluation of G
-        ff_vec = sym2num_vectorfield(sys.ff_sym, sys.x_sym, sys.u_sym, True)
+        # localize vectorized functions for the control system's vector field and its jacobian
+        ff_vec = self._ff_vectorized
+        Df_vec = self._Df_vectorized
         
+        # in the later evaluation of the equation system `G` and its jacobian `DG`
+        # there will be created the matrices `F` and DF in which every `x` rows represent the 
+        # evaluation of the control systems vectorfield and its jacobian in a specific collocation
+        # point, where `x` is the number of state variables
+        # 
+        # if we make use of the system structure, i.e. the integrator chains, not every
+        # equation of the vector field has to be solved and because of that, not every row 
+        # of the matrices `F` and `DF` is neccessary
+        # 
+        # therefore we now create an array with the indices of all rows we need from these matrices
         if sys.mparam['use_chains']:
             eqind = sys.eqind
         else:
             eqind = range(len(sys.x_sym))
         
+        # `eqind` now contains the indices of the equations/rows of the vector field
+        # that have to be solved
+        
         cp_len = len(cpts)
         
-        # NEW
+        # this (-> `take_indices`) will be the array with indices of the rows we need
+        # 
+        # to get these indices we iterate over all rows and take those whose indices
+        # are contained in `eqind` (module the number of state variables -> `x_len`)
         take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx%x_len in eqind])
-        
-        # templates
-        F = np.empty((cp_len, len(eqind)))
-        DF = sparse.dok_matrix( (cp_len*x_len, xu_len*cp_len) )
         
         # define the callable functions for the eqs
         def G(c):
             X = Mx.dot(c) + Mx_abs
             U = Mu.dot(c) + Mu_abs
-
-            X = np.array(X).reshape((-1, x_len)).T
-            U = np.array(U).reshape((-1, u_len)).T
             
+            X = np.array(X).reshape((x_len, -1), order='F')
+            U = np.array(U).reshape((u_len, -1), order='F')
+        
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
             # other equations need not to be solved
-            F = ff_vec(X, U)[eqind].T
-            
-            dX = Mdx.dot(c) + Mdx_abs
-            dX = np.array(dX).reshape((-1,x_len))[:,eqind]
+            F = ff_vec(X, U).take(eqind, axis=0)
         
+            dX = Mdx.dot(c) + Mdx_abs
+            dX = np.array(dX).reshape((x_len, -1), order='F').take(eqind, axis=0)
+    
             G = F - dX
             
-            return G.ravel()
-        
+            return G.ravel(order='F')
+    
         # and its jacobian
         def DG(c):
             '''
             Returns the jacobian matrix of the collocation system w.r.t. the
             independent parameters evaluated at :attr:`c`.
             '''
-            
+        
             # first we calculate the x and u values in all collocation points
             # with the current numerical values of the free parameters
             X = Mx.dot(c) + Mx_abs
-            X = np.array(X).reshape((-1,x_len)) # one column for every state component
+            X = np.array(X).reshape((x_len, -1), order='F')
             U = Mu.dot(c) + Mu_abs
-            U = np.array(U).reshape((-1,u_len)) # one column for every input component
+            U = np.array(U).reshape((u_len, -1), order='F')
             
             # get the jacobian blocks and turn them into the right shape
-            DF_blocks = Df_vec(X.T,U.T).swapaxes(0,2).swapaxes(1,2)
+            DF_blocks = Df_vec(X,U).swapaxes(0,2).swapaxes(1,2)
 
             # build a block diagonal matrix from the blocks
             DF_csr = sparse.block_diag(DF_blocks, format='csr').dot(DXU)
-            
+        
             # if we make use of the system structure
             # we have to select those rows which correspond to the equations
             # that have to be solved
@@ -272,9 +281,9 @@ class CollocationSystem(object):
                 #       some equations (use integrator chains) greater than
                 #       the performance loss that results from transfering the
                 #       sparse matrix to a full numpy array and back to a sparse matrix?
-            
+        
             DG = DF_csr - DdX
-            
+        
             return DG
         
         # return the callable functions

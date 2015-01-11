@@ -4,7 +4,7 @@ from IPython import embed as IPS
 import numpy as np
 
 from pytrajectory.system import ControlSystem
-from log import Timer
+from pytrajectory.log import Timer
 
 def f(x,u):
     x1, x2 = x

@@ -9,7 +9,7 @@ from collocation import CollocationSystem
 from simulation import Simulator
 import auxiliary
 import visualisation
-from log import logging
+from log import logging, Timer
 
 from IPython import embed as IPS
 
@@ -69,6 +69,8 @@ class ControlSystem(object):
         sol_steps     100             Maximum number of iteration steps for the eqs solver
         spline_orders [3]             The order of the polynomial spline parts
         nodes_type    'equidistant'   The type of the spline nodes
+        use_std_def   False           Whether to use the standard spline definition
+                                      or the one used in Oliver Schnabel's project thesis
         ============= =============   ============================================================
     
     '''
@@ -95,7 +97,8 @@ class ControlSystem(object):
                         'use_sparse' : True,
                         'sol_steps' : 100,
                         'spline_order' : [3],
-                        'nodes_type' : 'equidistant'}
+                        'nodes_type' : 'equidistant',
+                        'use_std_def' : False}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -157,9 +160,9 @@ class ControlSystem(object):
             # TODO: implement it so that just those chains are not used 
             #       which actually contain a constrained variable
         
-        # Now we transform the symbolic function of the vectorfield to
+        # Now we transform the symbolic function of the vector field to
         # a numeric one for faster evaluation
-        self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, False)
+        self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, vectorized=False)
         
         # set order of the polynomial spline parts
         if kwargs.has_key('spline_orders'):
@@ -213,10 +216,14 @@ class ControlSystem(object):
         
         # check if current and new value have the same type
         # --> should they always?
-        assert type(val) == type(self.mparam[param])
+        #assert type(val) == type(self.mparam[param])
         
         if param in {'spline_orders', 'nodes_type'}:
             raise NotImplementedError()
+        
+        if param == 'use_std_def' and val == True:
+            logging.warning('Method seems not to work with the standard spline definition yet.')
+            logging.warning('Please consider using the spline definition from the project thesis.')
         
         self.mparam[param] = val
     
@@ -463,7 +470,8 @@ class ControlSystem(object):
             Callable function for the input variables.
         '''
         
-        # do the first step
+        # do the first iteration step
+        logging.info("1st Iteration: %d spline parts"%self.mparam['sx'])
         self._iterate()
         
         # this was the first iteration
@@ -515,7 +523,8 @@ class ControlSystem(object):
                                        boundary_values=self._boundary_values,
                                        use_chains=self.mparam['use_chains'],
                                        spline_orders=self.mparam['spline_orders'],
-                                       nodes_type=self.mparam['nodes_type'])
+                                       nodes_type=self.mparam['nodes_type'],
+                                       use_std_def=self.mparam['use_std_def'])
         
         # Get a initial value (guess)
         self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
@@ -523,7 +532,8 @@ class ControlSystem(object):
                             new_splines=self.trajectories._splines)
         
         # Build the collocation equations system
-        G, DG = self.eqs.build(self, self.trajectories)
+        with Timer('Building equation system'):
+            G, DG = self.eqs.build(self, self.trajectories)
         
         # Solve the collocation equation system
         sol = self.eqs.solve(G, DG)
@@ -543,8 +553,6 @@ class ControlSystem(object):
             x_sym = self.x_sym
         
         self.reached_accuracy = self.trajectories.check_accuracy(self.sim_data, self.ff, x_sym, boundary_values)
-        
-        #IPS()
     
     
     def simulate(self):

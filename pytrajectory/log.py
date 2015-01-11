@@ -6,7 +6,7 @@ import logging
 
 DEBUG = True
 LOG2CONSOLE = True
-LOG2FILE = True
+LOG2FILE = False
 
 # get logger
 logger = logging.getLogger()

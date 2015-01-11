@@ -83,7 +83,7 @@ class Trajectory(object):
         '''
         
         if not self._a <= t <= self._b:
-            logging.warning("Time point 't' has to be in (a,b)")
+            #logging.warning("Time point 't' has to be in (a,b)")
             arr = np.array([self._u_fnc[uu](self._b) for uu in self._u_sym])
         else:
             arr = np.array([self._u_fnc[uu](t) for uu in self._u_sym])
@@ -112,7 +112,7 @@ class Trajectory(object):
     
     
     
-    def init_splines(self, sx, su, boundary_values, use_chains, spline_orders, nodes_type):
+    def init_splines(self, sx, su, boundary_values, use_chains, spline_orders, nodes_type, use_std_def):
         '''
         This method is used to create the necessary spline function objects.
         
@@ -164,11 +164,11 @@ class Trajectory(object):
                 # w.r.t. its lower end (whether it is an input variable or not)
                 if chain.lower.name.startswith('x'):
                     splines[upper] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[upper]}, tag=upper.name,
-                                                 nodes_type=nodes_type)
+                                                 nodes_type=nodes_type, use_std_def=use_std_def)
                     splines[upper].type = 'x'
                 elif chain.lower.name.startswith('u'):
                     splines[upper] = CubicSpline(self._a, self._b, n=su, bc={0:bv[lower]}, tag=upper.name,
-                                                 nodes_type=nodes_type)
+                                                 nodes_type=nodes_type, use_std_def=use_std_def)
                     splines[upper].type = 'u'
         
                 # search for boundary values to satisfy
@@ -194,7 +194,7 @@ class Trajectory(object):
                 #splines[xx] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True)
                 SplineClass = spline_classes[spline_orders[i]]
                 splines[xx] = SplineClass(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True,
-                                          nodes_type=nodes_type)
+                                          nodes_type=nodes_type, use_std_def=use_std_def)
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx]
         
@@ -204,7 +204,7 @@ class Trajectory(object):
                 #splines[uu] = CubicSpline(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True)
                 SplineClass = spline_classes[spline_orders[offset+j]]
                 splines[uu] = SplineClass(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True,
-                                          nodes_type=nodes_type)
+                                          nodes_type=nodes_type, use_std_def=use_std_def)
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu]
     
