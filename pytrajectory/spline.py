@@ -3,7 +3,7 @@ import sympy as sp
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
 
-import log
+from log import logging, Timer
 
 # DEBUG
 from IPython import embed as IPS
@@ -73,7 +73,7 @@ class CubicSpline():
     
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=None, bcd=None, bcdd=None, steady=True):
+    def __init__(self, a=0.0, b=1.0, n=10, tag='', bc=[None, None], bcd=[None, None], bcdd=[None, None], steady=True):
         self.a = a
         self.b = b
         self.n = int(n)
@@ -111,11 +111,11 @@ class CubicSpline():
         self.jpts = np.linspace(self.a, self.b, self.n+1)
 
         if (steady):
-            with log.Timer("makesteady()"):
+            with Timer("makesteady()"):
                 self.makesteady()
     
     
-    def prov_evalf(self, x, d):
+    def prov_evalf(self, t, d):
         '''
         This function yields a provisionally evaluation of the spline while there are no numerical 
         values for its free parameters.
@@ -126,27 +126,27 @@ class CubicSpline():
         Parameters
         ----------
         
-        x : real
+        t : real
             The point to evaluate the spline at
         
         d : int
             The derivation order
         '''
         
-        # Get the spline part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
+        # Get the spline part where t is in
+        i = int(np.floor(t*self.n/(self.b)))
         if (i == self.n): i-= 1
         
-        x -= (i+1)*self.h
-        #x -= self.jpts[i]
+        t -= (i+1)*self.h
+        #t -= self.jpts[i]
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if (d == 0):
-            p = np.array([x*x*x,x*x,x,1.0])
+            p = np.array([t*t*t,t*t,t,1.0])
         elif (d == 1):
-            p = np.array([3.0*x*x,2.0*x,1.0,0.0])
+            p = np.array([3.0*t*t,2.0*t,1.0,0.0])
         elif (d == 2):
-            p = np.array([6.0*x,2.0,0.0,0.0])
+            p = np.array([6.0*t,2.0,0.0,0.0])
         elif (d == 3):
             p = np.array([6.0,0.0,0.0,0.0])
         
@@ -156,56 +156,59 @@ class CubicSpline():
         return np.dot(p,M0), np.dot(p,m0)
     
     
-    def evalf(self, x, d):
+    def evalf(self, t, d):
         '''
-        Returns the value of the splines :attr:`d`-th derivative at :attr:`x`.
+        Returns the value of the splines :attr:`d`-th derivative at :attr:`t`.
         
         
         Parameters
         ----------
         
-        x : float
+        t : float
             The point to evaluate the spline at
         
         d : int
             The derivation order
         '''
         
-        # get polynomial part where x is in
-        i = int(np.floor(x*self.n/(self.b)))
+        # get polynomial part where t is in
+        i = int(np.floor(t*self.n/(self.b)))
+        # if `t` is equal to the right border, which is the last node, there is no
+        # corresponding spline part
+        # so we use the one before
         if (i == self.n): i-= 1
         p = self.S[i]
 
-        return p.deriv(d)(x-(i+1)*self.h)
-        #return p.deriv(d)(x-self.jpts[i])
+        return p.deriv(d)(t-(i+1)*self.h)
+        #return p.deriv(d)(t-self.jpts[i])
     
-    def f(self, x):
+    def f(self, t):
         '''This is just a wrapper to evaluate the spline itself.'''
         if self.prov_flag:
-            return self.prov_evalf(x,0)
+            return self.prov_evalf(t,0)
         else:
-            return self.evalf(x,0)
+            return self.evalf(t,0)
 
-    def df(self, x):
+    def df(self, t):
         '''This is just a wrapper to evaluate the splines 1st derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,1)
+            return self.prov_evalf(t,1)
         else:
-            return self.evalf(x,1)
+            return self.evalf(t,1)
 
-    def ddf(self, x):
+    def ddf(self, t):
         '''This is just a wrapper to evaluate the splines 2nd derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,2)
+            return self.prov_evalf(t,2)
         else:
-            return self.evalf(x,2)
+            return self.evalf(t,2)
 
-    def dddf(self, x):
+    def dddf(self, t):
         '''This is just a wrapper to evaluate the splines 3rd derivative.'''
         if self.prov_flag:
-            return self.prov_evalf(x,3)
+            return self.prov_evalf(t,3)
         else:
-            return self.evalf(x,3)
+            return self.evalf(t,3)
     
     
     def makesteady(self):
@@ -216,7 +219,7 @@ class CubicSpline():
         Please see the documentation for more details: :ref:`candidate_functions`
         '''
         
-        log.info("    makesteady: "+self.tag, verb=2)
+        logging.debug("makesteady: "+self.tag)
         
         # This should be untouched yet
         assert self.steady_flag == False
@@ -226,11 +229,11 @@ class CubicSpline():
 
         # mu represents degree of boundary conditions
         mu = -1
-        if (self.bc != None):
+        if (self.bc[0] is not None) and (self.bc[1] is not None):
             mu += 1
-        if (self.bcd != None):
+        if (self.bcd[0] is not None) and (self.bcd[1] is not None):
             mu += 1
-        if (self.bcdd != None):
+        if (self.bcdd[0] is not None) and (self.bcdd[1] is not None):
             mu += 1
 
         # now we determine the free parameters of the spline function
@@ -279,20 +282,23 @@ class CubicSpline():
             M[3*i:3*(i+1),4*i:4*(i+2)] = block
         
         # add equations for boundary conditions
-        if (self.bc != None):
+        if (self.bc[0] != None):
             M[3*(self.n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
-            M[3*(self.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
             r[3*(self.n-1)] = self.bc[0]
+        if (self.bc[1] != None):
+            M[3*(self.n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
             r[3*(self.n-1)+1] = self.bc[1]
-        if (self.bcd != None):
+        if (self.bcd[0] != None):
             M[3*(self.n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
-            M[3*(self.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
             r[3*(self.n-1)+2] = self.bcd[0]
+        if (self.bcd[1] != None):
+            M[3*(self.n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
             r[3*(self.n-1)+3] = self.bcd[1]
-        if (self.bcdd != None):
+        if (self.bcdd[0] != None):
             M[3*(self.n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
-            M[3*(self.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
             r[3*(self.n-1)+4] = self.bcdd[0]
+        if (self.bcdd[1] != None):
+            M[3*(self.n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
             r[3*(self.n-1)+5] = self.bcdd[1]
 
         # get A and B matrix --> see docu
@@ -308,13 +314,13 @@ class CubicSpline():
         a_mat = sparse.lil_matrix((N2,N2-N1))
         b_mat = sparse.lil_matrix((N2,N1))
         
-        for i,aa in enumerate(a):
+        for i, aa in enumerate(a):
             tmp = aa.name.split('_')[-2:]
             j = int(tmp[0])
             k = int(tmp[1])
             a_mat[4*j+k,i] = 1
 
-        for i,bb in enumerate(b):
+        for i, bb in enumerate(b):
             tmp = bb.name.split('_')[-2:]
             j = int(tmp[0])
             k = int(tmp[1])

@@ -44,5 +44,5 @@ Source Code
 
 .. only:: html
 
-   .. image:: /../pic/inv_pendulum.gif
+   .. image:: /../pic/inv_pend_trans.gif
 

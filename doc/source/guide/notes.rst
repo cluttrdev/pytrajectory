@@ -27,3 +27,9 @@ Smoothness and boundary conditions for the splines
 **************************************************
 
 ... to be continued!
+
+
+Some explanations on the method parameters
+******************************************
+
+... to be continued!

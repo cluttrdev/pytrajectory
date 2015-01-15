@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Acrobot &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>Acrobot &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../../index.html" />
     <link rel="up" title="Examples" href="index.html" />
-    <link rel="next" title="Notes on implementation" href="../notes.html" />
+    <link rel="next" title="Constrained double integrator" href="con_double_integrator.html" />
     <link rel="prev" title="Underactuated Manipulator" href="uact_manipulator.html" /> 
   </head>
   <body>
@@ -39,12 +39,12 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../notes.html" title="Notes on implementation"
+          <a href="con_double_integrator.html" title="Constrained double integrator"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="uact_manipulator.html" title="Underactuated Manipulator"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
       </ul>
@@ -68,7 +68,7 @@ with a homogeneous distribution of mass <img class="math" src="../../_images/mat
 This does not correspond to the proportions of a man, also no restrictions were placed
 on the mobility of the hip joint.</p>
 <p>The following figure shows the schematic representation of the model.</p>
-<a class="reference internal image-reference" href="../../_images/acrobot.png"><img alt="../../_images/acrobot.png" src="../../_images/acrobot.png" style="width: 247.2px; height: 188.8px;" /></a>
+<a class="reference internal image-reference" href="../../_images/acrobot.png"><img alt="../../_images/acrobot.png" src="../../_images/acrobot.png" /></a>
 <p>Using the previously assumed model parameters and the write abbreviations</p>
 <div class="math">
 <p><img src="../../_images/math/f3f0095f70ff28e9aceb49df29575b04f2204632.png" alt="\begin{eqnarray*}
@@ -107,7 +107,6 @@ position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d
 <span class="kn">from</span> <span class="nn">pytrajectory.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
 
 <span class="c"># define the function that returns the vectorfield</span>
 <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">u</span><span class="p">):</span>
@@ -139,19 +138,20 @@ position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d
 <span class="c"># system state boundary values for a = 0.0 [s] and b = 2.0 [s]</span>
 <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="mi">3</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mi">3</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="mi">1</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mi">1</span><span class="o">/</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values for the inputs</span>
-<span class="n">uab</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+<span class="n">ua</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
+<span class="n">ub</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># create trajectory object</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="n">uab</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">xa</span><span class="o">=</span><span class="n">xa</span><span class="p">,</span> <span class="n">xb</span><span class="o">=</span><span class="n">xb</span><span class="p">,</span> <span class="n">ua</span><span class="o">=</span><span class="n">ua</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">)</span>
 
 <span class="c"># alter some method parameters to increase performance</span>
 <span class="n">T</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s">&#39;su&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -182,8 +182,8 @@ position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d
   <p class="topless"><a href="uact_manipulator.html"
                         title="previous chapter">Underactuated Manipulator</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../notes.html"
-                        title="next chapter">Notes on implementation</a></p>
+  <p class="topless"><a href="con_double_integrator.html"
+                        title="next chapter">Constrained double integrator</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/guide/examples/acrobot.txt"
@@ -216,19 +216,19 @@ position <img class="math" src="../../_images/math/f861eb0dc0f495534a416a007f91d
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../notes.html" title="Notes on implementation"
+          <a href="con_double_integrator.html" title="Constrained double integrator"
              >next</a> |</li>
         <li class="right" >
           <a href="uact_manipulator.html" title="Underactuated Manipulator"
              >previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" >Examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

@@ -4,7 +4,6 @@
 from pytrajectory.trajectory import Trajectory
 import numpy as np
 from sympy import cos, sin
-from numpy import pi
 
 # define the function that returns the vectorfield
 def f(x,u):
@@ -36,19 +35,20 @@ def f(x,u):
 # system state boundary values for a = 0.0 [s] and b = 2.0 [s]
 xa = [  0.0,
         0.0,
-        3/2.0*pi,
+        3/2.0*np.pi,
         0.0]
 
 xb = [  0.0,
         0.0,
-        1/2.0*pi,
+        1/2.0*np.pi,
         0.0]
 
 # boundary values for the inputs
-uab = [0.0, 0.0]
+ua = [0.0]
+ub = [0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, g=uab)
+T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # alter some method parameters to increase performance
 T.setParam('su', 10)
@@ -91,8 +91,9 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'phi1'),(2,'phi2')], plotinputs=[(0,'u')])
     A.set_limits(xlim=(-1.1,1.1), ylim=(-1.1,1.1))
     
     A.animate()
-    A.save('ex5_Acrobot.mp4')
+    A.save('ex5_Acrobot.gif')

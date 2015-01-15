@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Translation of the inverted pendulum &mdash; pytrajectory 0.3.4 documentation</title>
+    <title>Translation of the inverted pendulum &mdash; pytrajectory 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.3.4',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="pytrajectory 0.3.4 documentation" href="../../index.html" />
+    <link rel="top" title="pytrajectory 0.4.0 documentation" href="../../index.html" />
     <link rel="up" title="Examples" href="index.html" />
-    <link rel="next" title="Swing up of the inverted double pendulum" href="inv_double_pendulum_swing.html" />
+    <link rel="next" title="Swing up of the inverted dual pendulum" href="inv_dual_pendulum_swing.html" />
     <link rel="prev" title="Examples" href="index.html" /> 
   </head>
   <body>
@@ -39,12 +39,12 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+          <a href="inv_dual_pendulum_swing.html" title="Swing up of the inverted dual pendulum"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Examples"
              accesskey="P">previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
       </ul>
@@ -64,7 +64,7 @@ The mass of the pendulum is concentrated in <img class="math" src="../../_images
 cart in <img class="math" src="../../_images/math/26a00c0666e9094d8aac94f0ef300011af9b38a5.png" alt="P_1"/>. The state vector of the system can be specified
 using the carts position <img class="math" src="../../_images/math/8f4117f82b4d0bf705d6d7cf4e3b5164e42335e4.png" alt="x_w(t)"/> and the pendulum deflection
 <img class="math" src="../../_images/math/048ae70a27bf19f8d5910fcd4a8be4990e3d9573.png" alt="\varphi(t)"/> and their derivatives.</p>
-<a class="reference internal image-reference" href="../../_images/inv_pendulum.png"><img alt="../../_images/inv_pendulum.png" src="../../_images/inv_pendulum.png" style="width: 230.4px; height: 192.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/inv_pendulum.png"><img alt="../../_images/inv_pendulum.png" src="../../_images/inv_pendulum.png" /></a>
 <p>With the <em>Lagrangian Formalism</em> the model has the following state
 representation where <img class="math" src="../../_images/math/2ae3245358b001429a077ec2599d726781f78262.png" alt="u_1 = F"/> and
 <img class="math" src="../../_images/math/71f6bb0fe3835795a48a76ce4e2f4950a69451d8.png" alt="x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]"/></p>
@@ -114,11 +114,11 @@ The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7a
 <span class="c"># boundary values at the start (a = 0.0 [s])</span>
 <span class="n">xa</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
 
 <span class="c"># boundary values at the end (b = 1.0 [s])</span>
-<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">0.0</span><span class="p">,</span>
+<span class="n">xb</span> <span class="o">=</span> <span class="p">[</span>  <span class="mf">1.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">,</span>
         <span class="mf">0.0</span><span class="p">]</span>
@@ -133,7 +133,7 @@ The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7a
 <span class="n">T</span><span class="o">.</span><span class="n">startIteration</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/inv_pendulum.gif" src="../../_images/inv_pendulum.gif" />
+<img alt="../../_images/inv_pend_trans.gif" src="../../_images/inv_pend_trans.gif" />
 </div>
 </div>
 
@@ -155,8 +155,8 @@ The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7a
   <p class="topless"><a href="index.html"
                         title="previous chapter">Examples</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="inv_double_pendulum_swing.html"
-                        title="next chapter">Swing up of the inverted double pendulum</a></p>
+  <p class="topless"><a href="inv_dual_pendulum_swing.html"
+                        title="next chapter">Swing up of the inverted dual pendulum</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/guide/examples/inv_pendulum_trans.txt"
@@ -189,19 +189,19 @@ The operating time here is <img class="math" src="../../_images/math/fe3eb0ccd7a
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="inv_double_pendulum_swing.html" title="Swing up of the inverted double pendulum"
+          <a href="inv_dual_pendulum_swing.html" title="Swing up of the inverted dual pendulum"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Examples"
              >previous</a> |</li>
-        <li><a href="../../index.html">pytrajectory 0.3.4 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">pytrajectory 0.4.0 documentation</a> &raquo;</li>
           <li><a href="../index.html" >PyTrajectory User&#8217;s Guide</a> &raquo;</li>
           <li><a href="index.html" >Examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, Andreas Kunze.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

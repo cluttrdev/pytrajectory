@@ -1,11 +1,11 @@
 .. _ex_inv_dbl_pend:
 
-Swing up of the inverted double pendulum
-----------------------------------------
+Swing up of the inverted dual pendulum
+--------------------------------------
 
 In this example we add another pendulum to the cart in the system.
 
-.. image:: /../pic/inv_double_pendulum.png
+.. image:: /../pic/inv_dual_pendulum.png
    :scale: 80
 
 The system has the state vector :math:`x = [x_1, \dot{x}_1, 
@@ -44,10 +44,10 @@ same position again and the pendulums should be at rest with
 Source Code
 +++++++++++
 
-.. literalinclude:: /../../examples/ex2_InvertedDoublePendulumOscillation.py
+.. literalinclude:: /../../examples/ex2_InvertedDualPendulumSwingUp.py
    :lines: 1-46
 
 .. only:: html
 
-   .. image:: /../pic/inv_double_pendulum.gif
+   .. image:: /../pic/inv_dual_pend_swing.gif
 

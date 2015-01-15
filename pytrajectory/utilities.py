@@ -1,31 +1,33 @@
 import numpy as np
+import sympy as sp
 from sympy.core.symbol import Symbol
 
 import matplotlib as mpl
+mpl.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
 
 from IPython import embed as IPS
 
-# for import of PyMbs motion equations
-from sympy import *
 import os
+import time
 
-class IntegChain():
+from log import logging
+
+
+class IntegChain(object):
     '''
-    This class provides a representation of a integrator chain consisting of sympy symbols.
+    This class provides a representation of an integrator chain consisting of sympy symbols.
     
     For the elements :math:`(x_i)_{i=1,...,n}` the relation
-    :math:`\dot{x}_i = x_{i+1}` applies:
-    
+    :math:`\dot{x}_i = x_{i+1}` applies.
     
     Parameters
     ----------
     
     lst : list
         Ordered list of elements for the integrator chain
-    
     
     Attributes
     ----------
@@ -108,7 +110,7 @@ class Animation():
         self.draw = drawfnc
         
         # enable LaTeX text rendering --> slow
-        plt.rc('text', usetex=True)
+        #plt.rc('text', usetex=True)
     
     
     class Image():
@@ -183,12 +185,34 @@ class Animation():
         xt = self.xt
         ut = self.ut
         
-        tt = np.linspace(0,(len(t)-1),self.nframes+1,endpoint=True)
+        # NEW: try to repeat first and last frame
+        pause_time = 1.0 #[s]
         
-        self.T = t[-1] - t[0]
+        # how many frames will be plotted per second of system time
+        fps = self.nframes/(t[-1] - t[0])
+        
+        # add so many frames that they fill the `pause`
+        add_frames = int(fps * pause_time)
+        
+        for i in xrange(add_frames):
+            t = np.hstack((t[0],t,t[-1]))
+            xt = np.vstack((xt[0],xt,xt[-1]))
+            ut = np.vstack((ut[0],ut,ut[-1]))
+        
+        
+        #tt = np.linspace(0,len(t)-1,self.nframes,endpoint=True)
+        tt = np.linspace(0,xt.shape[0]-1,self.nframes,endpoint=True)
+        tt = np.hstack(([tt[0]]*add_frames,tt,[tt[-1]]*add_frames))
+        
+        self.T = t[-1] - t[0] + 2 * pause_time
+        
+        # raise number of frames
+        self.nframes += 2 * add_frames
+        
+        #IPS()
         
         # set axis limits and labels of system curves
-        xlim = (0.0, self.T)
+        xlim = (0.0, self.T - 2 * pause_time)
         for i, idxlabel in enumerate(self.plotsys):
             idx, label = idxlabel
             
@@ -214,7 +238,7 @@ class Animation():
         
         def _animate(frame):
             i = tt[frame]
-            print frame
+            print "frame = {f}, t = {t}, x = {x}, u = {u}".format(f=frame, t=t[i], x=xt[i,:], u=ut[i,:])
             
             # draw picture
             image = self.image
@@ -239,10 +263,6 @@ class Animation():
             for l in image.lines:
                 ax_img.add_line(l)
             
-            # automatically set limits --> does not work as wanted
-            #ax_img.relim()
-            #ax_img.autoscale_view()
-            
             self.image = image
             self.axes['ax_img'] = ax_img
             
@@ -264,7 +284,8 @@ class Animation():
             
             plt.draw()
         
-        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, interval=1, blit=True)
+        self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, 
+                                            interval=1, blit=True)
     
     
     def save(self, fname, fps=None, dpi=200):
@@ -272,19 +293,19 @@ class Animation():
         Saves the animation as a video file or animated gif.
         '''
         if not fps:
-            fps = self.nframes/float(self.T)
+            fps = self.nframes/(float(self.T))  # add pause_time here?
         
         if fname.endswith('gif'):
             self.anim.save(fname, writer='imagemagick', fps=fps)
         else:
-            self.anim.save(fname, fps=fps, dpi=dpi)
+            FFWriter = animation.FFMpegFileWriter()
+            self.anim.save(fname, fps=fps, dpi=dpi, writer='mencoder')
 
 
 def plotsim(sim, H, fname=None):
     '''
     This method provides graphics for each system variable, manipulated
     variable and error function and plots the solution of the simulation.
-    
     
     Parameters
     ----------

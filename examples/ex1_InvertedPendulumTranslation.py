@@ -28,11 +28,11 @@ def f(x,u):
 # boundary values at the start (a = 0.0 [s])
 xa = [  0.0,
         0.0,
-        np.pi,
+        0.0,
         0.0]
 
 # boundary values at the end (b = 1.0 [s])
-xb = [  0.0,
+xb = [  1.0,
         0.0,
         0.0,
         0.0]
@@ -91,8 +91,12 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim)
-    A.set_limits(xlim=(-0.3,0.8), ylim=(-0.1,0.6))
+    A = Animation(drawfnc=draw, simdata=T.sim,
+                  plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
+    
+    xmin = np.min(T.sim[1][:,0])
+    xmax = np.max(T.sim[1][:,0])
+    A.set_limits(xlim=(xmin - 0.5,xmax + 0.5), ylim=(-0.3,0.8))
     
     A.animate()
-    A.save('ex1_InvertedPendulumTranslation.mp4')
+    A.save('ex1_InvertedPendulumTranslation.gif')
