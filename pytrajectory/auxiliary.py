@@ -7,7 +7,11 @@ from log import logging, Timer
 
 from IPython import embed as IPS
 
-
+# The code following python class `BetweenDict` was written
+# by Joshua Kugler and has been taken from
+# 
+# http://joshuakugler.com/archives/30-BetweenDict,-a-Python-dict-for-value-ranges.html
+# 
 class BetweenDict(dict):
     def __init__(self, d = {}):
         for k, v in d.iteritems():
@@ -289,8 +293,9 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
                     # 
                     # we just take an arbitrary input, multiply it with 0 and add it
                     # to the current element (constant)
-                    expr = sp.Mul(0.0, x_sym[0], evaluate=False)
-                    F[i,j] = sp.Add(F[i,j], expr, evaluate=False)
+                    expr_mul = sp.Mul(0.0, x_sym[0], evaluate=False)
+                    expr_add = sp.Add(x_sym[0], -x_sym[0], evaluate=False)
+                    F[i,j] = sp.Add(F[i,j], expr_add, evaluate=False)
         
         # if it is a vector, squeeze it
         if min(F.shape) == 1:

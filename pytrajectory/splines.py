@@ -37,18 +37,12 @@ class Spline(object):
     poly_order : int
         The order of the polynomial spline parts.
     
-    nodes_type : str
-        The type of the spline nodes (equidistant/chebychev).
-    
     steady : bool
         Whether or not to call :meth:`make_steady()` when instanciated.
     
-    use_std_def : bool
-        Whether to use the standard spline definition 
-        or the one used in Oliver Schnabel's project thesis
     '''
     
-    def __init__(self, a=0.0, b=1.0, n=10, bc={}, poly_order=-1, nodes_type='equidistant', steady=False, tag='', use_std_def=False):
+    def __init__(self, a=0.0, b=1.0, n=10, bc={}, poly_order=-1, steady=False, tag=''):
         # interval boundaries
         assert a < b
         self.a = a
@@ -88,8 +82,7 @@ class Spline(object):
         self._coeffs = sp.symarray('c'+tag, (self.n, self._poly_order+1))
         
         # calculate nodes of the spline
-        self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type)
-        self._nodes_type = nodes_type
+        self.nodes = get_spline_nodes(self.a, self.b, self.n+1)
         
         # create an dictionary with
         #   key: the intervals defined by the spline nodes
@@ -130,10 +123,6 @@ class Spline(object):
         # the free parameters of the spline
         self._indep_coeffs = np.array([])
         
-        # whether to use the standard spline definition (True)
-        # or the one used in Oliver Schnabel's project thesis (False)
-        self._use_std_def = use_std_def
-        
         if steady:
             self.make_steady()
     
@@ -145,10 +134,7 @@ class Spline(object):
         # get polynomial part where t is in
         i = self._nodes_dict[t]
         
-        if self._use_std_def:
-            return self._S[i](t - self.nodes[i])
-        else:
-            return self._S[i](t - self.nodes[i+1])
+        return self._S[i](t - self.nodes[i+1])
         
     
     def is_constant(self):
@@ -230,18 +216,15 @@ class Spline(object):
         # determine the spline part to evaluate
         i = self._nodes_dict[t]
         
-        if self._use_std_def:
-            t = t - self.nodes[i]
-        else:
-            t = t - self.nodes[i+1]
+        t = t - self.nodes[i+1]
         
         tt = [t*t*t, t*t, t, 1.0][-(self._poly_order + 1):]
         
-        M0 = self._dep_array[i]
-        m0 = self._dep_array_abs[i]
+        D = self._dep_array[i]
+        Da = self._dep_array_abs[i]
         
-        dep_vec = np.dot(tt,M0)
-        dep_vec_abs = np.dot(tt,m0)
+        dep_vec = np.dot(tt,D)
+        dep_vec_abs = np.dot(tt,Da)
         
         return dep_vec, dep_vec_abs
     
@@ -274,7 +257,8 @@ class Spline(object):
             if not (self.n == coeffs.shape[0]):
                 logging.error('Dimension mismatch in number of spline parts ({}) and \
                             rows in coefficients array ({})'.format(self.n, coeffs.shape[0]))
-                raise ValueError
+                raise ValueError('Dimension mismatch in number of spline parts ({}) and \
+                            rows in coefficients array ({})'.format(self.n, coeffs.shape[0]))
             elif not (self._poly_order + 1 == coeffs.shape[1]):
                 logging.error('Dimension mismatch in number of polynomial coefficients ({}) and \
                             columns in coefficients array ({})'.format(self._poly_order + 1, coeffs.shape[1]))
@@ -294,8 +278,9 @@ class Spline(object):
             # a little check
             if not (self._indep_coeffs.size == free_coeffs.size):
                 logging.error('Got {} values for the {} independent coefficients.'\
-                                .format(free_coeffs.size,self._indep_coeffs.size))
-                raise ValueError
+                                .format(free_coeffs.size, self._indep_coeffs.size))
+                raise ValueError('Got {} values for the {} independent coefficients.'\
+                                .format(free_coeffs.size, self._indep_coeffs.size))
             
             # set the numerical values
             self._indep_coeffs = free_coeffs
@@ -308,7 +293,7 @@ class Spline(object):
         else:
             # not sure...
             logging.error('Not sure what to do, please either pass `coeffs` or `free_coeffs`.')
-            raise RuntimeError
+            raise TypeError('Not sure what to do, please either pass `coeffs` or `free_coeffs`.')
         
         # now we have numerical values for the coefficients so we can set this to False
         self._prov_flag = False
@@ -372,31 +357,31 @@ class ConstantSpline(Spline):
     '''
     This class provides a spline object with piecewise constant polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag='', use_std_def=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, nodes_type=nodes_type, steady=steady, use_std_def=use_std_def)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=0, steady=steady)
 
 class LinearSpline(Spline):
     '''
     This class provides a spline object with piecewise linear polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag='', use_std_def=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, nodes_type=nodes_type, steady=steady, use_std_def=use_std_def)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=1, steady=steady)
 
 
 class QuadraticSpline(Spline):
     '''
     This class provides a spline object with piecewise quadratic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag='', use_std_def=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, nodes_type=nodes_type, steady=steady, use_std_def=use_std_def)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=2, steady=steady)
 
 
 class CubicSpline(Spline):
     '''
     This class provides a spline object with piecewise cubic polynomials.
     '''
-    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), nodes_type='equidistant', steady=False, tag='', use_std_def=False):
-        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, nodes_type=nodes_type, steady=steady, use_std_def=use_std_def)
+    def __init__(self, a=0.0, b=1.0, n=10, bc=dict(), steady=False, tag=''):
+        Spline.__init__(self, a=a, b=b, n=n, tag=tag, bc=bc, poly_order=3, steady=steady)
             
 
 def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
@@ -422,20 +407,6 @@ def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
     
     if nodes_type == 'equidistant':
         nodes = np.linspace(a, b, n, endpoint=True)
-    elif nodes_type == 'chebychev':
-        # determine rank of chebychev polynomial
-        # of which to calculate zero points
-        nc = int(n) - 2
-
-        # calculate zero points of chebychev polynomial --> in [-1,1]
-        cheb_cpts = [np.cos( (2.0*i+1)/(2*(nc+1)) * np.pi) for i in xrange(nc)]
-        cheb_cpts.sort()
-
-        # transfer chebychev nodes from [-1,1] to our interval [a,b]
-        chpts = [a + (b-a)/2.0 * (chp + 1) for chp in cheb_cpts]
-
-        # add left and right borders
-        nodes = np.hstack((a, chpts, b))
     else:
         raise NotImplementedError()
     
@@ -561,7 +532,7 @@ def differentiate(S, d=1, new_tag=''):
 def make_steady(S):
     '''
     This method sets up and solves equations that satisfy boundary conditions and
-    ensure steadiness and smoothness conditions of the spline :attr:`S` in every joining point.
+    ensure steadiness and smoothness conditions of the spline `S` in every joining point.
     
     Please see the documentation for more details: :ref:`candidate_functions`
     
@@ -569,7 +540,7 @@ def make_steady(S):
     ----------
     
     S : Spline
-        The spline function object to solve smoothness and boundary conditions for.
+        The spline function object for which to solve smoothness and boundary conditions.
     '''
     
     # This should be yet untouched
@@ -638,13 +609,11 @@ def make_steady(S):
     N1 = S._poly_order * (S.n - 1) + 2 * (nu + 1)
     N2 = (S._poly_order + 1) * S.n
     
-    # the following may cause MemoryError
-    # TODO: (optionally) introduce sparse matrix already here
-    #M = np.zeros((N1,N2))
-    #r = np.zeros(N1)
+    # get matrix and right hand site of the equation system
+    # that ensures smoothness and compliance with the boundary values
     M, r = get_smoothness_matrix(S, N1, N2)
     
-    # get A and B matrix --> see docu
+    # get A and B matrix such that
     #
     #       M*c = r
     # A*a + B*b = r
@@ -818,66 +787,35 @@ def get_smoothness_matrix(S, N1, N2):
     if S.is_constant():
         raise NotImplementedError()
     
-    if S._use_std_def:
-        for k in xrange(n-1):
-            if S.is_cubic():
-                block = np.array([[  h[k]**3, h[k]**2,  h[k], 1.0, 0.0, 0.0, 0.0, -1.0],
-                                  [3*h[k]**2,  2*h[k],  1.0,  0.0, 0.0, 0.0, -1.0, 0.0],
-                                  [  6*h[k],    2.0,    0.0,  0.0, 0.0, -2.0, 0.0, 0.0]])
-            elif S.is_quadratic():
-                block = np.array([[h[k]**2, h[k], 1.0, 0.0, 0.0, -1.0],
-                                  [ 2*h[k],  1.0, 0.0, 0.0, -1.0, 0.0]])
-            elif S.is_linear():
-                block = np.array([[h[k], 1.0, 0.0, -1.0]])
-        
-            M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
+    for k in xrange(n-1):
+        if S.is_cubic():
+            block = np.array([[0.0, 0.0, 0.0, 1.0,   h[k]**3, -h[k]**2, h[k], -1.0],
+                              [0.0, 0.0, 1.0, 0.0, -3*h[k]**2,  2*h[k], -1.0,  0.0],
+                              [0.0, 2.0, 0.0, 0.0,   6*h[k],    -2.0,    0.0,  0.0]])
+        elif S.is_quadratic():
+            block = np.array([[0.0, 0.0, 1.0, -h[k]**2, h[k], -1.0],
+                              [0.0, 1.0, 0.0,  2*h[k],  -1.0, 0.0]])
+        elif S.is_linear():
+            block = np.array([[0.0, 1.0, h[k], -1.0]])
     
-        # add equations for boundary conditions
-        if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
-            M[po*(n-1),0:(po+1)] =   np.array([   0.0,       0.0,     0.0,   1.0])
-            M[po*(n-1)+1,-(po+1):] = np.array([h[n-1]**3, h[n-1]**2, h[n-1], 1.0])
-            r[po*(n-1)] = S._bc[0][0]
-            r[po*(n-1)+1] = S._bc[0][1]
-        if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
-            M[po*(n-1)+2,0:(po+1)] = np.array([    0.0,       0.0,    1.0, 0.0])
-            M[po*(n-1)+3,-(po+1):] = np.array([3*h[n-1]**2, 2*h[n-1], 1.0, 0.0])
-            r[po*(n-1)+2] = S._bc[1][0]
-            r[po*(n-1)+3] = S._bc[1][1]
-        if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
-            M[po*(n-1)+4,0:(po+1)] = np.array([  0.0,    2.0, 0.0, 0.0])
-            M[po*(n-1)+5,-(po+1):] = np.array([6*h[n-1], 2.0, 0.0, 0.0])
-            r[po*(n-1)+4] = S._bc[2][0]
-            r[po*(n-1)+5] = S._bc[2][1]
-    else:
-        for k in xrange(n-1):
-            if S.is_cubic():
-                block = np.array([[0.0, 0.0, 0.0, 1.0,   h[k]**3, -h[k]**2, h[k], -1.0],
-                                  [0.0, 0.0, 1.0, 0.0, -3*h[k]**2,  2*h[k], -1.0,  0.0],
-                                  [0.0, 2.0, 0.0, 0.0,   6*h[k],    -2.0,    0.0,  0.0]])
-            elif S.is_quadratic():
-                block = np.array([[0.0, 0.0, 1.0, -h[k]**2, h[k], -1.0],
-                                  [0.0, 1.0, 0.0,  2*h[k],  -1.0, 0.0]])
-            elif S.is_linear():
-                block = np.array([[0.0, 1.0, h[k], -1.0]])
-        
-            M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
-        
-        # add equations for boundary conditions
-        if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
-            M[po*(n-1),0:(po+1)] =   np.array([-h[n-1]**3, h[n-1]**2, -h[n-1], 1.0])
-            M[po*(n-1)+1,-(po+1):] = np.array([    0.0,        0.0,     0.0,   1.0])
-            r[po*(n-1)] = S._bc[0][0]
-            r[po*(n-1)+1] = S._bc[0][1]
-        if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
-            M[po*(n-1)+2,0:(po+1)] = np.array([3*h[n-1]**2, -2*h[n-1], 1.0, 0.0])
-            M[po*(n-1)+3,-(po+1):] = np.array([    0.0,        0.0,    1.0, 0.0])
-            r[po*(n-1)+2] = S._bc[1][0]
-            r[po*(n-1)+3] = S._bc[1][1]
-        if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
-            M[po*(n-1)+4,0:(po+1)] = np.array([-6*h[n-1], 2.0, 0.0, 0.0])
-            M[po*(n-1)+5,-(po+1):] = np.array([   0.0,    2.0, 0.0, 0.0])
-            r[po*(n-1)+4] = S._bc[2][0]
-            r[po*(n-1)+5] = S._bc[2][1]
+        M[po*k:po*(k+1),(po+1)*k:(po+1)*(k+2)] = block
+    
+    # add equations for boundary conditions
+    if S._bc.has_key(0) and not any(item is None for item in S._bc[0]):
+        M[po*(n-1),0:(po+1)] =   np.array([-h[n-1]**3, h[n-1]**2, -h[n-1], 1.0])
+        M[po*(n-1)+1,-(po+1):] = np.array([    0.0,        0.0,     0.0,   1.0])
+        r[po*(n-1)] = S._bc[0][0]
+        r[po*(n-1)+1] = S._bc[0][1]
+    if S._bc.has_key(1) and not any(item is None for item in S._bc[1]):
+        M[po*(n-1)+2,0:(po+1)] = np.array([3*h[n-1]**2, -2*h[n-1], 1.0, 0.0])
+        M[po*(n-1)+3,-(po+1):] = np.array([    0.0,        0.0,    1.0, 0.0])
+        r[po*(n-1)+2] = S._bc[1][0]
+        r[po*(n-1)+3] = S._bc[1][1]
+    if S._bc.has_key(2) and not any(item is None for item in S._bc[2]):
+        M[po*(n-1)+4,0:(po+1)] = np.array([-6*h[n-1], 2.0, 0.0, 0.0])
+        M[po*(n-1)+5,-(po+1):] = np.array([   0.0,    2.0, 0.0, 0.0])
+        r[po*(n-1)+4] = S._bc[2][0]
+        r[po*(n-1)+5] = S._bc[2][1]
     
     return M, r
 
@@ -905,18 +843,13 @@ def interpolate(S=None, fnc=None, points=None, **kwargs):
         The number of nodes that the interpolating spline should have
         (if the interpolant `S` is not given).
     
-    nodes_type : str
-        The type of the spline nodes (if the interpolant `S` is not given).
-    
     spline_order : int
         The polynomial order of the spline parts (if the interpolant `S` is not given).
     
     '''
     
     params = {'n_nodes' : 100,
-              'nodes_type' : 'equidistant',
-              'spline_order' : 3,
-              'use_std_def' : True}
+              'spline_order' : 3}
     
     # check for given keyword arguments
     for k, v in kwargs.items():
@@ -927,9 +860,7 @@ def interpolate(S=None, fnc=None, points=None, **kwargs):
     
     if isinstance(S, Spline):
         params['n_nodes'] = S.n + 1
-        params['nodes_type'] = S._nodes_type
         params['spline_order'] = S._poly_order
-        params['use_std_def'] = S._use_std_def
     
     # first check passed arguments
     try:
@@ -981,17 +912,13 @@ def interpolate(S=None, fnc=None, points=None, **kwargs):
         spline_was_given = False
         
         if params['spline_order'] == 0:
-            S = ConstantSpline(a=nodes[0], b=nodes[-1], n=nodes.size, 
-                                nodes_type=params['nodes_type'], use_std_def=params['use_std_def'])
+            S = ConstantSpline(a=nodes[0], b=nodes[-1], n=nodes.size)
         elif params['spline_order'] == 1:
-            S = LinearSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, 
-                                nodes_type=params['nodes_type'], use_std_def=params['use_std_def'])
+            S = LinearSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
         elif params['spline_order'] == 2:
-            S = QuadraticSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, 
-                                nodes_type=params['nodes_type'], use_std_def=params['use_std_def'])
+            S = QuadraticSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
         elif params['spline_order'] == 3:
-            S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1, 
-                                nodes_type=params['nodes_type'], use_std_def=params['use_std_def'])
+            S = CubicSpline(a=nodes[0], b=nodes[-1], n=nodes.size - 1)
     else:
         spline_was_given = True
         
@@ -1008,17 +935,11 @@ def interpolate(S=None, fnc=None, points=None, **kwargs):
     if S._steady_flag:
         _interpolate_steady_spline(S, fnc=fnc, points=points)
     else:
-        if S._use_std_def:
-            _interpolate_non_steady_spline(S, nodes=nodes, values=values)
-        else:
-            logging.warning('Standard spline interpolation only works ' + 
-                            'if spline object uses the standard spline ' +
-                            'definition!')
-            # solve steadiness and smoothness conditions
-            S.make_steady()
-            
-            # use the other `interpolation` method
-            _interpolate_steady_spline(S, fnc=fnc, points=points)
+        # solve steadiness and smoothness conditions
+        S.make_steady()
+        
+        # use the other `interpolation` method
+        _interpolate_steady_spline(S, fnc=fnc, points=points)
     
     if not spline_was_given:
         return S
@@ -1098,114 +1019,6 @@ def _interpolate_steady_spline(S, fnc=None, points=None):
     S.set_coefficients(free_coeffs=free_coeffs)
 
 
-def _interpolate_non_steady_spline(S, nodes, values):
-    '''
-    '''
-    
-    # set up and solve the interpolation equation system
-    if S.is_cubic():
-        # create vector of step sizes
-        h = np.array([nodes[k+1] - nodes[k] for k in xrange(nodes.size-1)])
-        
-        # create diagonals for the coefficient matrix of the equation system
-        l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(nodes.size-2)])
-        d = 2.0*np.ones(nodes.size-2)
-        u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(nodes.size-2)])
-        
-        # right hand site of the equation system
-        r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
-                        for k in xrange(nodes.size-2)])
-        
-        # add conditions for unique solution
-        # 
-        # natural spline
-        l = np.hstack([l, 1.0, 0.0])
-        d = np.hstack([2.0, d, 2.0])
-        u = np.hstack([0.0, 1.0, u])
-        r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
-        
-        data = [l,d,u]
-        offsets = [-1, 0, 1]
-        
-        # create tridiagonal coefficient matrix
-        D = sparse.dia_matrix((data, offsets), shape=(S.n+1, S.n+1))
-        
-        # solve the equation system
-        sol = sparse.linalg.spsolve(D.tocsr(),r)
-        
-        # calculate the coefficients
-        coeffs = np.zeros((S.n, 4))
-        
-        for i in xrange(S.n):
-            coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
-                         3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
-                         sol[i],
-                         values[i]]
-    
-    elif S.is_quadratic():
-        # let `t[i]` be the i-th node and let `z[i]` be the value of the i-th spline part at `t[i]`
-        # then it is easy to verify that for i = 0,...,n-1
-        # 
-        #              (z[i+1] - z[i])                2
-        # S[i](t) = --------------------- * (t - t[i])  + z[i] * (t - t[i]) + y[i]
-        #           (2 * (t[i+1] - t[i]))
-        # 
-        # where `y[i]` is the value the spline should take at `t[i]`
-        
-        # given a `z[0]` we can construct the rest, using the condition S[i](t[i+1]) = y[i+1]
-        z = np.zeros(S.n + 1)
-        
-        z[0] = (values[1] - values[0]) / (nodes[1] - nodes[0])
-        for i in xrange(S.n):
-            z[i+1] = -z[i] + 2.0 * (values[i+1] - values[i]) / (nodes[i+1] - nodes[i])
-        
-        # calculate resulting coefficients
-        coeffs = np.zeros((S.n, 3))
-        
-        for i in xrange(S.n):
-            coeffs[i, :] = [(z[i+1] - z[i]) / (2.0 * (nodes[i+1] - nodes[i])),
-                             z[i],
-                             values[i]]
-    
-    elif S.is_linear():
-        coeffs = np.zeros((S.n, 2))
-        
-        for i in xrange(S.n):
-            coeffs[i,0] = (values[i+1] - values[i]) / (nodes[i+1] - nodes[i])
-        coeffs[:,1] = values[:-1]
-    
-    elif S.is_constant():
-        # to get a constant interpolant we use the nearest neighbor interpolation
-        # 
-        # therefore we have to recalculate the spline nodes
-        # as the midpoints of the current interval parts
-        # 
-        # to keep the interval borders we have to add a node
-        # (and therefore a spline part in the initialisation above)
-        new_nodes = np.zeros(nodes.size + 1)
-        new_nodes[0] = nodes[0]
-        new_nodes[-1] = nodes[-1]
-        for i in xrange(1, nodes.size):
-            new_nodes[i] = 0.5 * (nodes[i-1] + nodes[i])
-        
-        # change spline nodes manually
-        S.nodes = new_nodes
-        S._nodes_dict = BetweenDict()
-        for i in xrange(S.n):
-            key = (new_nodes[i], new_nodes[i+1])
-            S._nodes_dict[key] = i
-        S._nodes_dict[(new_nodes[-1], np.inf)] = S.n - 1
-        
-        coeffs = np.zeros((S.n, 1))
-        coeffs[:,0] = values[:]
-    
-    # set solution
-    S.set_coefficients(coeffs=coeffs)
-    
-    S._steady_flag = True
-    
-    
-    
         
 
 

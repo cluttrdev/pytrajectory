@@ -75,7 +75,7 @@ class Solver:
         i = 0
         x = self.x0
         res = 1
-        res_alt = 1e10
+        res_alt = -1
         
         eye = scp.sparse.identity(len(self.x0))
 

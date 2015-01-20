@@ -332,36 +332,25 @@ class CollocationSystem(object):
                     s_new = new_splines[k]
                     s_old = old_splines[k]
                     
-                    if s_new._use_std_def:
-                        s_interp = interpolate(fnc=s_old, points=s_new.nodes, nodes_type=s_old._nodes_type)
+                    # how many independent coefficients does the spline have
+                    coeffs_size = s_new._indep_coeffs.size
                     
-                        # get indices of new independent coefficients
-                        idx = [(int(i),int(j)) for i,j in [coeff.name.split('_')[-2:] for coeff in s_new._indep_coeffs]]
+                    # generate points to evaluate the old spline at
+                    # (new and old spline should be equal in these)
+                    #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=False)
+                    guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
                     
-                        # get values for them from the interpolant
-                        interp_guess = np.array([s_interp._coeffs[ij] for ij in idx])
+                    # evaluate the splines
+                    s_old_t = np.array([s_old(t) for t in guess_points])
                     
-                        guess = np.hstack((guess,interp_guess))
-                    else:
-                        # how many independent coefficients does the spline have
-                        coeffs_size = s_new._indep_coeffs.size
-                        
-                        # generate points to evaluate the old spline at
-                        # (new and old spline should be equal in these)
-                        #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=False)
-                        guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
-                        
-                        # evaluate the splines
-                        s_old_t = np.array([s_old(t) for t in guess_points])
-                        
-                        dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
-                        s_new_t = np.array([vec[0] for vec in dep_vecs])
-                        s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
-                        
-                        #old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
-                        old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
-                        
-                        guess = np.hstack((guess, old_style_guess))
+                    dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
+                    s_new_t = np.array([vec[0] for vec in dep_vecs])
+                    s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
+                    
+                    #old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
+                    old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
+                    
+                    guess = np.hstack((guess, old_style_guess))
                         
                 else:
                     # if it is a input variable, just take the old solution
@@ -429,13 +418,6 @@ class CollocationSystem(object):
         
         # solve the equation system
         self.sol = solver.solve()
-        
-        #print "SOLVE"
-        #IPS()
-        
-        #from scipy import optimize as op
-        #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
-        #IPS()
         
         return self.sol
 
