@@ -95,7 +95,10 @@ class ControlSystem(object):
                         'use_chains' : True,
                         'coll_type' : 'equidistant',
                         'use_sparse' : True,
-                        'sol_steps' : 100}
+                        'sol_steps' : 100,
+                        'spline_order' : [3],
+                        'nodes_type' : 'equidistant',
+                        'use_std_def' : False}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
@@ -161,6 +164,27 @@ class ControlSystem(object):
         # a numeric one for faster evaluation
         self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, vectorized=False)
         
+        # set order of the polynomial spline parts
+        if kwargs.has_key('spline_orders'):
+            raise NotImplementedError()
+            
+            orders = kwargs['spline_orders']
+            if hasattr(orders, '__iter__'):
+                assert len(orders) == len(self.x_sym + self.u_sym)
+                self.mparam['spline_orders'] = [int(order) for order in orders]
+            elif type(orders) in {dict}:
+                raise NotImplementedError
+            else:
+                try:
+                    order = int(orders)
+                    self.mparam['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
+                except:
+                    logging.warning('Could not set spline orders to `{}`, \
+                                     will use cubic polynomial parts.'.format(orders))
+                    self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
+        else:
+            self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
+        
         # Create trajectory and equation system objects
         self.trajectories = Trajectory(self)
         self.eqs = CollocationSystem(self)
@@ -193,6 +217,13 @@ class ControlSystem(object):
         # check if current and new value have the same type
         # --> should they always?
         #assert type(val) == type(self.mparam[param])
+        
+        if param in {'spline_orders', 'nodes_type'}:
+            raise NotImplementedError()
+        
+        if param == 'use_std_def' and val == True:
+            logging.warning('Method seems not to work with the standard spline definition yet.')
+            logging.warning('Please consider using the spline definition from the project thesis.')
         
         self.mparam[param] = val
     
@@ -490,7 +521,10 @@ class ControlSystem(object):
         # Initialise the spline function objects
         self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
                                        boundary_values=self._boundary_values,
-                                       use_chains=self.mparam['use_chains'])
+                                       use_chains=self.mparam['use_chains'],
+                                       spline_orders=self.mparam['spline_orders'],
+                                       nodes_type=self.mparam['nodes_type'],
+                                       use_std_def=self.mparam['use_std_def'])
         
         # Get a initial value (guess)
         self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
