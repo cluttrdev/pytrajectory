@@ -218,7 +218,7 @@ class ControlSystem(object):
         # --> should they always?
         #assert type(val) == type(self.mparam[param])
         
-        if param in {'spline_orders', 'nodes_type'}:
+        if param in {'nodes_type'}:#, 'spline_orders'}:
             raise NotImplementedError()
         
         if param == 'use_std_def' and val == True:
@@ -609,6 +609,7 @@ class ControlSystem(object):
                                                           self.trajectories.u, 
                                                           self.trajectories.dx, 
                                                           self.ff, len(self.sim_data[0]), True)
+        
         H = dict()
         for i in self.eqind:
             H[i] = error[:,i]

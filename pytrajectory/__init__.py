@@ -14,8 +14,12 @@ from simulation import Simulator
 from visualisation import Animation
 from log import logging
 
-__version__ = '1.0'
-__release__ = '1.0.0'
+# current version
+__version__ = '1.0.0'
+
+# datetime of the latest commit
+# this line will be altered with every commit using git's pre-commit hook
+__date__ = None
 
 # check versions of dependencies
 import numpy

@@ -417,7 +417,8 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500, return_error_ar
         dx = dx_fnc(t)
         
         error.append(ff - dx)
-    error = np.array(error)
+    
+    error = np.array(error).squeeze()
     
     max_con_err = error.max()
     
