@@ -17,9 +17,11 @@ from log import logging
 # current version
 __version__ = '1.0.0'
 
-# datetime of the latest commit
-# this line will be altered with every commit using git's pre-commit hook
-__date__ = None
+# Placeholder for the datetime string of latest commit
+__date__ = "2015/01/26-18:24:23"
+
+# `__date__` contains the date and time of the latest commit
+# (will be altered with every commit using git's pre-commit hook)
 
 # check versions of dependencies
 import numpy
@@ -39,3 +41,6 @@ if not (int(sp_info[0]) >= 0 and int(sp_info[1]) >= 7 and int(sp_info[2][0]) >= 
 
 # is the following really necessary?
 del numpy, scipy, sympy
+
+# log information about current version
+log.debug('This is PyTrajectory version {} of {}'.format(__version__, __date__))

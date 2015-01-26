@@ -67,6 +67,12 @@ or ::
 
 provided that you have the Python modules `pip` or `setuptools` installed on your system.
 
+Please note that there are different versions of PyTrajectory available (development version
+in github repository [various branches], release versions at PyPI).
+Because the documentation is build automatically upon the source code, there are also different
+versions of the docs available. Please make sure that you always use matching versions of
+code and documentation.
+
 .. _usage:
 
 Usage
