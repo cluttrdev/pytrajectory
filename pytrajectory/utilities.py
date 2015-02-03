@@ -3,7 +3,7 @@ import sympy as sp
 from sympy.core.symbol import Symbol
 
 import matplotlib as mpl
-mpl.use('TKAgg')
+#mpl.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
