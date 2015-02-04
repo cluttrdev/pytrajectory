@@ -18,7 +18,7 @@ from log import logging
 __version__ = '1.0.0'
 
 # Placeholder for the datetime string of latest commit
-__date__ = "2015/01/26-18:24:23"
+__date__ = "2015/02/04-12:35:29"
 
 # `__date__` contains the date and time of the latest commit
 # (will be altered with every commit using git's pre-commit hook)
@@ -43,4 +43,4 @@ if not (int(sp_info[0]) >= 0 and int(sp_info[1]) >= 7 and int(sp_info[2][0]) >= 
 del numpy, scipy, sympy
 
 # log information about current version
-log.debug('This is PyTrajectory version {} of {}'.format(__version__, __date__))
+logging.debug('This is PyTrajectory version {} of {}'.format(__version__, __date__))

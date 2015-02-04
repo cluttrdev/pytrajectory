@@ -530,7 +530,7 @@ def differentiate(S, d=1, new_tag=''):
                 elif d == 3:
                     coeffs[:,0] *= 6
                 
-                    dep_array[:0] *= 6
+                    dep_array[:,0] *= 6
                     dep_array_abs[:,0] *= 6
             elif S.is_quadratic:
                 if d == 1:
