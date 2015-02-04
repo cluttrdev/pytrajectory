@@ -9,8 +9,9 @@ before_install:
  - sudo apt-get install -qq python-numpy python-scipy
 
 # command to install dependencies
-install: 
+install:
   - pip install -r requirements.txt
+  - python setup.py install
 
 # command to run tests
 script: py.test
