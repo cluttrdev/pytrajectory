@@ -2,15 +2,21 @@
 
 import os
 import sys
+import inspect
 import pytest
+
 
 import pytrajectory
 
 class TestPath(object):
     
     def test_example_path(self):
-        pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
-        examples_dir = os.sep.join(pth)
+        #pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
+        #examples_dir = os.sep.join(pth)
+        
+        pth = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        pth = pth.split(os.sep)[:-1]
+        examples_dir = os.sep.join(pth + ['examples'])
         
         print pth
         print examples_dir
