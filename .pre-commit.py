@@ -18,7 +18,7 @@ import sys
 import time
 
 # get current date and time
-datetime = time.strftime('%Y/%m/%d-%H:%M:%S')
+datetime = time.strftime('%Y-%m-%d %H:%M:%S')
 
 # specify the paths to the files where to replace the placeholder of `datetime` in
 file_paths = [['doc', 'source', 'index.rst'],

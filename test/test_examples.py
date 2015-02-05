@@ -1,12 +1,25 @@
 # IMPORTS
 
 import os
+import sys
 import pytest
 
 import pytrajectory
 
+class TestPath(object):
+    
+    def test_example_path(self):
+        pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
+        examples_dir = os.sep.join(pth)
+        
+        print pth
+        print examples_dir
+        
+        script = os.path.join(examples_dir, 'ex1_InvertedPendulumTranslation.py')
+        f = open(script)
+        f.close()
 
-class TestExamples(object):
+class ATestExamples(object):
 
     pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
     examples_dir = os.sep.join(pth)
