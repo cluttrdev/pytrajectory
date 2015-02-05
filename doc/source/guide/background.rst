@@ -15,8 +15,8 @@ Trajectory planning with BVP's
 The task in the field of trajectory planning PyTrajectory is intended
 to perform, is the transition of a control system between desired states.
 A possible way to solve such a problem is to treat it as a two-point
-boundary value problem with free parameters. This approach has been
-presented for example by K. Graichen and M. Zeitz ([Graichen06]_) and was
+boundary value problem with free parameters. This approach is based on the
+work of K. Graichen and M. Zeitz (e.g. see [Graichen06]_) and was
 picked up by O. Schnabel ([Schnabel13]_)  in the project thesis from which 
 PyTrajectory emerged.
 
