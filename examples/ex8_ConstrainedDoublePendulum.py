@@ -199,12 +199,9 @@ T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, 
 # time to run the iteration
 x, u = T.startIteration()
 
-from IPython import embed as IPS
-IPS()
-
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = True
+do_animation = False
 
 if do_animation:
     import matplotlib as mpl

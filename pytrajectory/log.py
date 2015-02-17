@@ -4,7 +4,7 @@ import os
 
 import logging
 
-DEBUG = False
+DEBUG = True
 LOG2CONSOLE = True
 LOG2FILE = True
 

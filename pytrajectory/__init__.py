@@ -16,6 +16,9 @@ from log import logging
 __version__ = '0.4'
 __release__ = '0.4.0'
 
+# Placeholder for the datetime string of latest commit
+__date__ = "2015-02-17 18:00:49"
+
 ##################################
 # check versions of dependencies #
 ##################################

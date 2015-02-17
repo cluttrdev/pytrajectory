@@ -790,7 +790,7 @@ class Trajectory():
                 self.c_list = np.hstack((self.c_list, self.indep_coeffs[k]))
 
                 if (new_splines[k].type == 'x'):
-                    logging.debug("Get new guess for spline %s".format(k.name))
+                    logging.debug("Get new guess for spline {}".format(k.name))
 
                     # how many unknown coefficients does the new spline have
                     nn = len(self.indep_coeffs[k])

@@ -285,7 +285,7 @@ class Animation():
             plt.draw()
         
         self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, 
-                                            interval=1, blit=True)
+                                            interval=1, blit=False)
     
     
     def save(self, fname, fps=None, dpi=200):
