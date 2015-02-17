@@ -1,5 +1,10 @@
+![Constrained Double Pendulum](https://raw.github.com/TUD-RST/pytrajectory/new_api/doc/pic/con_double_pend_swing.gif)
+
 About
 =====
+
+[![Build Status](https://travis-ci.org/TUD-RST/pytrajectory.svg?branch=new_api)$
+[![PyPI Version](https://pypip.in/v/pytrajectory/badge.png)](https://pypi.pytho$
 
 PyTrajectory is a Python library for the determination of the feed forward control 
 to achieve a transition between desired states of a nonlinear control system.
