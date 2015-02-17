@@ -50,11 +50,11 @@ class Solver:
         collocation equation system.
         '''
         
-        if (self.method == 'leven'):
+        if self.method == 'leven':
             logging.debug("Run Levenberg-Marquardt method")
             self.leven()
         
-        if (self.sol == None):
+        if self.sol is None:
             logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:

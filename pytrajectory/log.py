@@ -4,7 +4,7 @@ import os
 
 import logging
 
-DEBUG = False
+DEBUG = True
 LOG2CONSOLE = True
 LOG2FILE = True
 
@@ -55,13 +55,10 @@ class Timer():
     label : str
         The 'name' of the code block which is timed
     
-    verb : int
-        Level of verbosity
     '''
-    def __init__(self, label="~", verb=4):
+    def __init__(self, label="~"):
         self.label = label
-        self.verb = verb
-
+ 
     def __enter__(self):
         self.start = time.time()
 

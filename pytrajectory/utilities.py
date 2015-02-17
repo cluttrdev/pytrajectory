@@ -3,7 +3,7 @@ import sympy as sp
 from sympy.core.symbol import Symbol
 
 import matplotlib as mpl
-mpl.use('TKAgg')
+#mpl.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
@@ -285,7 +285,7 @@ class Animation():
             plt.draw()
         
         self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, 
-                                            interval=1, blit=True)
+                                            interval=1, blit=False)
     
     
     def save(self, fname, fps=None, dpi=200):
