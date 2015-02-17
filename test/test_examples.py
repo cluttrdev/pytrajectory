@@ -5,48 +5,54 @@ import sys
 import inspect
 import pytest
 
-
 import pytrajectory
 
-class TestPath(object):
+
+class TestExamples(object):
+    # first, we need to get the path to the example scripts
+    # 
+    # so we take the directory name of the absolute path
+    # of the source or compiled file in which the top of the
+    # call stack was defined in
+    # (should be this file...!)
+    pth = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    
+    # the example scripts are located in a directory one level above the test scripts
+    # so we remove the last directory in the path
+    pth = pth.split(os.sep)[:-1]
+    
+    # and add that of the example 
+    examples_dir = os.sep.join(pth + ['examples'])
+
+    test_example_path_failed = True
     
     def test_example_path(self):
-        #pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
-        #examples_dir = os.sep.join(pth)
-        
-        pth = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        pth = pth.split(os.sep)[:-1]
-        examples_dir = os.sep.join(pth + ['examples'])
-        
-        print pth
-        print examples_dir
-        
-        script = os.path.join(examples_dir, 'ex1_InvertedPendulumTranslation.py')
+        script = os.path.join(examples_dir, 'ex0_InvertedPendulumSwingUp.py')
         f = open(script)
         f.close()
-
-class ATestExamples(object):
-
-    pth = pytrajectory.__path__[0].split(os.sep)[:-1] + ['examples']
-    examples_dir = os.sep.join(pth)
-
+        self.test_example_path_failed = False
+    
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def assert_reached_accuracy(self, loc):
         for value in loc.values():
             if isinstance(value, pytrajectory.system.ControlSystem):
                 assert value.reached_accuracy
 
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_inverted_pendulum_translation(self):
         script = os.path.join(self.examples_dir, 'ex1_InvertedPendulumTranslation.py')
         d = dict(locals(), **globals())
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_inverted_dual_pendulum_swing_up(self):
         script = os.path.join(self.examples_dir, 'ex2_InvertedDualPendulumSwingUp.py')
         d = dict(locals(), **globals())
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_aricraft(self):
         script = os.path.join(self.examples_dir, 'ex3_Aircraft.py')
         d = dict(locals(), **globals())
@@ -54,6 +60,7 @@ class ATestExamples(object):
         self.assert_reached_accuracy(locals())
     
     @pytest.mark.slow
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_underactuated_manipulator(self):
         script = os.path.join(self.examples_dir, 'ex4_UnderactuatedManipulator.py')
         d = dict(locals(), **globals())
@@ -61,6 +68,7 @@ class ATestExamples(object):
         self.assert_reached_accuracy(locals())
     
     @pytest.mark.slow
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_acrobot(self):
         script = os.path.join(self.examples_dir, 'ex5_Acrobot.py')
         d = dict(locals(), **globals())
@@ -68,6 +76,7 @@ class ATestExamples(object):
         self.assert_reached_accuracy(locals())
     
     @pytest.mark.slow
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_integrator(self):
         script = os.path.join(self.examples_dir, 'ex6_ConstrainedDoubleIntegrator.py')
         d = dict(locals(), **globals())
@@ -75,6 +84,7 @@ class ATestExamples(object):
         self.assert_reached_accuracy(locals())
 
     @pytest.mark.slow
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_inverted_pendulum(self):
         script = os.path.join(self.examples_dir, 'ex7_ConstrainedInvertedPendulum.py')
         d = dict(locals(), **globals())
@@ -82,6 +92,7 @@ class ATestExamples(object):
         self.assert_reached_accuracy(locals())
 
     @pytest.mark.slow
+    @pytest.mark.skipif(self.test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_pendulum(self):
         script = os.path.join(self.examples_dir, 'ex8_ConstrainedDoublePendulum.py')
         d = dict(locals(), **globals())
