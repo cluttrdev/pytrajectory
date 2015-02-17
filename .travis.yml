@@ -6,11 +6,15 @@ virtualenv:
   system_site_packages: true
 
 before_install:
- - sudo apt-get install -qq python-numpy python-tk
+ - sudo apt-get update;
+ - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-tk;
+ - pip install "numpy>=1.8.1";
+ - pip install "scipy>=0.13.0";
+ - pip install "sympy>=0.7.5";
+ - pip install matplotlib ipython
 
 # command to install dependencies
 install:
-  - pip install sympy scipy matplotlib ipython
   - python setup.py install
 
 # command to run tests
