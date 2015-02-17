@@ -19,6 +19,7 @@ import time
 
 # get current date and time
 datetime = time.strftime('%Y-%m-%d %H:%M:%S')
+datetime_str = "This documentation is built automatically from the source code (commit: {})\n".format(datetime)
 
 # specify the paths to the files where to replace the placeholder of `datetime` in
 file_paths = [['doc', 'source', 'index.rst'],
@@ -36,7 +37,7 @@ for path in file_paths:
                 idx = in_lines.index('.. Placeholder for the datetime string of latest commit\n') + 2
                 
                 # replace the placeholder
-                out_lines = in_lines[:idx] + ['build: {}\n'.format(datetime)] + in_lines[idx+1:]
+                out_lines = in_lines[:idx] + [datetime_str] + in_lines[idx+1:]
             elif f.name.endswith('.py'):
                 # get the line in which the datetime string will be written
                 idx = in_lines.index('# Placeholder for the datetime string of latest commit\n') + 1
