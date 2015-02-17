@@ -6,11 +6,11 @@ virtualenv:
   system_site_packages: true
 
 before_install:
- - sudo apt-get install -qq python-numpy python-scipy python-tk
+ - sudo apt-get install -qq python-numpy python-tk
 
 # command to install dependencies
 install:
-  - pip install sympy matplotlib ipython
+  - pip install sympy scipy matplotlib ipython
   - python setup.py install
 
 # command to run tests
