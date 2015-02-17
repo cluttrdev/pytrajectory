@@ -1,4 +1,4 @@
-![Constrained Double Pendulum](https://raw.github.com/TUD-RST/pytrajectory/new_api/doc/pic/con_double_pend_swing.gif)
+![Constrained Double Pendulum](https://raw.github.com/TUD-RST/pytrajectory/develop/doc/pic/con_double_pend_swing.gif)
 
 About
 =====
