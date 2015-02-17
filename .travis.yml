@@ -14,4 +14,4 @@ install:
   - python setup.py install
 
 # command to run tests
-script: py.test -s
+script: py.test -v
