@@ -81,7 +81,7 @@ class ControlSystem(object):
         self.b = b
         
         # Set default values for method parameters
-        self.mparam = {'sx' : 5,
+        method_param = {'sx' : 5,
                         'su' : 5,
                         'kx' : 2,
                         'delta' : 2,
@@ -94,12 +94,13 @@ class ControlSystem(object):
                         'coll_type' : 'equidistant',
                         'use_sparse' : True,
                         'sol_steps' : 100,
-                        'spline_order' : [3],
+                        'spline_orders' : [3],
                         'nodes_type' : 'equidistant'}
         
         # Change default values of given kwargs
         for k, v in kwargs.items():
-            self.set_param(k, v)
+            if method_param.has_key(k):
+                method_param[k] = v
         
         # Analyse the given system to set some parameters
         n, m, x_sym, u_sym, chains, eqind = self.analyse(xa)
@@ -113,8 +114,8 @@ class ControlSystem(object):
         self.m = m
         
         # Set symbols for state and input variables
-        self.x_sym = x_sym
-        self.u_sym = u_sym
+        self.x_sym = [sym.name for sym in x_sym]
+        self.u_sym = [sym.name for sym in u_sym]
         
         # Set integrator chains and equations that have to be solved
         self.chains = chains
@@ -153,7 +154,7 @@ class ControlSystem(object):
             
             # we cannot make use of an integrator chain
             # if it contains a constrained variable
-            self.mparam['use_chains'] = False
+            method_param['use_chains'] = False
             # TODO: implement it so that just those chains are not used 
             #       which actually contain a constrained variable
         
@@ -168,57 +169,43 @@ class ControlSystem(object):
             orders = kwargs['spline_orders']
             if hasattr(orders, '__iter__'):
                 assert len(orders) == len(self.x_sym + self.u_sym)
-                self.mparam['spline_orders'] = [int(order) for order in orders]
+                method_param['spline_orders'] = [int(order) for order in orders]
             elif type(orders) in {dict}:
                 raise NotImplementedError
             else:
                 try:
                     order = int(orders)
-                    self.mparam['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
+                    method_param['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
                 except:
                     logging.warning('Could not set spline orders to `{}`, \
                                      will use cubic polynomial parts.'.format(orders))
-                    self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
+                    method_param['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
         else:
-            self.mparam['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
+            method_param['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
         
-        # Create trajectory and equation system objects
-        self.trajectories = Trajectory(self)
-        self.eqs = CollocationSystem(self)
+        # Create trajectory
+        self.trajectories = Trajectory(sys=self, sx=method_param['sx'], su=method_param['su'],
+                                        use_chains=method_param['use_chains'],
+                                        spline_orders=method_param['spline_orders'],
+                                        nodes_type=method_param['nodes_type'])
+
+        # and equation system objects
+        self.eqs = CollocationSystem(sys=self, tol=method_param['tol'], steps=method_param['sol_steps'], 
+                                        method=method_param['method'], coll_type=method_param['coll_type'],
+                                        use_sparse=method_param['use_sparse'])
         
         # Reset iteration number
         self.nIt = 0
+        self._maxIt = method_param['maxIt']
+        self._kx = method_param['kx']
         
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
+        self._ierr = method_param['ierr']
+        self._eps = method_param['eps']
 
         # and likewise this should not be existent yet
         self.sol = None
-    
-    
-    def set_param(self, param='', val=None):
-        '''
-        Method to assign value :attr:`val` to method parameter :attr:`param`.
-        (mainly for didactic purpose)
-
-        Parameters
-        ----------
-
-        param : str
-            Parameter of which to alter the value.
-
-        val : ???
-            New value for the passed parameter.
-        '''
-        
-        # check if current and new value have the same type
-        # --> should they always?
-        #assert type(val) == type(self.mparam[param])
-        
-        if param in {'nodes_type'}:
-            raise NotImplementedError()
-        
-        self.mparam[param] = val
     
     
     def analyse(self, xa):
@@ -241,7 +228,7 @@ class ControlSystem(object):
             System state dimension.
         
         int
-            Input dimension.
+            Inputs dimension.
         
         list
             List of sympy.symbols for state variables
@@ -299,8 +286,8 @@ class ControlSystem(object):
         
         # if we don't take advantage of the system structure
         # we need to solve every equation
-        if not self.mparam['use_chains']:
-            eqind = range(len(x_sym))
+        #if not self.mparam['use_chains']:
+        #    eqind = range(len(x_sym))
         
         # get minimal neccessary number of spline parts
         # for the manipulated variables
@@ -351,18 +338,19 @@ class ControlSystem(object):
                 raise ValueError('Boundary values have to be strictly within the saturation limits!')
             
             # replace constrained state variable with new unconstrained one
-            x_sym[k] = sp.Symbol('y%d'%(k+1))
+            x_sym[k] = 'y{}'.format(k+1)
             
             # calculate saturation function expression and its derivative
             yk = x_sym[k]
+            yk_sym = sp.Symbol(yk)
             m = 4.0/(v[1] - v[0])
-            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk))
+            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
             #dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
-            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
+            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk_sym))**2
             
             # replace constrained variables in vectorfield with saturation expression
             # x(t) = psi(y(t))
-            ff = ff.replace(x_sym_orig[k], psi)
+            ff = ff.replace(sp.Symbol(x_sym_orig[k]), psi)
             
             # update vectorfield to represent differential equation for new
             # unconstrained state variable
@@ -464,21 +452,21 @@ class ControlSystem(object):
         '''
         
         # do the first iteration step
-        logging.info("1st Iteration: %d spline parts"%self.mparam['sx'])
+        logging.info("1st Iteration: %d spline parts"%self.trajectories._sx)
         self._iterate()
         
         # this was the first iteration
         # now we are getting into the loop
-        while not self.reached_accuracy and self.nIt < self.mparam['maxIt']:
+        while not self.reached_accuracy and self.nIt < self._maxIt:
             # raise the number of spline parts
-            self.mparam['sx'] = int(round(self.mparam['kx']*self.mparam['sx']))
+            self.trajectories._sx = int(round(self._kx * self.trajectories._sx))
             
             if self.nIt == 1:
-                logging.info("2nd Iteration: %d spline parts"%self.mparam['sx'])
+                logging.info("2nd Iteration: {} spline parts".format(self.trajectories._sx))
             elif self.nIt == 2:
-                logging.info("3rd Iteration: %d spline parts"%self.mparam['sx'])
+                logging.info("3rd Iteration: {} spline parts".format(self.trajectories._sx))
             elif self.nIt >= 3:
-                logging.info("%dth Iteration: %d spline parts"%(self.nIt+1, self.mparam['sx']))
+                logging.info("{}th Iteration: {} spline parts".format(self.nIt+1, self.trajectories._sx))
 
             # start next iteration step
             self._iterate()
@@ -512,29 +500,20 @@ class ControlSystem(object):
         self.nIt += 1
         
         # Initialise the spline function objects
-        self.trajectories.init_splines(sx=self.mparam['sx'], su=self.mparam['su'],
-                                       boundary_values=self._boundary_values,
-                                       use_chains=self.mparam['use_chains'],
-                                       spline_orders=self.mparam['spline_orders'],
-                                       nodes_type=self.mparam['nodes_type'])
+        self.trajectories.init_splines(boundary_values=self._boundary_values)
         
-        # Get a initial value (guess)
-        self.eqs.get_guess(free_coeffs=self.trajectories.indep_coeffs, 
-                            old_splines=self.trajectories._old_splines,
-                            new_splines=self.trajectories._splines)
+        # Get an initial value (guess)
+        self.eqs.get_guess(trajectories=self.trajectories)
         
         # Build the collocation equations system
         with Timer('Building equation system'):
-            G, DG = self.eqs.build(self, self.trajectories)
+            G, DG = self.eqs.build(sys=self, trajectories=self.trajectories)
         
         # Solve the collocation equation system
         sol = self.eqs.solve(G, DG)
         
-        from IPython import embed as IPS
-        IPS()
-        
         # Set the found solution
-        self.trajectories.set_coeffs(sol, use_chains=self.mparam['use_chains'])
+        self.trajectories.set_coeffs(sol)
         
         # Solve the resulting initial value problem
         self.simulate()
@@ -547,7 +526,7 @@ class ControlSystem(object):
             boundary_values = self._boundary_values
             x_sym = self.x_sym
         
-        self.reached_accuracy = self.trajectories.check_accuracy(self.sim_data, self.ff, x_sym, boundary_values)
+        self.check_accuracy()
     
     
     def simulate(self):
@@ -583,6 +562,55 @@ class ControlSystem(object):
         # start forward simulation
         self.sim_data = S.simulate()
     
+    def check_accuracy(self):
+        '''
+        Checks whether the desired accuracy for the boundary values was reached.
+
+        It calculates the difference between the solution of the simulation
+        and the given boundary values at the right border and compares its
+        maximum against the tolerance.
+        
+        If set by the user it also calculates some kind of consistency error
+        that shows how "well" the spline functions comply with the system
+        dynamic given by the vector field.
+        
+        '''
+        
+        # this is the solution of the simulation
+        a = self.sim_data[0][0]
+        b = self.sim_data[0][-1]
+        xt = self.sim_data[1]
+        
+        # get boundary values at right border of the interval
+        xb = dict([(k, v[1]) for k, v in self._boundary_values.items() if k in self.x_sym])
+        
+        # what is the error
+        logging.debug(40*"-")
+        logging.debug("Ending up with:   Should Be:  Difference:")
+
+        err = np.empty(xt.shape[1])
+        for i, xx in enumerate(self.x_sym):
+            err[i] = abs(xb[xx] - xt[-1][i])
+            logging.debug(str(xx)+" : %f     %f    %f"%(xt[-1][i], xb[xx], err[i]))
+        
+        logging.debug(40*"-")
+        
+        if self._ierr:
+            # calculate maximum consistency error on the whole interval
+            maxH = auxiliary.consistency_error((a,b), self.trajectories.x, self.trajectories.u, self.trajectories.dx, self.ff)
+            
+            reached_accuracy = (maxH < self._ierr) and (max(err) < self._eps)
+            logging.debug('maxH = %f'%maxH)
+        else:
+            # just check if tolerance for the boundary values is satisfied
+            reached_accuracy = max(err) < self._eps
+        
+        if reached_accuracy:
+            logging.info("  --> reached desired accuracy: "+str(reached_accuracy))
+        else:
+            logging.debug("  --> reached desired accuracy: "+str(reached_accuracy))
+        
+        self.reached_accuracy = reached_accuracy
     
     def plot(self):
         '''
@@ -599,7 +627,7 @@ class ControlSystem(object):
             return
 
         # calculate the error functions H_i(t)
-        max_con_err, error = auxiliary.consistency_error((self.a,self.b), 
+        max_con_err, error = auxiliary.consistency_error((self.a, self.b), 
                                                           self.trajectories.x,
                                                           self.trajectories.u, 
                                                           self.trajectories.dx, 

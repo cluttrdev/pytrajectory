@@ -130,9 +130,12 @@ class Spline(object):
     
     def __call__(self, t):
         # get polynomial part where t is in
-        i = self._nodes_dict[t]
+        #i = self._nodes_dict[t]
+        i = int(np.floor(t * self.n / self.b))
+        if (i == self.n): i -= 1
         
-        return self._S[i](t - self.nodes[i])
+        #return self._S[i](t - self.nodes[i])
+        return self._S[i](t - (i+1)*self._h[i])
     
     @property
     def is_constant(self):

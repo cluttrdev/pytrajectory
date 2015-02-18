@@ -250,7 +250,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     
     # get a sympy.Matrix representation of the vectorfield
     if callable(f_sym):
-        F = sp.Matrix(f_sym(x_sym, u_sym))
+        F = sp.Matrix(f_sym(sp.symbols(x_sym), sp.symbols(u_sym)))
     else:
         try:
             F = sp.Matrix(f_sym)
@@ -293,7 +293,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
                     # 
                     # we just take an arbitrary input, multiply it with 0 and add it
                     # to the current element (constant)
-                    expr = sp.Mul(0.0, x_sym[0], evaluate=False)
+                    expr = sp.Mul(0.0, sp.Symbol(x_sym[0]), evaluate=False)
                     F[i,j] = sp.Add(F[i,j], expr, evaluate=False)
         
         # if it is a vector, squeeze it

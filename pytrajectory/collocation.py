@@ -23,29 +23,34 @@ class CollocationSystem(object):
     Parameters
     ----------
     
-    CtrlSys : system.ControlSystem
+    sys : system.ControlSystem
         Instance of a control system.
     
     '''
-    def __init__(self, ctrl_sys):
+    def __init__(self, sys, tol=1e-5, steps=100, method='leven', coll_type='equidistant', use_sparse=True):
         # TODO: get rid of the following
-        self.sys = ctrl_sys
+        self.sys = sys
         
         # Save some information
-        self._coll_type = ctrl_sys.mparam['coll_type']
-        self._use_sparse = ctrl_sys.mparam['use_sparse']
-        self.sol = 0
+        self._tol = tol
+        self._steps = steps
+        self._method = method
+        self._coll_type = coll_type
+        self._use_sparse = use_sparse
+        
+        # we don't have a soution, yet
+        self.sol = None
         
         # create vectorized versions of the control system's vector field
         # and its jacobian for the faster evaluation of the collocation equation system `G`
         # and its jacobian `DG` (--> see self.build())
-        f = ctrl_sys.ff_sym(ctrl_sys.x_sym, ctrl_sys.u_sym)
-        Df = sp.Matrix(f).jacobian(ctrl_sys.x_sym+ctrl_sys.u_sym)
+        f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
+        Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
-        self._ff_vectorized = sym2num_vectorfield(f, ctrl_sys.x_sym, ctrl_sys.u_sym, vectorized=True)
-        self._Df_vectorized = sym2num_vectorfield(Df, ctrl_sys.x_sym, ctrl_sys.u_sym, vectorized=True)
+        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True)
+        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True)
     
-    def build(self, sys, traj):
+    def build(self, sys, trajectories):
         '''
         This method is used to set up the equations for the collocation equation system
         and defines functions for the numerical evaluation of the system and its jacobian.
@@ -53,10 +58,10 @@ class CollocationSystem(object):
         Parameters
         ----------
         
-        sys : system.ControlSystem
+        sys : pytrajectory.system.ControlSystem
             The control system for which to build the collocation equation system.
         
-        traj : trajectories.Trajectory
+        trajectories : pytrajectory.trajectories.Trajectory
             The control system's trajectory object.
         
         Returns
@@ -75,20 +80,20 @@ class CollocationSystem(object):
         logging.debug("Building Equation System")
         
         # make functions local
-        x_fnc = traj._x_fnc
-        dx_fnc = traj._dx_fnc
-        u_fnc = traj._u_fnc
+        x_fnc = trajectories._x_fnc
+        dx_fnc = trajectories._dx_fnc
+        u_fnc = trajectories._u_fnc
 
         # make symbols local
-        x_sym = traj._x_sym
-        u_sym = traj._u_sym
+        x_sym = trajectories._x_sym
+        u_sym = trajectories._u_sym
 
         a = sys.a
         b = sys.b
-        delta = sys.mparam['delta']
+        delta = 2#sys.mparam['delta']
 
         # now we generate the collocation points
-        cpts = collocation_nodes(a=a, b=b, npts=(sys.mparam['sx']*delta+1), coll_type=sys.mparam['coll_type'])
+        cpts = collocation_nodes(a=a, b=b, npts=(trajectories._sx * delta + 1), coll_type=self._coll_type)
     
         # here we do something that will be explained after we've done it  ;-)
         indic = dict()
@@ -96,7 +101,7 @@ class CollocationSystem(object):
         j = 0
     
         # iterate over spline quantities
-        for k, v in sorted(sys.trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
+        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
@@ -104,9 +109,9 @@ class CollocationSystem(object):
     
         # iterate over all quantities including inputs
         # and take care of integrator chain elements
-        if sys.mparam['use_chains']:
+        if trajectories._use_chains:
             for sq in x_sym+u_sym:
-                for ic in sys.chains:
+                for ic in trajectories._chains:
                     if sq in ic:
                         indic[sq] = indic[ic.upper]
     
@@ -122,7 +127,7 @@ class CollocationSystem(object):
         # spline created for x1 and so on...
 
         # total number of independent coefficients
-        free_param = np.hstack(sorted(traj.indep_coeffs.values(), key=lambda arr: arr[0].name))
+        free_param = np.hstack(sorted(trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
         c_len = free_param.size
         
         with Timer('Building M-matrices'):
@@ -175,7 +180,7 @@ class CollocationSystem(object):
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
         DdX = Mdx.reshape((len(cpts),-1,free_param.size))
-        if sys.mparam['use_chains']:
+        if trajectories._use_chains:
             DdX = DdX[:,sys.eqind,:]
         DdX = np.vstack(DdX)
 
@@ -191,7 +196,7 @@ class CollocationSystem(object):
         DXU_old = DXU
         DXU = np.vstack(DXU)
         
-        if sys.mparam['use_sparse']:
+        if self._use_sparse:
             Mx = sparse.csr_matrix(Mx)
             Mx_abs = sparse.csr_matrix(Mx_abs)
             Mdx = sparse.csr_matrix(Mdx)
@@ -216,7 +221,7 @@ class CollocationSystem(object):
         # of the matrices `F` and `DF` is neccessary
         # 
         # therefore we now create an array with the indices of all rows we need from these matrices
-        if sys.mparam['use_chains']:
+        if trajectories._use_chains:
             eqind = sys.eqind
         else:
             eqind = range(len(sys.x_sym))
@@ -275,7 +280,7 @@ class CollocationSystem(object):
             # if we make use of the system structure
             # we have to select those rows which correspond to the equations
             # that have to be solved
-            if sys.mparam['use_chains']:
+            if trajectories._use_chains:
                 DF_csr = sparse.csr_matrix(DF_csr.toarray().take(take_indices, axis=0))
                 # TODO: is the performance gain that results from not having to solve
                 #       some equations (use integrator chains) greater than
@@ -290,7 +295,7 @@ class CollocationSystem(object):
         return G, DG
     
     
-    def get_guess(self, free_coeffs, old_splines, new_splines):
+    def get_guess(self, trajectories):
         '''
         This method is used to determine a starting value (guess) for the
         solver of the collocation equation system.
@@ -308,29 +313,22 @@ class CollocationSystem(object):
         Parameters
         ----------
         
-        free_coeffs : dict
-            The free parameters, i.e. the independent coefficients of the splines.
-        
-        old_splines : dict
-            The splines from the last iteration (None if there are none).
-        
-        new_splines : dict
-            The newly initialised splines of the current iteration step.
+        trajectories : pytrajectory.trajectories.Trajectory
         
         '''
-        if not old_splines:
-            free_coeffs_all = np.hstack(free_coeffs.values())
+        if not trajectories._old_splines:
+            free_coeffs_all = np.hstack(trajectories.indep_coeffs.values())
             guess = 0.1 * np.ones(free_coeffs_all.size)
         else:
             guess = np.empty(0)
             
             # get new guess for every independent variable
-            for k, v in sorted(free_coeffs.items(), key = lambda (k, v): k.name):
-                if (new_splines[k].type == 'x'):
-                    logging.debug("Get new guess for spline %s"%k.name)
+            for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k):
+                if (trajectories._splines[k].type == 'x'):
+                    logging.debug("Get new guess for spline {}".format(k))
                     
-                    s_new = new_splines[k]
-                    s_old = old_splines[k]
+                    s_new = trajectories._splines[k]
+                    s_old = trajectories._old_splines[k]
                     
                     # how many independent coefficients does the spline have
                     coeffs_size = s_new._indep_coeffs.size
@@ -354,37 +352,36 @@ class CollocationSystem(object):
                         
                 else:
                     # if it is a input variable, just take the old solution
-                    guess = np.hstack((guess, old_splines[k]._indep_coeffs))
+                    guess = np.hstack((guess, trajectories._old_splines[k]._indep_coeffs))
         
         if 0:
             
             try:
                 import matplotlib.pyplot as plt
             
-                tt = np.linspace(self.sys.a, self.sys.b, 1000)
-                xt_old = np.zeros((1000,len(self.sys.x_sym)))
+                tt = np.linspace(trajectories._a, trajectories._b, 1000)
+                xt_old = np.zeros((1000,len(trajectories._x_sym)))
             
-                for i, x in enumerate(self.sys.x_sym):
-                    fx = old_splines[x]
+                for i, x in enumerate(trajectories._x_sym):
+                    fx = trajectories._old_splines[x]
                     xt_old[:,i] = [fx(t) for t in tt]
             
                 sol_bak = 1.0*self.sol
-                splines_bak = new_splines.copy()
+                splines_bak = trajectories._splines.copy()
             
-                self.sys.trajectories.set_coeffs(guess, False)
-                xt_new = np.zeros((1000,len(self.sys.x_sym)))
+                trajectories.set_coeffs(guess)
+                xt_new = np.zeros((1000,len(trajectories._x_sym)))
                 
-                for i, x in enumerate(self.sys.x_sym):
-                    fx = new_splines[x]
+                for i, x in enumerate(trajectories._x_sym):
+                    fx = trajectories._splines[x]
                     xt_new[:,i] = [fx(t) for t in tt]
-                
                 
                 print np.abs(xt_old-xt_new).max()
                 IPS()
                 
                 self.sol = sol_bak
-                new_splines = splines_bak
-                for s in new_splines.values():
+                trajectories._splines = splines_bak
+                for s in trajectories._splines.values():
                     s._prov_flag = True
                 
             except Exception as err:
@@ -413,8 +410,8 @@ class CollocationSystem(object):
         logging.debug("Solving Equation System")
         
         # create our solver
-        solver = Solver(F=G, DF=DG, x0=self.guess, tol=self.sys.mparam['tol'],
-                        maxIt=self.sys.mparam['sol_steps'], method=self.sys.mparam['method'])
+        solver = Solver(F=G, DF=DG, x0=self.guess, tol=self._tol,
+                        maxIt=self._steps, method=self._method)
         
         # solve the equation system
         self.sol = solver.solve()

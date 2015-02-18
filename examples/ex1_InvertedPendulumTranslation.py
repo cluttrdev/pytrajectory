@@ -41,7 +41,8 @@ xb = [  1.0,
 S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb)
 
 # change method parameter to increase performance
-S.set_param('use_chains', False)
+#S.set_param('use_chains', False)
+S.trajectories._use_chains = False
 
 # run iteration
 #S.solve()
