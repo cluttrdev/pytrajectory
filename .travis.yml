@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+before_install:
+ - sudo apt-get install -qq python-numpy python-tk
+ - pip install "sympy>=0.7.5"
+ - pip install "scipy>=0.13.0"
+ - pip install matplotlib ipython
+
+# command to install dependencies
+install:
+  - python setup.py install
+
+# command to run tests
+script: py.test -v

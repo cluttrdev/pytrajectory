@@ -1,7 +1,7 @@
 # vertical take-off aircraft
 
 # import trajectory class and necessary dependencies
-from pytrajectory import Trajectory
+from pytrajectory import ControlSystem
 from sympy import sin, cos
 import numpy as np
 from numpy import pi
@@ -41,21 +41,21 @@ xa = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 xb = [10.0, 0.0, 5.0, 0.0, 0.0, 0.0]
 
 # boundary values for the inputs
-ua = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
-ub = [0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ua = [0.5*9.81*50.0/(cos(5/360.0*2*pi)), 0.5*9.81*50.0/(cos(5/360.0*2*pi))]
+ub = [0.5*9.81*50.0/(cos(5/360.0*2*pi)), 0.5*9.81*50.0/(cos(5/360.0*2*pi))]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=3.0, xa=xa, xb=xb, ua=ua, ub=ub)
+S = ControlSystem(f, a=0.0, b=3.0, xa=xa, xb=xb, ua=ua, ub=ub)
 
 # don't take advantage of the system structure (integrator chains)
 # (this will result in a faster solution here)
-T.setParam('use_chains', False)
+S.set_param('use_chains', False)
 
 # also alter some other method parameters to increase performance
-T.setParam('kx', 5)
+S.set_param('kx', 5)
 
 # run iteration
-T.startIteration()
+S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
@@ -63,7 +63,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xti, image):
         x, y, theta = xti[0], xti[2], xti[4]
@@ -88,7 +88,7 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(4,'theta')], plotinputs=[(0,'F1'),(1,'F2')])
     A.set_limits(xlim=(-1,11), ylim=(-1,7))
     
