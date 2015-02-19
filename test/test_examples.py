@@ -56,7 +56,6 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
     
-    @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_underactuated_manipulator(self):
         script = os.path.join(self.examples_dir, 'ex4_UnderactuatedManipulator.py')
@@ -64,7 +63,6 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
     
-    @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_acrobot(self):
         script = os.path.join(self.examples_dir, 'ex5_Acrobot.py')
@@ -72,6 +70,7 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
     
+    @pytest.mark.xfail
     @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_integrator(self):
@@ -80,6 +79,7 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
+    @pytest.mark.xfail
     @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_inverted_pendulum(self):
@@ -88,6 +88,7 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
+    @pytest.mark.xfail
     @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_pendulum(self):

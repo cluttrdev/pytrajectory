@@ -31,7 +31,7 @@ xa = [  0.0,
         0.0,
         0.0]
 
-# boundary values at the end (b = 1.0 [s])
+# boundary values at the end (b = 2.0 [s])
 xb = [  1.0,
         0.0,
         0.0,
@@ -41,13 +41,10 @@ xb = [  1.0,
 S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb)
 
 # change method parameter to increase performance
-#S.set_param('use_chains', False)
-S.trajectories._use_chains = False
+S.set_param('use_chains', False)
 
 # run iteration
-#S.solve()
-from IPython import embed as IPS
-IPS()
+S.solve()
 
 
 # the following code provides an animation of the system above

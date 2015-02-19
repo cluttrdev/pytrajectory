@@ -8,7 +8,7 @@ to achieve a transition between desired states of a nonlinear control system.
 
 from system import ControlSystem
 from trajectories import Trajectory
-from splines import CubicSpline
+from splines import Spline
 from solver import Solver
 from simulation import Simulator
 from visualisation import Animation
@@ -18,7 +18,7 @@ from log import logging
 __version__ = '1.0.0'
 
 # Placeholder for the datetime string of latest commit
-__date__ = "2015-02-18 18:44:00"
+__date__ = "2015-02-19 13:43:11"
 
 # `__date__` contains the date and time of the latest commit
 # (will be altered with every commit using git's pre-commit hook)

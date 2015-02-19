@@ -6,8 +6,6 @@ from scipy import sparse
 from log import logging, Timer
 from solver import Solver
 
-from splines import interpolate
-
 from auxiliary import sym2num_vectorfield
 
 from IPython import embed as IPS
@@ -27,13 +25,13 @@ class CollocationSystem(object):
         Instance of a control system.
     
     '''
-    def __init__(self, sys, tol=1e-5, steps=100, method='leven', coll_type='equidistant', use_sparse=True):
+    def __init__(self, sys, tol=1e-5, sol_steps=100, method='leven', coll_type='equidistant', use_sparse=True):
         # TODO: get rid of the following
         self.sys = sys
         
         # Save some information
         self._tol = tol
-        self._steps = steps
+        self._sol_steps = sol_steps
         self._method = method
         self._coll_type = coll_type
         self._use_sparse = use_sparse
@@ -150,8 +148,8 @@ class CollocationSystem(object):
 
                     i,j = indic[xx]
 
-                    mx[i:j], Mx_abs[eqx] = x_fnc[xx].get_dependence_vectors(p)
-                    mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].get_dependence_vectors(p)
+                    mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
+                    mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
 
                     Mx[eqx] = mx
                     Mdx[eqx] = mdx
@@ -162,7 +160,7 @@ class CollocationSystem(object):
 
                     i,j = indic[uu]
                 
-                    mu[i:j], Mu_abs[equ] = u_fnc[uu].get_dependence_vectors(p)
+                    mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
                 
                     Mu[equ] = mu
                     equ += 1
@@ -339,7 +337,7 @@ class CollocationSystem(object):
                     guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
                     
                     # evaluate the splines
-                    s_old_t = np.array([s_old(t) for t in guess_points])
+                    s_old_t = np.array([s_old.f(t) for t in guess_points])
                     
                     dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
                     s_new_t = np.array([vec[0] for vec in dep_vecs])
@@ -411,7 +409,7 @@ class CollocationSystem(object):
         
         # create our solver
         solver = Solver(F=G, DF=DG, x0=self.guess, tol=self._tol,
-                        maxIt=self._steps, method=self._method)
+                        maxIt=self._sol_steps, method=self._method)
         
         # solve the equation system
         self.sol = solver.solve()

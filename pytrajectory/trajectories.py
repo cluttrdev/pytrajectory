@@ -1,7 +1,7 @@
 # IMPORTS
 import numpy as np
 
-from splines import ConstantSpline, LinearSpline, QuadraticSpline, CubicSpline
+from splines import Spline, differentiate
 from log import logging
 import auxiliary
 
@@ -23,7 +23,7 @@ class Trajectory(object):
         and so on.
     '''
     
-    def __init__(self, sys, sx=5, su=5, use_chains=True, spline_orders=3, nodes_type='equidistant'):
+    def __init__(self, sys, sx=5, su=5, use_chains=True, nodes_type='equidistant'):
         # Save the control system instance
         # TODO: get rid of this need
         self.sys = sys
@@ -37,7 +37,6 @@ class Trajectory(object):
         self._su = su
         self._chains = sys.chains
         self._use_chains = use_chains
-        self._spline_orders = spline_orders
         self._nodes_type = nodes_type
         
         # Initialise dictionaries as containers for all
@@ -139,9 +138,6 @@ class Trajectory(object):
         u_fnc = dict()
         dx_fnc = dict()
         
-        spline_classes = [ConstantSpline, LinearSpline, QuadraticSpline, CubicSpline]
-        #spline_classes = [LinearSpline, LinearSpline, QuadraticSpline, CubicSpline]
-        
         if self._use_chains:
             # first handle variables that are part of an integrator chain
             for chain in self._chains:
@@ -151,59 +147,72 @@ class Trajectory(object):
                 # here we just create a spline object for the upper ends of every chain
                 # w.r.t. its lower end (whether it is an input variable or not)
                 if chain.lower.startswith('x'):
-                    splines[upper] = CubicSpline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper,
+                    splines[upper] = Spline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper,
                                                  nodes_type=self._nodes_type)
                     splines[upper].type = 'x'
                 elif chain.lower.startswith('u'):
-                    splines[upper] = CubicSpline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper,
+                    splines[upper] = Spline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper,
                                                  nodes_type=self._nodes_type)
                     splines[upper].type = 'u'
         
                 # search for boundary values to satisfy
-                for i, elem in enumerate(chain.elements()):
+                for i, elem in enumerate(chain.elements):
                     if elem in self._x_sym:
-                        splines[upper]._boundary_values[i] = boundary_values[elem]
+                        splines[upper]._boundary_values[i] = bv[elem]
                         if splines[upper].type == 'u':
-                            splines[upper]._boundary_values [i+1] = boundary_values[lower]
+                            splines[upper]._boundary_values[i+1] = bv[lower]
         
                 # solve smoothness and boundary conditions
                 splines[upper].make_steady()
         
                 # calculate derivatives
-                for i, elem in enumerate(chain.elements()):
-                    if elem in self._x_sym:
-                        x_fnc[elem] = splines[upper].differentiate(i)
-                    elif elem in self._u_sym:
-                        u_fnc[elem] = splines[upper].differentiate(i)
+                for i, elem in enumerate(chain.elements):
+                    if elem in self._u_sym:
+                        if (i == 0):
+                            u_fnc[elem] = splines[upper].f
+                        if (i == 1):
+                            u_fnc[elem] = splines[upper].df
+                        if (i == 2):
+                            u_fnc[elem] = splines[upper].ddf
+                    elif elem in self._x_sym:
+                        if (i == 0):
+                            splines[upper]._boundary_values[0] = bv[elem]
+                            if splines[upper].type == 'u':
+                                splines[upper]._boundary_values[1] = bv[lower]
+                            x_fnc[elem] = splines[upper].f
+                        if (i == 1):
+                            splines[upper]._boundary_values[1] = bv[elem]
+                            if splines[upper].type == 'u':
+                                splines[upper]._boundary_values[2] = bv[lower]
+                            x_fnc[elem] = splines[upper].df
+                        if (i == 2):
+                            splines[upper]._boundary_values[2] = bv[elem]
+                            x_fnc[elem] = splines[upper].ddf
 
         # now handle the variables which are not part of any chain
         for i, xx in enumerate(self._x_sym):
-            if (not x_fnc.has_key(xx)):
-                #splines[xx] = CubicSpline(self._a, self._b, n=sx, bc={0:bv[xx]}, tag=xx.name, steady=True)
-                SplineClass = spline_classes[self._spline_orders[i]]
-                splines[xx] = SplineClass(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx,
-                                          nodes_type=self._nodes_type)
+            if not x_fnc.has_key(xx):
+                splines[xx] = Spline(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx,
+                                     nodes_type=self._nodes_type)
                 splines[xx].make_steady()
                 splines[xx].type = 'x'
-                x_fnc[xx] = splines[xx]
+                x_fnc[xx] = splines[xx].f
         
         offset = len(self._x_sym)
         for j, uu in enumerate(self._u_sym):
-            if (not u_fnc.has_key(uu)):
-                #splines[uu] = CubicSpline(self._a, self._b, n=su, bc={0:bv[uu]}, tag=uu.name, steady=True)
-                SplineClass = spline_classes[self._spline_orders[offset+j]]
-                splines[uu] = SplineClass(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu,
-                                          nodes_type=self._nodes_type)
+            if not u_fnc.has_key(uu):
+                splines[uu] = Spline(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu,
+                                     nodes_type=self._nodes_type)
                 splines[uu].make_steady()
                 splines[uu].type = 'u'
-                u_fnc[uu] = splines[uu]
+                u_fnc[uu] = splines[uu].f
         
         # calculate derivatives of every state variable spline
         for xx in self._x_sym:
-            dx_fnc[xx] = x_fnc[xx].differentiate()
+            dx_fnc[xx] = differentiate(x_fnc[xx])
 
         indep_coeffs = dict()
-        for ss in splines:
+        for ss in splines.keys():
             indep_coeffs[ss] = splines[ss]._indep_coeffs
         
         self.indep_coeffs = indep_coeffs
@@ -246,14 +255,6 @@ class Trajectory(object):
                         subs[var] = subs[ic.upper]
         
         # set numerical coefficients for each spline and derivative
-        #for k, v in self._x_fnc.items() + self._u_fnc.items() + self._dx_fnc.items():
-            #v.set_coefficients(free_coeffs=subs[k])
-        for k in self._x_fnc.keys():
-            self._x_fnc[k].set_coefficients(free_coeffs=subs[k])
-        for k in self._u_fnc.keys():
-            self._u_fnc[k].set_coefficients(free_coeffs=subs[k])
-        for k in self._dx_fnc.keys():
-            self._dx_fnc[k].set_coefficients(free_coeffs=subs[k])
         for k in self._splines.keys():
             self._splines[k].set_coefficients(free_coeffs=subs[k])
         

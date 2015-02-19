@@ -67,7 +67,6 @@ class ControlSystem(object):
         coll_type     'equidistant'   The type of the collocation points
         use_sparse    True            Whether or not to use sparse matrices
         sol_steps     100             Maximum number of iteration steps for the eqs solver
-        spline_orders [3]             The order of the polynomial spline parts
         nodes_type    'equidistant'   The type of the spline nodes
         ============= =============   ============================================================
     
@@ -186,11 +185,10 @@ class ControlSystem(object):
         # Create trajectory
         self.trajectories = Trajectory(sys=self, sx=method_param['sx'], su=method_param['su'],
                                         use_chains=method_param['use_chains'],
-                                        spline_orders=method_param['spline_orders'],
                                         nodes_type=method_param['nodes_type'])
 
         # and equation system objects
-        self.eqs = CollocationSystem(sys=self, tol=method_param['tol'], steps=method_param['sol_steps'], 
+        self.eqs = CollocationSystem(sys=self, tol=method_param['tol'], sol_steps=method_param['sol_steps'], 
                                         method=method_param['method'], coll_type=method_param['coll_type'],
                                         use_sparse=method_param['use_sparse'])
         
@@ -299,6 +297,28 @@ class ControlSystem(object):
         
         return n, m, x_sym, u_sym, chains, eqind
     
+    def set_param(self, param='', value=None):
+        '''
+        Alters the value of the method parameters.
+        
+        Parameters
+        ----------
+        
+        param : str
+            The method parameter to alter
+        
+        value : int/float/string
+            The new value
+        '''
+        
+        if param in {'kx', 'maxIt', 'eps', 'ierr'}:
+            setattr(self, '_{}'.format(param), value)
+        elif param in {'sx', 'su', 'use_chains', 'nodes_type'}:
+            setattr(self.trajectories, '_{}'.format(param), value)
+        elif param in {'tol', 'method', 'coll_type', 'sol_steps'}:
+            setattr(self.eqs, '_{}'.format(param), value)
+        else:
+            raise AttributeError("Invalid method parameter ({})".format(param))
     
     def unconstrain(self):
         '''
@@ -346,7 +366,7 @@ class ControlSystem(object):
             m = 4.0/(v[1] - v[0])
             psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
             #dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
-            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk_sym))**2
+            dpsi = (4.0*sp.exp(m*yk_sym))/(1.0+sp.exp(m*yk_sym))**2
             
             # replace constrained variables in vectorfield with saturation expression
             # x(t) = psi(y(t))

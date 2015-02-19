@@ -82,17 +82,26 @@ class IntegChain(object):
     elements : tuple
         Ordered list of all elements that are part of the integrator chain
     
-    upper : sympy.Symbol
+    upper : str
         Upper end of the integrator chain
     
-    lower : sympy.Symbol
+    lower : str
         Lower end of the integrator chain
     '''
     
     def __init__(self, lst):
-        self._elements = tuple(lst)
-        self.upper = self._elements[0]
-        self.lower = self._elements[-1]
+        # check if elements are sympy.Symbol's or already strings
+        elements = []
+        for elem in lst:
+            if isinstance(elem, sp.Symbol):
+                elements.append(elem.name)
+            elif isinstance(elem, str):
+                elements.append(elem)
+            else:
+                raise TypeError("Integrator chain elements should either be \
+                                 sympy.Symbol's or string objects!")
+                                 
+        self._elements = tuple(elements)
     
     def __len__(self):
         return len(self._elements)
@@ -106,14 +115,31 @@ class IntegChain(object):
     def __str__(self):
         s = ''
         for elem in self._elements:#[::-1]:
-            s += ' -> ' + elem.name
+            s += ' -> ' + elem
         return s[4:]
     
+    @property
     def elements(self):
         '''
         Return an ordered list of the integrator chain's elements.
         '''
         return self._elements
+    
+    @property
+    def upper(self):
+        '''
+        Returns the upper end of the integrator chain, i.e. the element
+        of which all others are derivatives of.
+        '''
+        return self._elements[0]
+    
+    @property
+    def lower(self):
+        '''
+        Returns the lower end of the integrator chain, i.e. the element
+        which has no derivative in the integrator chain.
+        '''
+        return self._elements[-1]
 
 
 def find_integrator_chains(fi, x_sym, u_sym):
@@ -197,14 +223,15 @@ def find_integrator_chains(fi, x_sym, u_sym):
     # now we determine the equations that have to be solved by collocation
     # (--> lower ends of integrator chains)
     eqind = []
-
+    
+    x_sym_str = [sym.name for sym in x_sym]
     if chains:
         # iterate over all integrator chains
         for ic in chains:
             # if lower end is a system variable
             # then its equation has to be solved
-            if ic.lower.name.startswith('x'):
-                idx = x_sym.index(ic.lower)
+            if ic.lower.startswith('x'):
+                idx = x_sym_str.index(ic.lower)
                 eqind.append(idx)
         eqind.sort()
         
