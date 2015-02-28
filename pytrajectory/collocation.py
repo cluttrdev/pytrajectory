@@ -42,7 +42,8 @@ class CollocationSystem(object):
         # create vectorized versions of the control system's vector field
         # and its jacobian for the faster evaluation of the collocation equation system `G`
         # and its jacobian `DG` (--> see self.build())
-        f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
+        #f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
+        f = sys.ff_sym(sys.x_sym, sys.u_sym)
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
         self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True)
@@ -99,7 +100,7 @@ class CollocationSystem(object):
         j = 0
     
         # iterate over spline quantities
-        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k):
+        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k.name):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
@@ -321,7 +322,7 @@ class CollocationSystem(object):
             guess = np.empty(0)
             
             # get new guess for every independent variable
-            for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k):
+            for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k.name):
                 if (trajectories._splines[k].type == 'x'):
                     logging.debug("Get new guess for spline {}".format(k))
                     

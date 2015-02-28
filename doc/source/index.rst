@@ -8,7 +8,7 @@ Welcome to PyTrajectory's documentation!
 
 .. Placeholder for the datetime string of latest commit
 
-This documentation is built automatically from the source code (commit: 2015-02-19 13:43:11)
+This documentation is built automatically from the source code (commit: 2015-02-28 11:46:18)
 
 .. toctree::
    :maxdepth: 2

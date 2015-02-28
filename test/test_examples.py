@@ -70,8 +70,6 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
     
-    @pytest.mark.xfail
-    @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_integrator(self):
         script = os.path.join(self.examples_dir, 'ex6_ConstrainedDoubleIntegrator.py')
@@ -79,8 +77,6 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
-    @pytest.mark.xfail
-    @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_inverted_pendulum(self):
         script = os.path.join(self.examples_dir, 'ex7_ConstrainedInvertedPendulum.py')
@@ -88,7 +84,6 @@ class TestExamples(object):
         execfile(script, d, d)
         self.assert_reached_accuracy(locals())
 
-    @pytest.mark.xfail
     @pytest.mark.slow
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
     def test_constrained_double_pendulum(self):

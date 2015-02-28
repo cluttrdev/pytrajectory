@@ -146,12 +146,12 @@ class Trajectory(object):
         
                 # here we just create a spline object for the upper ends of every chain
                 # w.r.t. its lower end (whether it is an input variable or not)
-                if chain.lower.startswith('x'):
-                    splines[upper] = Spline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper,
+                if chain.lower.name.startswith('x'):
+                    splines[upper] = Spline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper.name,
                                                  nodes_type=self._nodes_type)
                     splines[upper].type = 'x'
-                elif chain.lower.startswith('u'):
-                    splines[upper] = Spline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper,
+                elif chain.lower.name.startswith('u'):
+                    splines[upper] = Spline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper.name,
                                                  nodes_type=self._nodes_type)
                     splines[upper].type = 'u'
         
@@ -192,7 +192,7 @@ class Trajectory(object):
         # now handle the variables which are not part of any chain
         for i, xx in enumerate(self._x_sym):
             if not x_fnc.has_key(xx):
-                splines[xx] = Spline(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx,
+                splines[xx] = Spline(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx.name,
                                      nodes_type=self._nodes_type)
                 splines[xx].make_steady()
                 splines[xx].type = 'x'
@@ -201,7 +201,7 @@ class Trajectory(object):
         offset = len(self._x_sym)
         for j, uu in enumerate(self._u_sym):
             if not u_fnc.has_key(uu):
-                splines[uu] = Spline(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu,
+                splines[uu] = Spline(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu.name,
                                      nodes_type=self._nodes_type)
                 splines[uu].make_steady()
                 splines[uu].type = 'u'
@@ -243,7 +243,7 @@ class Trajectory(object):
         sol_bak = sol.copy()
         subs = dict()
 
-        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k):
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             i = len(v)
             subs[k] = sol[:i]
             sol = sol[i:]
@@ -265,7 +265,7 @@ class Trajectory(object):
         i = 0
         j = 0
 
-        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k):
+        for k, v in sorted(self.indep_coeffs.items(), key=lambda (k, v): k.name):
             j += len(v)
             coeffs_sol[k] = sol_bak[i:j]
             i = j

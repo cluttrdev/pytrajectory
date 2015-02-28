@@ -113,8 +113,10 @@ class ControlSystem(object):
         self.m = m
         
         # Set symbols for state and input variables
-        self.x_sym = [sym.name for sym in x_sym]
-        self.u_sym = [sym.name for sym in u_sym]
+        #self.x_sym = [sym.name for sym in x_sym]
+        #self.u_sym = [sym.name for sym in u_sym]
+        self.x_sym = x_sym
+        self.u_sym = u_sym
         
         # Set integrator chains and equations that have to be solved
         self.chains = chains
@@ -161,28 +163,7 @@ class ControlSystem(object):
         # a numeric one for faster evaluation
         self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, vectorized=False)
         
-        # set order of the polynomial spline parts
-        if kwargs.has_key('spline_orders'):
-            raise NotImplementedError()
-            
-            orders = kwargs['spline_orders']
-            if hasattr(orders, '__iter__'):
-                assert len(orders) == len(self.x_sym + self.u_sym)
-                method_param['spline_orders'] = [int(order) for order in orders]
-            elif type(orders) in {dict}:
-                raise NotImplementedError
-            else:
-                try:
-                    order = int(orders)
-                    method_param['spline_orders'] = [order] * len(self.x_sym + self.u_sym)
-                except:
-                    logging.warning('Could not set spline orders to `{}`, \
-                                     will use cubic polynomial parts.'.format(orders))
-                    method_param['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
-        else:
-            method_param['spline_orders'] = [3] * len(self.x_sym + self.u_sym)
-        
-        # Create trajectory
+        # Create trajectory object
         self.trajectories = Trajectory(sys=self, sx=method_param['sx'], su=method_param['su'],
                                         use_chains=method_param['use_chains'],
                                         nodes_type=method_param['nodes_type'])
@@ -314,6 +295,8 @@ class ControlSystem(object):
         if param in {'kx', 'maxIt', 'eps', 'ierr'}:
             setattr(self, '_{}'.format(param), value)
         elif param in {'sx', 'su', 'use_chains', 'nodes_type'}:
+            if param == 'nodes_type' and value != 'equidistant':
+                raise NotImplementedError()
             setattr(self.trajectories, '_{}'.format(param), value)
         elif param in {'tol', 'method', 'coll_type', 'sol_steps'}:
             setattr(self.eqs, '_{}'.format(param), value)
@@ -328,6 +311,7 @@ class ControlSystem(object):
         '''
         
         # make some stuff local
+        #ff = sp.Matrix(self.ff_sym(sp.symbols(self.x_sym), sp.symbols(self.u_sym)))
         ff = sp.Matrix(self.ff_sym(self.x_sym, self.u_sym))
         boundary_values = self._boundary_values
         x_sym = self.x_sym
@@ -358,19 +342,25 @@ class ControlSystem(object):
                 raise ValueError('Boundary values have to be strictly within the saturation limits!')
             
             # replace constrained state variable with new unconstrained one
-            x_sym[k] = 'y{}'.format(k+1)
+            #x_sym[k] = 'y{}'.format(k+1)
+            x_sym[k] = sp.Symbol('y{}'.format(k+1))
             
             # calculate saturation function expression and its derivative
             yk = x_sym[k]
-            yk_sym = sp.Symbol(yk)
+            #yk_sym = sp.Symbol(yk)
             m = 4.0/(v[1] - v[0])
-            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
+            #psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
+            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk))
+            
             #dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
-            dpsi = (4.0*sp.exp(m*yk_sym))/(1.0+sp.exp(m*yk_sym))**2
+            
+            #dpsi = (4.0*sp.exp(m*yk_sym))/(1.0+sp.exp(m*yk_sym))**2
+            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
             
             # replace constrained variables in vectorfield with saturation expression
             # x(t) = psi(y(t))
-            ff = ff.replace(sp.Symbol(x_sym_orig[k]), psi)
+            #ff = ff.replace(sp.Symbol(x_sym_orig[k]), psi)
+            ff = ff.replace(x_sym_orig[k], psi)
             
             # update vectorfield to represent differential equation for new
             # unconstrained state variable
@@ -602,14 +592,21 @@ class ControlSystem(object):
         xt = self.sim_data[1]
         
         # get boundary values at right border of the interval
-        xb = dict([(k, v[1]) for k, v in self._boundary_values.items() if k in self.x_sym])
+        if self.constraints:
+            bv = self.orig_backup['boundary_values']
+            x_sym = self.orig_backup['x_sym'] 
+        else:
+            bv = self._boundary_values
+            x_sym = self.x_sym
+            
+        xb = dict([(k, v[1]) for k, v in bv.items() if k in x_sym])
         
         # what is the error
         logging.debug(40*"-")
         logging.debug("Ending up with:   Should Be:  Difference:")
 
         err = np.empty(xt.shape[1])
-        for i, xx in enumerate(self.x_sym):
+        for i, xx in enumerate(x_sym):
             err[i] = abs(xb[xx] - xt[-1][i])
             logging.debug(str(xx)+" : %f     %f    %f"%(xt[-1][i], xb[xx], err[i]))
         
