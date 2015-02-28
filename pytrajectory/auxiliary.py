@@ -94,8 +94,7 @@ class IntegChain(object):
         elements = []
         for elem in lst:
             if isinstance(elem, sp.Symbol):
-                #elements.append(elem.name)
-                elements.append(elem)
+                elements.append(elem.name)
             elif isinstance(elem, str):
                 elements.append(elem)
             else:
@@ -116,7 +115,7 @@ class IntegChain(object):
     def __str__(self):
         s = ''
         for elem in self._elements:#[::-1]:
-            s += ' -> ' + str(elem)
+            s += ' -> ' + elem
         return s[4:]
     
     @property
@@ -225,15 +224,14 @@ def find_integrator_chains(fi, x_sym, u_sym):
     # (--> lower ends of integrator chains)
     eqind = []
     
-    #x_sym_str = [sym.name for sym in x_sym]
+    x_sym_str = [sym.name for sym in x_sym]
     if chains:
         # iterate over all integrator chains
         for ic in chains:
             # if lower end is a system variable
             # then its equation has to be solved
-            if ic.lower.name.startswith('x'):
-                #idx = x_sym_str.index(ic.lower)
-                idx = x_sym.index(ic.lower)
+            if ic.lower.startswith('x'):
+                idx = x_sym_str.index(ic.lower)
                 eqind.append(idx)
         eqind.sort()
         
@@ -279,8 +277,10 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     
     # get a sympy.Matrix representation of the vectorfield
     if callable(f_sym):
-        #F = sp.Matrix(f_sym(sp.symbols(x_sym), sp.symbols(u_sym)))
-        F = sp.Matrix(f_sym(x_sym, u_sym))
+        if all(isinstance(s, sp.Symbol) for s in x_sym+u_sym):
+            F = sp.Matrix(f_sym(x_sym, u_sym))
+        elif all(isinstance(s, str) for s in x_sym+u_sym):
+            F = sp.Matrix(f_sym(sp.symbols(x_sym), sp.symbols(u_sym)))
     else:
         try:
             F = sp.Matrix(f_sym)
@@ -323,8 +323,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
                     # 
                     # we just take an arbitrary input, multiply it with 0 and add it
                     # to the current element (constant)
-                    #expr = sp.Mul(0.0, sp.Symbol(x_sym[0]), evaluate=False)
-                    expr = sp.Mul(0.0, x_sym[0], evaluate=False)
+                    expr = sp.Mul(0.0, sp.Symbol(x_sym[0]), evaluate=False)
                     F[i,j] = sp.Add(F[i,j], expr, evaluate=False)
         
         # if it is a vector, squeeze it

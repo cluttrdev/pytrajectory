@@ -21,7 +21,7 @@ a = 0.0
 b = 2.0
 ua = [0.0]
 ub = [0.0]
-constraints = { 1:[-0.1, 0.65]}
+constraints = { 1 : [-0.1, 0.65]}
 #constraints = dict()
 
 S = ControlSystem(f, a=a, b=b, xa=xa, xb=xb, ua=ua, ub=ub, constraints=constraints)

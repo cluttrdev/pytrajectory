@@ -113,10 +113,8 @@ class ControlSystem(object):
         self.m = m
         
         # Set symbols for state and input variables
-        #self.x_sym = [sym.name for sym in x_sym]
-        #self.u_sym = [sym.name for sym in u_sym]
-        self.x_sym = x_sym
-        self.u_sym = u_sym
+        self.x_sym = [sym.name for sym in x_sym]
+        self.u_sym = [sym.name for sym in u_sym]
         
         # Set integrator chains and equations that have to be solved
         self.chains = chains
@@ -311,8 +309,7 @@ class ControlSystem(object):
         '''
         
         # make some stuff local
-        #ff = sp.Matrix(self.ff_sym(sp.symbols(self.x_sym), sp.symbols(self.u_sym)))
-        ff = sp.Matrix(self.ff_sym(self.x_sym, self.u_sym))
+        ff = sp.Matrix(self.ff_sym(sp.symbols(self.x_sym), sp.symbols(self.u_sym)))
         boundary_values = self._boundary_values
         x_sym = self.x_sym
         
@@ -342,25 +339,20 @@ class ControlSystem(object):
                 raise ValueError('Boundary values have to be strictly within the saturation limits!')
             
             # replace constrained state variable with new unconstrained one
-            #x_sym[k] = 'y{}'.format(k+1)
-            x_sym[k] = sp.Symbol('y{}'.format(k+1))
+            x_sym[k] = 'y{}'.format(k+1)
             
             # calculate saturation function expression and its derivative
             yk = x_sym[k]
-            #yk_sym = sp.Symbol(yk)
+            yk_sym = sp.Symbol(yk)
             m = 4.0/(v[1] - v[0])
-            #psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
-            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk))
+            psi = v[1] - (v[1]-v[0])/(1.0+sp.exp(m*yk_sym))
             
             #dpsi = ((v[1]-v[0])*m*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
-            
-            #dpsi = (4.0*sp.exp(m*yk_sym))/(1.0+sp.exp(m*yk_sym))**2
-            dpsi = (4.0*sp.exp(m*yk))/(1.0+sp.exp(m*yk))**2
+            dpsi = (4.0*sp.exp(m*yk_sym))/(1.0+sp.exp(m*yk_sym))**2
             
             # replace constrained variables in vectorfield with saturation expression
             # x(t) = psi(y(t))
-            #ff = ff.replace(sp.Symbol(x_sym_orig[k]), psi)
-            ff = ff.replace(x_sym_orig[k], psi)
+            ff = ff.replace(sp.Symbol(x_sym_orig[k]), psi)
             
             # update vectorfield to represent differential equation for new
             # unconstrained state variable
@@ -529,13 +521,6 @@ class ControlSystem(object):
         self.simulate()
         
         # check if desired accuracy is reached
-        if self.constraints:
-            boundary_values = self.orig_backup['boundary_values']
-            x_sym = self.orig_backup['x_sym']
-        else:
-            boundary_values = self._boundary_values
-            x_sym = self.x_sym
-        
         self.check_accuracy()
     
     
