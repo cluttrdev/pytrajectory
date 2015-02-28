@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import ode
 
 
-class Simulation:
+class Simulator(object):
     '''
     This class simulates the initial value problem that results from solving 
     the boundary value problem of the control system.
@@ -52,10 +52,11 @@ class Simulation:
 
     def rhs(self, t, x):
         '''
-        Retruns the right hand side (vectorfield) of the ode system.
+        Retruns the right hand side (vector field) of the ode system.
         '''
         u = self.u(t)
         dx = self.ff(x, u)
+        
         return dx
 
 

@@ -4,7 +4,7 @@ About
 =====
 
 [![Build Status](https://travis-ci.org/TUD-RST/pytrajectory.svg?branch=develop)](https://travis-ci.org/TUD-RST/pytrajectory)
-[![PyPI Version](https://pypip.in/v/pytrajectory/badge.png)](https://pypi.python.org/pypi/pytrajectory)
+[![PyPI Version](https://pypip.in/v/pytrajectory/badge.png)](https://pypi.python.org(pypi/pytrajectory)
 
 PyTrajectory is a Python library for the determination of the feed forward control 
 to achieve a transition between desired states of a nonlinear control system.

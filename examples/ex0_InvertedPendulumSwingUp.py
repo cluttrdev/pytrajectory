@@ -4,14 +4,14 @@ PyTrajectory as well as its visualisation capabilities.
 '''
 
 # import all we need for solving the problem
-from pytrajectory import Trajectory
+from pytrajectory import ControlSystem
 import numpy as np
 from sympy import cos, sin
 from numpy import pi
 
 # the next imports are necessary for the visualisatoin of the system
 import matplotlib as mpl
-from pytrajectory.utilities import Animation
+from pytrajectory.visualisation import Animation
 
 # first, we define the function that returns the vectorfield
 def f(x,u):
@@ -40,10 +40,10 @@ ua = [0.0]
 ub = [0.0]
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, ua, ub, kx=5, use_chains=False)
+S = ControlSystem(f, a, b, xa, xb, ua, ub, kx=5, use_chains=False)
 
 # time to run the iteration
-T.startIteration()
+S.solve()
 
 
 # now that we (hopefully) have found a solution,
@@ -109,12 +109,12 @@ def draw(xt, image):
 #
 # to plot the curves of some trajectories along with the picture
 # we also pass the appropriate lists as arguments (see documentation)
-A = Animation(drawfnc=draw, simdata=T.sim, 
+A = Animation(drawfnc=draw, simdata=S.sim_data, 
               plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
 
 # as for now we have to explicitly set the limits of the figure
 # (may involves some trial and error)
-xmin = np.min(T.sim[1][:,0]); xmax = np.max(T.sim[1][:,0])
+xmin = np.min(S.sim_data[1][:,0]); xmax = np.max(S.sim_data[1][:,0])
 A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
 
 # if everything is set, we can start the animation

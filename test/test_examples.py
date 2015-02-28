@@ -24,7 +24,7 @@ class TestExamples(object):
     # and add that of the example 
     examples_dir = os.sep.join(pth + ['examples'])
 
-    # now we test, if the example scripts are reachable
+    # now we test, if we can get the example scripts
     test_example_path_failed = True
     with open(os.path.join(examples_dir, 'ex0_InvertedPendulumSwingUp.py')) as f:
         f.close()
@@ -32,7 +32,7 @@ class TestExamples(object):
     
     def assert_reached_accuracy(self, loc):
         for value in loc.values():
-            if isinstance(value, pytrajectory.trajectory.Trajectory):
+            if isinstance(value, pytrajectory.system.ControlSystem):
                 assert value.reached_accuracy
 
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")

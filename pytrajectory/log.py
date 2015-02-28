@@ -6,7 +6,7 @@ import logging
 
 DEBUG = True
 LOG2CONSOLE = True
-LOG2FILE = True
+LOG2FILE = False
 
 # get logger
 logger = logging.getLogger()
@@ -55,14 +55,16 @@ class Timer():
     label : str
         The 'name' of the code block which is timed
     
+    verb : int
+        Level of verbosity
     '''
-    def __init__(self, label="~"):
+    def __init__(self, label="~", verb=4):
         self.label = label
- 
+        self.verb = verb
+
     def __enter__(self):
         self.start = time.time()
 
     def __exit__(self, *args):
         self.delta = time.time() - self.start
         logging.debug("---> [%s elapsed %f s]"%(self.label, self.delta))
-

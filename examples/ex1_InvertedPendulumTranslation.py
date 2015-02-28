@@ -1,7 +1,7 @@
 # translation of the inverted pendulum
 
 # import trajectory class and necessary dependencies
-from pytrajectory import Trajectory
+from pytrajectory import ControlSystem
 from sympy import sin, cos
 import numpy as np
 
@@ -31,20 +31,20 @@ xa = [  0.0,
         0.0,
         0.0]
 
-# boundary values at the end (b = 1.0 [s])
+# boundary values at the end (b = 2.0 [s])
 xb = [  1.0,
         0.0,
         0.0,
         0.0]
 
 # create trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb)
+S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb)
 
 # change method parameter to increase performance
-T.setParam('use_chains', False)
+S.set_param('use_chains', False)
 
 # run iteration
-T.startIteration()
+S.solve()
 
 
 # the following code provides an animation of the system above
@@ -53,7 +53,7 @@ do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xti, image):
         x = xti[0]
@@ -91,11 +91,11 @@ if do_animation:
         
         return image
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(0,'x'), (2,'phi')], plotinputs=[(0,'u')])
     
-    xmin = np.min(T.sim[1][:,0])
-    xmax = np.max(T.sim[1][:,0])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 0.5,xmax + 0.5), ylim=(-0.3,0.8))
     
     A.animate()

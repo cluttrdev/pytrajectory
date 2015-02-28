@@ -5,6 +5,7 @@ import scipy as scp
 from log import logging
 
 
+
 class Solver:
     '''
     This class provides solver for the collocation equation system.
@@ -37,7 +38,7 @@ class Solver:
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = 1e-5
+        self.reltol = 1e-4
         self.maxIt = maxIt
         self.method = method
         
@@ -50,11 +51,14 @@ class Solver:
         collocation equation system.
         '''
         
-        if self.method == 'leven':
+        if (self.method == 'leven'):
             logging.debug("Run Levenberg-Marquardt method")
             self.leven()
+        elif (self.method == 'new_leven'):
+            self.alternate_levenberg_marquardt()
         
-        if self.sol is None:
+        
+        if (self.sol == None):
             logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:
@@ -71,7 +75,7 @@ class Solver:
         i = 0
         x = self.x0
         res = 1
-        res_alt = 1e10
+        res_alt = -1
         
         eye = scp.sparse.identity(len(self.x0))
 
@@ -90,6 +94,7 @@ class Solver:
         while((res > self.tol) and (self.maxIt > i) and (abs(res-res_alt) > reltol)):
             i += 1
             
+            #if (i-1)%4 == 0:
             DFx = self.DF(x)
             DFx = scp.sparse.csr_matrix(DFx)
             
@@ -111,12 +116,12 @@ class Solver:
                 
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
-                #logging.debug("  roh= %f    mu= %f"%(roh,mu))
+                #log.info("  roh= %f    mu= %f"%(roh,mu))
                 
                 # the following was believed to be some kind of bug, hence the warning
                 # but that was not the case...
                 #if (roh < 0.0):
-                    #logging.warning("Parameter roh in LM-method became negative")
+                    #log.warn("Parameter roh in LM-method became negative", verb=3)
                     #from IPython import embed as IPS
                     #IPS()
             
@@ -126,11 +131,10 @@ class Solver:
             roh = 0.0
             res_alt = res
             res = normFx
-            logging.debug("      nIt= %d    res= %f"%(i,res))
+            logging.debug("nIt= %d    res= %f"%(i,res))
             
             # NEW - experimental
-            if res<1.0:
-                reltol = 1e-4
+            #if res<1.0:
+            #    reltol = 1e-3
 
         self.sol = x
-

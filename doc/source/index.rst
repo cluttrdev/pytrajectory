@@ -8,13 +8,12 @@ Welcome to PyTrajectory's documentation!
 
 .. Placeholder for the datetime string of latest commit
 
-This documentation is built automatically from the source code (commit: 2015-02-17 18:00:49)
+This documentation is built automatically from the source code (commit: 2015-02-28 13:25:31)
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    guide/index
-   
    pytrajectory
 
 
@@ -24,4 +23,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
