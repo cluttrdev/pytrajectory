@@ -22,10 +22,22 @@ class CollocationSystem(object):
     ----------
     
     sys : system.ControlSystem
-        Instance of a control system.
+        Instance of a control system
+    
+    tol : float
+        Tolerance for the solver
+    
+    sol_steps : int
+        Maximum number of steps of the nonlinear solver
+    
+    method : str
+        The method to solve the nonlinear equation system
+    
+    coll_type : str
+        The type of the collocation points
     
     '''
-    def __init__(self, sys, tol=1e-5, sol_steps=100, method='leven', coll_type='equidistant', use_sparse=True):
+    def __init__(self, sys, tol=1e-5, sol_steps=100, method='leven', coll_type='equidistant'):
         # TODO: get rid of the following
         self.sys = sys
         
@@ -128,49 +140,48 @@ class CollocationSystem(object):
         free_param = np.hstack(sorted(trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
         c_len = free_param.size
         
-        with Timer('Building M-matrices'):
-            lx = len(cpts)*len(x_sym)
-            lu = len(cpts)*len(u_sym)
+        lx = len(cpts)*len(x_sym)
+        lu = len(cpts)*len(u_sym)
 
-            Mx = [None]*lx
-            Mx_abs = [None]*lx
-            Mdx = [None]*lx
-            Mdx_abs = [None]*lx
-            Mu = [None]*lu
-            Mu_abs = [None]*lu
+        Mx = [None]*lx
+        Mx_abs = [None]*lx
+        Mdx = [None]*lx
+        Mdx_abs = [None]*lx
+        Mu = [None]*lu
+        Mu_abs = [None]*lu
 
-            eqx = 0
-            equ = 0
-            for p in cpts:
-                for xx in x_sym:
-                    mx = np.zeros(c_len)
-                    mdx = np.zeros(c_len)
+        eqx = 0
+        equ = 0
+        for p in cpts:
+            for xx in x_sym:
+                mx = np.zeros(c_len)
+                mdx = np.zeros(c_len)
 
-                    i,j = indic[xx]
+                i,j = indic[xx]
 
-                    mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
-                    mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
+                mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
+                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
 
-                    Mx[eqx] = mx
-                    Mdx[eqx] = mdx
-                    eqx += 1
+                Mx[eqx] = mx
+                Mdx[eqx] = mdx
+                eqx += 1
 
-                for uu in u_sym:
-                    mu = np.zeros(c_len)
+            for uu in u_sym:
+                mu = np.zeros(c_len)
 
-                    i,j = indic[uu]
-                
-                    mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
-                
-                    Mu[equ] = mu
-                    equ += 1
+                i,j = indic[uu]
+            
+                mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
+            
+                Mu[equ] = mu
+                equ += 1
 
-            Mx = np.array(Mx)
-            Mx_abs = np.array(Mx_abs)
-            Mdx = np.array(Mdx)
-            Mdx_abs = np.array(Mdx_abs)
-            Mu = np.array(Mu)
-            Mu_abs = np.array(Mu_abs)
+        Mx = np.array(Mx)
+        Mx_abs = np.array(Mx_abs)
+        Mdx = np.array(Mdx)
+        Mdx_abs = np.array(Mdx_abs)
+        Mu = np.array(Mu)
+        Mu_abs = np.array(Mu_abs)
         
         # the following would be created with every call to self.DG but it is possible to
         # only do it once. So we do it here to speed things up.
@@ -194,25 +205,25 @@ class CollocationSystem(object):
         DXU_old = DXU
         DXU = np.vstack(DXU)
         
-        if self._use_sparse:
-            Mx = sparse.csr_matrix(Mx)
-            Mx_abs = sparse.csr_matrix(Mx_abs)
-            Mdx = sparse.csr_matrix(Mdx)
-            Mdx_abs = sparse.csr_matrix(Mdx_abs)
-            Mu = sparse.csr_matrix(Mu)
-            Mu_abs = sparse.csr_matrix(Mu_abs)
+        # create sparse matrices
+        Mx = sparse.csr_matrix(Mx)
+        Mx_abs = sparse.csr_matrix(Mx_abs)
+        Mdx = sparse.csr_matrix(Mdx)
+        Mdx_abs = sparse.csr_matrix(Mdx_abs)
+        Mu = sparse.csr_matrix(Mu)
+        Mu_abs = sparse.csr_matrix(Mu_abs)
 
-            DdX = sparse.csr_matrix(DdX)
-            DXU = sparse.csr_matrix(DXU)
+        DdX = sparse.csr_matrix(DdX)
+        DXU = sparse.csr_matrix(DXU)
         
         # localize vectorized functions for the control system's vector field and its jacobian
         ff_vec = self._ff_vectorized
         Df_vec = self._Df_vectorized
         
         # in the later evaluation of the equation system `G` and its jacobian `DG`
-        # there will be created the matrices `F` and DF in which every `x` rows represent the 
+        # there will be created the matrices `F` and DF in which every x rows represent the 
         # evaluation of the control systems vectorfield and its jacobian in a specific collocation
-        # point, where `x` is the number of state variables
+        # point, where x is the number of state variables
         # 
         # if we make use of the system structure, i.e. the integrator chains, not every
         # equation of the vector field has to be solved and because of that, not every row 
@@ -226,7 +237,6 @@ class CollocationSystem(object):
         
         # `eqind` now contains the indices of the equations/rows of the vector field
         # that have to be solved
-        
         cp_len = len(cpts)
         
         # this (-> `take_indices`) will be the array with indices of the rows we need
@@ -257,11 +267,6 @@ class CollocationSystem(object):
     
         # and its jacobian
         def DG(c):
-            '''
-            Returns the jacobian matrix of the collocation system w.r.t. the
-            independent parameters evaluated at :attr:`c`.
-            '''
-        
             # first we calculate the x and u values in all collocation points
             # with the current numerical values of the free parameters
             X = Mx.dot(c) + Mx_abs
@@ -414,15 +419,7 @@ class CollocationSystem(object):
         # solve the equation system
         self.sol = solver.solve()
         
-        #print "SOLVE"
-        #IPS()
-        
-        #from scipy import optimize as op
-        #scipy_sol = op.root(fun=self.G, x0=self.guess, method='lm', jac=False)
-        #IPS()
-        
         return self.sol
-
 
 def collocation_nodes(a, b, npts, coll_type):
     '''

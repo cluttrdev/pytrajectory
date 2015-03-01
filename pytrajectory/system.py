@@ -65,7 +65,6 @@ class ControlSystem(object):
         method        'leven'         The solver algorithm to use
         use_chains    True            Whether or not to use integrator chains
         coll_type     'equidistant'   The type of the collocation points
-        use_sparse    True            Whether or not to use sparse matrices
         sol_steps     100             Maximum number of iteration steps for the eqs solver
         nodes_type    'equidistant'   The type of the spline nodes
         ============= =============   ============================================================
@@ -91,9 +90,7 @@ class ControlSystem(object):
                         'method' : 'leven',
                         'use_chains' : True,
                         'coll_type' : 'equidistant',
-                        'use_sparse' : True,
                         'sol_steps' : 100,
-                        'spline_orders' : [3],
                         'nodes_type' : 'equidistant'}
         
         # Change default values of given kwargs
@@ -391,7 +388,6 @@ class ControlSystem(object):
         
         return ff_sym, boundary_values, orig_backup
     
-    
     def constrain(self):
         '''
         This method is used to determine the solution of the original constrained
@@ -434,7 +430,6 @@ class ControlSystem(object):
         self.ff = self.orig_backup['ff_num']
         self.ff_sym = self.orig_backup['ff_sym']
         self.trajectories._x_sym = self.x_sym
-    
     
     def solve(self):
         '''
@@ -481,7 +476,6 @@ class ControlSystem(object):
         # return the found solution functions
         return self.trajectories.x, self.trajectories.u
     
-    
     def _iterate(self):
         '''
         This method is used to run one iteration step.
@@ -522,7 +516,6 @@ class ControlSystem(object):
         
         # check if desired accuracy is reached
         self.check_accuracy()
-    
     
     def simulate(self):
         '''
@@ -645,7 +638,6 @@ class ControlSystem(object):
         # xt = np.array([self.trajectories.x(tt) for tt in t])
         # ut = self.sim_data[2]
         # visualisation.plot_simulation([t,xt,ut], H)
-    
     
     def save(self):
         '''

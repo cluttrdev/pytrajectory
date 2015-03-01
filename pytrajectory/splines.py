@@ -16,7 +16,7 @@ class Spline(object):
     '''
     This class provides a representation of a cubic spline function.
     
-    It simultaneously provides access to the spline function itself as well as to its derivatives
+    It simultaneously enables access to the spline function itself as well as to its derivatives
     up to the 3rd order. Furthermore it has its own method to ensure the steadiness and smoothness 
     conditions of its polynomial parts in the joining points.
     

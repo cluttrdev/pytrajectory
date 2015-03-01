@@ -10,9 +10,8 @@ from IPython import embed as IPS
 
 class Trajectory(object):
     '''
-    This class handles the creation and managing of the
-    spline functions that are intended to approximate
-    the desired trajectories.
+    This class handles the creation and managing of the spline functions 
+    that are intended to approximate the desired trajectories.
     
     Parameters
     ----------
@@ -20,7 +19,19 @@ class Trajectory(object):
     sys : system.ControlSystem
         Instance of a control system providing information like
         vector field function, integrator chains, boundary values
-        and so on.
+        and so on
+        
+    sx : int
+        Initial number of spline parts for state variables
+    
+    su : int
+        Initial number of spline parts for input variables
+        
+    use_chains : bool
+        Whether or not to make use of system structure
+        
+    nodes_type : str
+        Type of the spline nodes
     '''
     
     def __init__(self, sys, sx=5, su=5, use_chains=True, nodes_type='equidistant'):
@@ -52,7 +63,6 @@ class Trajectory(object):
         
         self._old_splines = None
     
-    
     def x(self, t):
         '''
         Returns the current system state.
@@ -71,8 +81,7 @@ class Trajectory(object):
             arr = np.array([self._x_fnc[xx](t) for xx in self._x_sym])
         
         return arr
-
-
+    
     def u(self, t):
         '''
         Returns the state of the input variables.
@@ -91,8 +100,7 @@ class Trajectory(object):
             arr = np.array([self._u_fnc[uu](t) for uu in self._u_sym])
         
         return arr
-
-
+    
     def dx(self, t):
         '''
         Returns the state of the 1st derivatives of the system variables.
@@ -111,8 +119,6 @@ class Trajectory(object):
             arr = np.array([self._dx_fnc[xx](t) for xx in self._x_sym])
         
         return arr
-    
-    
     
     def init_splines(self, boundary_values):
         '''
@@ -221,7 +227,6 @@ class Trajectory(object):
         self._u_fnc = u_fnc
         self._dx_fnc = dx_fnc
         
-    
     def set_coeffs(self, sol):
         '''
         Set found numerical values for the independent parameters of each spline.

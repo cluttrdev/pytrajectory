@@ -7,62 +7,6 @@ from log import logging, Timer
 
 from IPython import embed as IPS
 
-# The code following python class `BetweenDict` was written
-# by Joshua Kugler and has been taken from
-# 
-# http://joshuakugler.com/archives/30-BetweenDict,-a-Python-dict-for-value-ranges.html
-# 
-class BetweenDict(dict):
-    def __init__(self, d = {}):
-        for k, v in d.iteritems():
-            self[(k[0], k[1])] = v
-
-    def __getitem__(self, key):
-        for k, v in self.iteritems():
-            if k[0] <= key < k[1]:
-                return v
-            
-        raise KeyError("Key '%s' is not between any values in the BetweenDict" % key)
-
-    def __setitem__(self, key, value):
-        try:
-            if len(key) == 2:
-                if key[0] < key[1]:
-                    dict.__setitem__(self, (key[0], key[1]), value)
-                else:
-                    raise RuntimeError('First element of a BetweenDict key '
-                                       'must be strictly less than the '
-                                       'second element')
-            else:
-                raise ValueError('Key of a BetweenDict must be an iterable '
-                                 'with length two')
-        except TypeError:
-            raise TypeError('Key of a BetweenDict must be an iterable '
-                             'with length two')
-
-    def __contains__(self, key):
-        try:
-            return bool(self[key]) or True
-        except KeyError:
-            return False
-    
-    def __str__(self):
-        s = '{{ {} }}'
-        rep = ''
-        for k, v in sorted(self.iteritems(), key=lambda item: item[0]):
-            rep += '{} : {}, '.format(k, v)
-        
-        return s.format(rep[:-1])
-    
-    def __repr__(self):
-        rep = ''
-        for k, v in sorted(self.iteritems(), key=lambda item: item[0]):
-            rep += '{} : {},\n'.format(k, v)
-        
-        print '{' + rep + '}'
-        return
-
-
 class IntegChain(object):
     '''
     This class provides a representation of an integrator chain.
@@ -74,7 +18,7 @@ class IntegChain(object):
     ----------
     
     lst : list
-        Ordered list of sympy.symbols for elements of the integrator chain.
+        Ordered list of the integrator chain's elements.
     
     Attributes
     ----------
@@ -282,11 +226,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
         elif all(isinstance(s, str) for s in x_sym+u_sym):
             F = sp.Matrix(f_sym(sp.symbols(x_sym), sp.symbols(u_sym)))
     else:
-        try:
-            F = sp.Matrix(f_sym)
-        except:
-            print "ERROR: array_like f_sym to sp.Matrix failed!"
-            IPS()
+        F = sp.Matrix(f_sym)
     
     # chack if it is a vector or matrix
     if min(F.shape) == 1:
