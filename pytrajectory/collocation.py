@@ -46,7 +46,6 @@ class CollocationSystem(object):
         self._sol_steps = sol_steps
         self._method = method
         self._coll_type = coll_type
-        self._use_sparse = use_sparse
         
         # we don't have a soution, yet
         self.sol = None

@@ -165,8 +165,7 @@ class ControlSystem(object):
 
         # and equation system objects
         self.eqs = CollocationSystem(sys=self, tol=method_param['tol'], sol_steps=method_param['sol_steps'], 
-                                        method=method_param['method'], coll_type=method_param['coll_type'],
-                                        use_sparse=method_param['use_sparse'])
+                                        method=method_param['method'], coll_type=method_param['coll_type'])
         
         # Reset iteration number
         self.nIt = 0
