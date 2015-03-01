@@ -3,7 +3,7 @@ language: python
 matrix:
   include:
     - python : "2.7"
-    - env : DEPS="sympy=0.75 numpy=1.8.1 scipy=0.13.0 matplotlib ipython"
+    - env : DEPS="sympy=0.7.5 numpy=1.8.1 scipy=0.13.0 matplotlib ipython"
 
 virtualenv:
   system_site_packages: true
