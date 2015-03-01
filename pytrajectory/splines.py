@@ -8,9 +8,6 @@ from log import logging
 # DEBUG
 from IPython import embed as IPS
 
-# NEW
-from auxiliary import BetweenDict
-
 
 class Spline(object):
     '''
