@@ -66,14 +66,6 @@ class Spline(object):
         self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type)
         self._nodes_type = nodes_type
         
-        # create an dictionary with
-        #   key: the intervals defined by the spline nodes
-        #   values: the corresponding polynomial spline part
-        self._nodes_dict = BetweenDict()
-        for i in xrange(self.n):
-            self._nodes_dict[(self.nodes[i], self.nodes[i+1])] = i
-        self._nodes_dict[(self.nodes[self.n], np.inf)] = self.n-1
-        
         # size of each polynomial part
         self._h = (self.b - self.a) / float(self.n)
         
@@ -123,16 +115,9 @@ class Spline(object):
         '''
         
         # get polynomial part where t is in
-        #i = self._nodes_dict[t]
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
         
-        #if i != min(int(np.floor(t * self.n / self.b)), self.n-1):
-        #if i != self._nodes_dict[t]:
-        #    from IPython import embed as IPS
-        #    IPS()
-        
-        #return self._S[i](t - self.nodes[i])
         return self._S[i].deriv(d)(t - (i+1)*self._h)
     
     def f(self, t):
@@ -205,22 +190,14 @@ class Spline(object):
             The derivation order.
         '''
         
-        #IPS()
         if np.size(points) > 1:
             raise NotImplementedError()
         t = points
         
         # determine the spline part to evaluate
-        #i = self._nodes_dict[t]
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
         
-        #if i != min(int(np.floor(t * self.n / self.b)), self.n-1):
-        #if i != self._nodes_dict[t]:
-        #    from IPython import embed as IPS
-        #    IPS()
-        
-        #t -= self.nodes[i]
         t -= (i+1) * self._h
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
