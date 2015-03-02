@@ -1,7 +1,7 @@
 # constrained double pendulum
 
 # import all we need for solving the problem
-from pytrajectory import Trajectory
+from pytrajectory import ControlSystem
 import numpy as np
 import sympy as sp
 from sympy import cos, sin, Matrix
@@ -194,21 +194,18 @@ con = {0 : [-1.0, 1.0],
         1 : [-5.0, 5.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-T = Trajectory(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
+S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
 
 # time to run the iteration
-x, u = T.startIteration()
-
-from IPython import embed as IPS
-IPS()
+x, u = S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = True
+do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]
@@ -255,10 +252,10 @@ if do_animation:
         return image
 
     # create Animation object
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(0,'x'),(1,'dx')], plotinputs=[(0,'u')])
-    xmin = np.min(T.sim[1][:,0])
-    xmax = np.max(T.sim[1][:,0])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-1.2,1.2))
     
     A.animate()

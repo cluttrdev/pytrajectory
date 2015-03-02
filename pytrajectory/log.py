@@ -4,9 +4,9 @@ import os
 
 import logging
 
-DEBUG = False
+DEBUG = True
 LOG2CONSOLE = True
-LOG2FILE = True
+LOG2FILE = False
 
 # get logger
 logger = logging.getLogger()
@@ -68,4 +68,3 @@ class Timer():
     def __exit__(self, *args):
         self.delta = time.time() - self.start
         logging.debug("---> [%s elapsed %f s]"%(self.label, self.delta))
-

@@ -1,66 +1,99 @@
+# IMPORTS
 import numpy as np
-import sympy as sp
-from sympy.core.symbol import Symbol
-
 import matplotlib as mpl
-mpl.use('TKAgg')
+#mpl.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.gridspec import GridSpec
-
-from IPython import embed as IPS
-
 import os
-import time
-
-from log import logging
 
 
-class IntegChain(object):
+def plot_simulation(sim_data, H=[], fname=None):
     '''
-    This class provides a representation of an integrator chain consisting of sympy symbols.
-    
-    For the elements :math:`(x_i)_{i=1,...,n}` the relation
-    :math:`\dot{x}_i = x_{i+1}` applies.
+    This method provides graphics for each system variable, manipulated
+    variable and error function and plots the solution of the simulation.
     
     Parameters
     ----------
     
-    lst : list
-        Ordered list of elements for the integrator chain
+    sim_data : tuple
+        Contains collocation points, and simulation results of system and input variables.
     
-    Attributes
-    ----------
+    H : dict
+        Dictionary of the callable error functions
     
-    elements : tuple
-        Ordered list of all elements that are part of the integrator chain
-    
-    upper : sympy.Symbol
-        Upper end of the integrator chain
-    
-    lower : sympy.Symbol
-        Lower end of the integrator chain
+    fname : str
+        If not None, plot will be saved as <fname>.png
     '''
     
-    def __init__(self, lst):
-        self.elements = tuple(lst)
-        self.upper = self.elements[0]
-        self.lower = self.elements[-1]
+    t, xt, ut = sim_data
+    n = xt.shape[1]
+    m = ut.shape[1]
     
-    def __len__(self):
-        return len(self.elements)
+    z = n + m + len(H.keys())
+    z1 = np.floor(np.sqrt(z))
+    z2 = np.ceil(z/z1)
+
+    plt.rcParams['figure.subplot.bottom']=.2
+    plt.rcParams['figure.subplot.top']= .95
+    plt.rcParams['figure.subplot.left']=.13
+    plt.rcParams['figure.subplot.right']=.95
+
+    plt.rcParams['font.size']=16
+
+    plt.rcParams['legend.fontsize']=16
+    #plt.rc('text', usetex=True)
+
+
+    plt.rcParams['xtick.labelsize']=16
+    plt.rcParams['ytick.labelsize']=16
+    plt.rcParams['legend.fontsize']=20
+
+    plt.rcParams['axes.titlesize']=26
+    plt.rcParams['axes.labelsize']=26
+
+
+    plt.rcParams['xtick.major.pad']='8'
+    plt.rcParams['ytick.major.pad']='8'
+
+    mm = 1./25.4 #mm to inch
+    scale = 3
+    fs = [100*mm*scale, 60*mm*scale]
+
+    fff=plt.figure(figsize=fs, dpi=80)
+
+
+    PP=1
+    for i in xrange(n):
+        plt.subplot(int(z1),int(z2),PP)
+        PP+=1
+        plt.plot(t,xt[:,i])
+        plt.xlabel(r'$t$')
+        plt.title(r'$'+'x%d'%(i+1)+'(t)$')
+
+    for i in xrange(m):
+        plt.subplot(int(z1),int(z2),PP)
+        PP+=1
+        plt.plot(t,ut[:,i])
+        plt.xlabel(r'$t$')
+        plt.title(r'$'+'u%d'%(i+1)+'(t)$')
+
+    for hh in H:
+        plt.subplot(int(z1),int(z2),PP)
+        PP+=1
+        plt.plot(t,H[hh])
+        plt.xlabel(r'$t$')
+        plt.title(r'$H_'+str(hh+1)+'(t)$')
+
+    plt.tight_layout()
     
-    def __getitem__(self, key):
-        return self.elements[key]
+    plt.show()
     
-    def __contains__(self, item):
-        return (item in self.elements)
-    
-    def __str__(self):
-        s = ''
-        for elem in self.elements:#[::-1]:
-            s += ' -> ' + elem.name
-        return s[4:]
+    if fname:
+        if not fname.endswith('.png'):
+            plt.savefig(fname+'.png')
+        else:
+            plt.savefig(fname)
 
 
 class Animation():
@@ -285,7 +318,7 @@ class Animation():
             plt.draw()
         
         self.anim = animation.FuncAnimation(self.fig, _animate, frames=self.nframes, 
-                                            interval=1, blit=True)
+                                            interval=1, blit=False)
     
     
     def save(self, fname, fps=None, dpi=200):
@@ -300,91 +333,3 @@ class Animation():
         else:
             FFWriter = animation.FFMpegFileWriter()
             self.anim.save(fname, fps=fps, dpi=dpi, writer='mencoder')
-
-
-def plotsim(sim, H, fname=None):
-    '''
-    This method provides graphics for each system variable, manipulated
-    variable and error function and plots the solution of the simulation.
-    
-    Parameters
-    ----------
-    
-    sim : tuple
-        Contains collocation points, and simulation results of system and input variables
-    
-    H : dict
-        Dictionary of the callable error functions
-    
-    fname : str
-        If not None, plot will be saved as <fname>.png
-    '''
-    
-    t, xt, ut = sim
-    n = xt.shape[1]
-    m = ut.shape[1]
-    
-    z = n + m + len(H.keys())
-    z1 = np.floor(np.sqrt(z))
-    z2 = np.ceil(z/z1)
-
-    plt.rcParams['figure.subplot.bottom']=.2
-    plt.rcParams['figure.subplot.top']= .95
-    plt.rcParams['figure.subplot.left']=.13
-    plt.rcParams['figure.subplot.right']=.95
-
-    plt.rcParams['font.size']=16
-
-    plt.rcParams['legend.fontsize']=16
-    #plt.rc('text', usetex=True)
-
-
-    plt.rcParams['xtick.labelsize']=16
-    plt.rcParams['ytick.labelsize']=16
-    plt.rcParams['legend.fontsize']=20
-
-    plt.rcParams['axes.titlesize']=26
-    plt.rcParams['axes.labelsize']=26
-
-
-    plt.rcParams['xtick.major.pad']='8'
-    plt.rcParams['ytick.major.pad']='8'
-
-    mm = 1./25.4 #mm to inch
-    scale = 3
-    fs = [100*mm*scale, 60*mm*scale]
-
-    fff=plt.figure(figsize=fs, dpi=80)
-
-
-    PP=1
-    for i in xrange(n):
-        plt.subplot(int(z1),int(z2),PP)
-        PP+=1
-        plt.plot(t,xt[:,i])
-        plt.xlabel(r'$t$')
-        plt.title(r'$'+'x%d'%(i+1)+'(t)$')
-
-    for i in xrange(m):
-        plt.subplot(int(z1),int(z2),PP)
-        PP+=1
-        plt.plot(t,ut[:,i])
-        plt.xlabel(r'$t$')
-        plt.title(r'$'+'u%d'%(i+1)+'(t)$')
-
-    for hh in H:
-        plt.subplot(int(z1),int(z2),PP)
-        PP+=1
-        plt.plot(t,H[hh])
-        plt.xlabel(r'$t$')
-        plt.title(r'$H_'+str(hh+1)+'(t)$')
-
-    plt.tight_layout()
-    
-    plt.show()
-    
-    if fname:
-        if not fname.endswith('.png'):
-            plt.savefig(fname+'.png')
-        else:
-            plt.savefig(fname)

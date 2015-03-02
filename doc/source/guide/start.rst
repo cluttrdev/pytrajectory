@@ -47,8 +47,8 @@ dependencies installed on your system.
 Source
 ------
 
-To install PyTrajectory from the source files please download the latest release from
-`here <https://github.com/TUD-RST/pytrajectory/tree/master/dist>`_. 
+To install PyTrajectory from the source files please download the latest release 
+from `here <https://github.com/TUD-RST/pytrajectory/tree/master/dist>`_. 
 After the download is complete open the archive and change directory
 into the extracted folder. Then all you have to do is run the following command ::
 
@@ -66,6 +66,12 @@ or ::
    $ easy_install pytrajectory
 
 provided that you have the Python modules `pip` or `setuptools` installed on your system.
+
+Please note that there are different versions of PyTrajectory available (development version
+in github repository [various branches], release versions at PyPI).
+Because the documentation is build automatically upon the source code, there are also different
+versions of the docs available. Please make sure that you always use matching versions of
+code and documentation.
 
 .. _usage:
 
@@ -149,21 +155,22 @@ and end ::
 
 The boundary values for the input variable are
 
-   >>> uab = [0.0, 0.0]
+   >>> ua = [0.0]
+   >>> ub = [0.0]
 
 because we want :math:`u(0) = u(T) = 0`.
 
 Now we import all we need from PyTrajectory ::
 
-   >>> from pytrajectory import Trajectory
+   >>> from pytrajectory import ControlSystem
 
 and pass our parameters. ::
 
-   >>> T = Trajectory(f, a, b, xa, xb, uab)
+   >>> S = ControlSystem(f, a, b, xa, xb, ua, ub)
 
 All we have to do now to solve our problem is ::
 
-   >>> x, u = T.startIteration()
+   >>> x, u = S.solve()
 
 After the iteration has finished `x(t)` and `u(t)` are returned as callable 
 functions for the system and input variables, where t has to be in (a,b).
@@ -175,11 +182,11 @@ performance by altering some of its method parameters.
 
 For example if we increase the factor for raising the spline parts (default: 2) ::
 
-   >>> T.setParam('kx', 5)
+   >>> S.set_param('kx', 5)
 
 and don't take advantage of the system structure (integrator chains) ::
 
-   >>> T.setParam('use_chains', False)
+   >>> S.set_param('use_chains', False)
 
 we get a solution after 3 steps with 125 spline parts.
 
@@ -187,7 +194,7 @@ There are more method parameters you can change to speed things up, i.e. the typ
 collocation points to use or the number of spline parts for the input variables. 
 To do so, just type::
 
-   >>> T.setParam('<param>', <value>)
+   >>> S.set_param('<param>', <value>)
 
 Please have a look at the :ref:`reference` for more information.
 
@@ -208,7 +215,7 @@ of the system according to given simulation data.
 First we import what we need by::
 
    >>> import matplotlib as mpl
-   >>> from pytrajectory.utilities import Animation
+   >>> from pytrajectory.visualisation import Animation
 
 Then we define our function that takes simulation data `x`  of a 
 specific time and an instance `image` of `Animation.Image` which is just 
@@ -224,7 +231,7 @@ a container for the image. In the considered example `xt` is of the form
 and `image` is just a container for the drawn image.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 55-105
+   :lines: 57-107
 
 Next, we create an instance of the :py:class:`Animation` class and
 pass our :py:func:`draw` function, the simulation data and some
@@ -237,13 +244,13 @@ value of the cart's movement along the `x`-axis.
 Finally, we can start the animation.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 112-122
+   :lines: 114-124
 
 The animation can be saved either as animated .gif file or as a 
 .mp4 video file. 
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 125
+   :lines: 127
 
 If saved as an animated .gif file you can view 
 single frames using for example `gifview` (GNU/Linux) or the 

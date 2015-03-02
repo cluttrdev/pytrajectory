@@ -12,19 +12,37 @@ system.
    :local:
 
 
-:mod:`trajectory` Module
-========================
+:mod:`system` Module
+====================
 
-.. automodule:: pytrajectory.trajectory
+.. automodule:: pytrajectory.system
     :members:
     :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
-:mod:`spline` Module
-====================
+:mod:`trajectories` Module
+==========================
 
-.. automodule:: pytrajectory.spline
+.. automodule:: pytrajectory.trajectories
+    :members:
+    :member-order: bysource
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`collocation` Module
+=========================
+
+.. automodule:: pytrajectory.collocation
+    :members:
+    :member-order:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`splines` Module
+=====================
+
+.. automodule:: pytrajectory.splines
     :members:
     :member-order: bysource
     :undoc-members:
@@ -48,21 +66,20 @@ system.
     :undoc-members:
     :show-inheritance:
 
-:mod:`utilities` Module
+:mod:`auxiliary` Module
 =======================
 
-.. automodule:: pytrajectory.utilities
+.. automodule:: pytrajectory.auxiliary
     :members:
     :member-order: bysource
     :undoc-members:
     :show-inheritance:
 
-:mod:`log` Module
-=================
+:mod:`visualisation` Module
+===========================
 
-.. automodule:: pytrajectory.log
-    :members:
-    :member-order: bysource
-    :undoc-members:
-    :show-inheritance:
-
+.. automodule:: pytrajectory.visualisation
+   :members:
+   :member-order: bysource
+   :undoc-members:
+   :show-inheritance:

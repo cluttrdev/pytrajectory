@@ -2,7 +2,7 @@
 This example of the double integrator demonstrates how to pass constraints to PyTrajectory.
 '''
 # imports
-from pytrajectory.trajectory import Trajectory
+from pytrajectory import ControlSystem
 import numpy as np
 
 # define the vectorfield
@@ -23,20 +23,19 @@ xb = [1.0, 0.0]
 con = {1 : [-0.1, 0.65]}
 
 # create the trajectory object
-T = Trajectory(f, a=0.0, b=2.0, xa=xa, xb=xb, constraints=con, use_chains=False)
+S = ControlSystem(f, a=0.0, b=2.0, xa=xa, xb=xb, constraints=con, use_chains=False)
 
 # start
-x, u = T.startIteration()
+x, u = S.solve()
 
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-
 do_animation = False
 
 if do_animation:
     import matplotlib as mpl
-    from pytrajectory.utilities import Animation
+    from pytrajectory.visualisation import Animation
     
     def draw(xt, image):
         x = xt[0]
@@ -55,11 +54,11 @@ if do_animation:
         return image
     
     
-    A = Animation(drawfnc=draw, simdata=T.sim,
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
                         plotsys=[(0,'x'), (1,'dx')],
                         plotinputs=[(0,'u')])
-    xmin = np.min(T.sim[1][:,0])
-    xmax = np.max(T.sim[1][:,0])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 0.1, xmax + 0.1), ylim=(-0.1,0.1))
     A.animate()
-    A.save('ex6_DoubleIntegrator.gif')
+    A.save('ex6_ConstrainedDoubleIntegrator.gif')
