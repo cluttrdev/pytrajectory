@@ -48,7 +48,7 @@ S.solve()
 
 # now that we (hopefully) have found a solution,
 # we can visualise our systems dynamic
-do_animation = True:
+do_animation = False
 
 if do_animation:
     # therefore we define a function that draws a image of the system

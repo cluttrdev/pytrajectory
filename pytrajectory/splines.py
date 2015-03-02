@@ -157,6 +157,9 @@ class Spline(object):
         self._boundary_values = value
     
     def make_steady(self):
+        '''
+        Please see :py:func:`pytrajectory.splines.make_steady`
+        '''
         make_steady(S=self)
     
     def differentiate(self, d=1, new_tag=''):

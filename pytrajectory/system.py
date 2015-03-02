@@ -45,12 +45,7 @@ class ControlSystem(object):
     constraints : dict
         Box-constraints of the state variables.
     
-    Attributes
-    ----------
-    
-    mparam : dict
-        Dictionary with method parameters
-        
+    kwargs
         ============= =============   ============================================================
         key           default value   meaning
         ============= =============   ============================================================
@@ -282,7 +277,7 @@ class ControlSystem(object):
         param : str
             The method parameter to alter
         
-        value : int/float/string
+        value
             The new value
         '''
         
@@ -518,7 +513,8 @@ class ControlSystem(object):
     
     def simulate(self):
         '''
-        This method is used to solve the initial value problem.
+        This method is used to solve the resulting initial value problem
+        after the computation of a solution for the input trajectories.
         '''
 
         logging.debug("Solving Initial Value Problem")

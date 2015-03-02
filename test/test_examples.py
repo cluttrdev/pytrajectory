@@ -36,7 +36,7 @@ class TestExamples(object):
                 assert value.reached_accuracy
 
     @pytest.mark.skipif(test_example_path_failed, reason="Cannot get example scripts!")
-    def test_inverted_pendulum_translation(self):
+    def test_inverted_pendulum_swing_up(self):
         script = os.path.join(self.examples_dir, 'ex0_InvertedPendulumSwingUp.py')
         d = dict(locals(), **globals())
         execfile(script, d, d)
