@@ -1,9 +1,9 @@
-![Constrained Double Pendulum](https://raw.github.com/TUD-RST/pytrajectory/develop/doc/pic/con_double_pend_swing.gif)
+![Constrained Double Pendulum](https://raw.github.com/TUD-RST/pytrajectory/master/doc/pic/con_double_pend_swing.gif)
 
 About
 =====
 
-[![Build Status](https://travis-ci.org/TUD-RST/pytrajectory.svg?branch=develop)](https://travis-ci.org/TUD-RST/pytrajectory)
+[![Build Status](https://travis-ci.org/TUD-RST/pytrajectory.svg?branch=master)](https://travis-ci.org/TUD-RST/pytrajectory)
 [![PyPI Version](https://pypip.in/v/pytrajectory/badge.png)](https://pypi.python.org/pypi/pytrajectory)
 
 PyTrajectory is a Python library for the determination of the feed forward control 
