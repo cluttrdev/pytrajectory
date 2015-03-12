@@ -231,26 +231,31 @@ a container for the image. In the considered example `xt` is of the form
 and `image` is just a container for the drawn image.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 57-107
+   :lines: 55-105
 
 Next, we create an instance of the :py:class:`Animation` class and
 pass our :py:func:`draw` function, the simulation data and some
 lists that specify what trajectory curves to plot along with the
 picture.
 
+If we would like to either plot the system state at the end time
+or want to animate the system we need t create an `Animation` object.
 To set the limits correctly we calculate the minimum and maximum
 value of the cart's movement along the `x`-axis.
 
-Finally, we can start the animation.
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 112-119
+
+Finally, we can plot the system and/or start the animation.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 114-124
+   :lines: 121-127
 
 The animation can be saved either as animated .gif file or as a 
 .mp4 video file. 
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 127
+   :lines: 130
 
 If saved as an animated .gif file you can view 
 single frames using for example `gifview` (GNU/Linux) or the 

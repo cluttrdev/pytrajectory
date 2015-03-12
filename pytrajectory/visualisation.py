@@ -142,9 +142,34 @@ class Animation():
         
         self.draw = drawfnc
         
+        # set axis limits and labels of system curves
+        #xlim = (0.0, self.t[-1] - self.t[0])
+        xlim = (self.t[0], self.t[-1])
+        for i, idxlabel in enumerate(self.plotsys):
+            idx, label = idxlabel
+            
+            try:
+                ylim = (min(self.xt[:,idx]), max(self.xt[:,idx]))
+            except:
+                ylim = (min(self.xt), max(self.xt))
+            
+            self.set_limits(ax='ax_x%d'%i, xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax_x%d'%i, label=label)
+            
+        # set axis limits and labels of input curves
+        for i, idxlabel in enumerate(self.plotinputs):
+            idx, label = idxlabel
+            
+            try:
+                ylim = (min(self.ut[:,idx]), max(self.ut[:,idx]))
+            except:
+                ylim = (min(self.ut), max(self.ut))
+            
+            self.set_limits(ax='ax_u%d'%i, xlim=xlim, ylim=ylim)
+            self.set_label(ax='ax_u%d'%i, label=label)
+        
         # enable LaTeX text rendering --> slow
         #plt.rc('text', usetex=True)
-    
     
     class Image():
         '''
@@ -157,7 +182,6 @@ class Animation():
         def reset(self):
             self.patches = []
             self.lines = []
-    
     
     def get_axes(self):
         sys = self.plotsys
@@ -200,15 +224,81 @@ class Animation():
         self.syscurves = syscurves
         self.inputcurves = inputcurves
     
-    
     def set_limits(self, ax='ax_img', xlim=(0,1), ylim=(0,1)):
         self.axes[ax].set_xlim(*xlim)
         self.axes[ax].set_ylim(*ylim)
     
-    
     def set_label(self, ax='ax_img', label=''):
         self.axes[ax].set_ylabel(label, rotation='horizontal', horizontalalignment='right')
         
+    def show(self, t=0.0, xlim=None, ylim=None):
+        '''
+        Plots one frame of the system animation.
+        
+        Parameters
+        ----------
+        
+        t : float
+            The time for which to plot the system
+        '''
+        
+        # determine index of sim_data values correponding to given time
+        if t <= self.t[0]:
+            i = 0
+        elif t >= self.t[-1]:
+            i = -1
+        else:
+            i = 0
+            while self.t[i] < t:
+                i += 1
+        
+        # draw picture
+        image = self.image
+        ax_img = self.axes['ax_img']
+        
+        if image == 0:
+            # init
+            image = self.Image()
+        else:
+            # update
+            for p in image.patches:
+                p.remove()
+            for l in image.lines:
+                l.remove()
+            image.reset()
+        
+        image = self.draw(self.xt[i,:], image=image)
+        
+        for p in image.patches:
+            ax_img.add_patch(p)
+        
+        for l in image.lines:
+            ax_img.add_line(l)
+        
+        self.image = image
+        self.axes['ax_img'] = ax_img
+        
+        if xlim is not None and ylim is not None:
+            self.set_limits(ax='ax_img', xlim=xlim, ylim=ylim)
+        
+        # update system curves
+        for k, curve in enumerate(self.syscurves):
+            try:
+                curve.set_data(self.t[:i], self.xt[:i, self.plotsys[k][0]])
+            except:
+                curve.set_data(self.t[:i], self.xt[:i])
+            self.axes['ax_x%d'%k].add_line(curve)
+        
+        # update input curves
+        for k, curve in enumerate(self.inputcurves):
+            try:
+                curve.set_data(self.t[:i], self.ut[:i,self.plotinputs[k][0]])
+            except:
+                curve.set_data(self.t[:i], self.ut[:i])
+            self.axes['ax_u%d'%k].add_line(curve)
+        
+        plt.draw()
+        plt.show()
     
     def animate(self):
         '''
@@ -244,30 +334,6 @@ class Animation():
         
         #IPS()
         
-        # set axis limits and labels of system curves
-        xlim = (0.0, self.T - 2 * pause_time)
-        for i, idxlabel in enumerate(self.plotsys):
-            idx, label = idxlabel
-            
-            try:
-                ylim = (min(xt[:,idx]), max(xt[:,idx]))
-            except:
-                ylim = (min(xt), max(xt))
-            
-            self.set_limits(ax='ax_x%d'%i, xlim=xlim, ylim=ylim)
-            self.set_label(ax='ax_x%d'%i, label=label)
-            
-        # set axis limits and labels of input curves
-        for i, idxlabel in enumerate(self.plotinputs):
-            idx, label = idxlabel
-            
-            try:
-                ylim = (min(ut[:,idx]), max(ut[:,idx]))
-            except:
-                ylim = (min(ut), max(ut))
-            
-            self.set_limits(ax='ax_u%d'%i, xlim=xlim, ylim=ylim)
-            self.set_label(ax='ax_u%d'%i, label=label)
         
         def _animate(frame):
             i = tt[frame]
@@ -302,7 +368,7 @@ class Animation():
             # update system curves
             for k, curve in enumerate(self.syscurves):
                 try:
-                    curve.set_data(t[:i], xt[:i,self.plotsys[k][0]])
+                    curve.set_data(t[:i], xt[:i, self.plotsys[k][0]])
                 except:
                     curve.set_data(t[:i], xt[:i])
                 self.axes['ax_x%d'%k].add_line(curve)

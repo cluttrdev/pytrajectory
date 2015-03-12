@@ -238,7 +238,6 @@ def f(x, u):
     
     # now solve the motion equations w.r.t. the accelerations
     # (might take some while...)
-    # TODO: use sympy.cse() here too
     print "    -> solving motion equations w.r.t. accelerations"
     
     # apply sympy.cse() on M and B to speed up solving the eqs
@@ -327,7 +326,7 @@ if __name__=='__main__':
     # get matrices of motion equations
     print "Get matrices of motion equations"
     M, B, state_vars, input_vars = N_Bar_Pendulum(N=N, param_values=param_values)
-    IPS()
+    
     # get callable function for vectorfield that can be used with PyTrajectory
     print "Get callable vectorfield"
     f = solve_motion_equations(M, B, state_vars, input_vars)
@@ -356,88 +355,82 @@ if __name__=='__main__':
     x, u = T.startIteration()
     
     
-    IPS()
-    
-    
-    
     # the following code provides an animation of the system above
     # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-    do_animation = True
+    import sys
+    import matplotlib as mpl
+    from pytrajectory.utilities import Animation
+    
+    def create_draw_function(N=1, car_width_height=[0.05, 0.02], rod_lengths=0.5, pendulum_sizes=0.015):
+        # if all rods have the same length
+        if type(rod_lengths) in {int, float}:
+            rod_lengths = [rod_lengths] * N
 
-    if do_animation:
-        import matplotlib as mpl
-        from pytrajectory.utilities import Animation
-        
-        def create_draw_function(N=1, car_width_height=[0.05, 0.02], rod_lengths=0.5, pendulum_sizes=0.015):
-            # if all rods have the same length
-            if type(rod_lengths) in {int, float}:
-                rod_lengths = [rod_lengths] * N
+        # if all pendulums have the same size
+        if type(pendulum_sizes) in {int, float}:
+            pendulum_sizes = [pendulum_sizes] * N
+
+        car_width, car_height = car_width_height
+
+        # the drawing function
+        def draw(xt, image):
+            x = xt[0]
+            phi = xt[2::2]
     
-            # if all pendulums have the same size
-            if type(pendulum_sizes) in {int, float}:
-                pendulum_sizes = [pendulum_sizes] * N
+            x_car = x
+            y_car = 0
     
-            car_width, car_height = car_width_height
+            # coordinates of the pendulums
+            x_p = []
+            y_p = []
     
-            # the drawing function
-            def draw(xt, image):
-                x = xt[0]
-                phi = xt[2::2]
-        
-                x_car = x
-                y_car = 0
-        
-                # coordinates of the pendulums
-                x_p = []
-                y_p = []
-        
-                # first pendulum
-                x_p.append( x_car + rod_lengths[0] * sin(phi[0]) )
-                y_p.append( rod_lengths[0] * cos(phi[0]) )
-        
-                # the rest
-                for i in xrange(1,N):
-                    x_p.append( x_p[i-1] + rod_lengths[i] * sin(phi[i]) )
-                    y_p.append( y_p[i-1] + rod_lengths[i] * cos(phi[i]) )
-            
-                # create image
-        
-                # first the car and joint
-                car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_height), car_width, car_height,
-                                            fill=True, facecolor='grey', linewidth=2.0)
-                joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
-        
-                image.patches.append(car)
-                image.patches.append(joint)
-        
-        
-                # then the pendulums
-                for i in xrange(N):
-                    image.patches.append( mpl.patches.Circle(xy=(x_p[i], y_p[i]), 
-                                                             radius=pendulum_sizes[i], 
-                                                             color='black') )
-            
-                    if i == 0:
-                        image.lines.append( mpl.lines.Line2D(xdata=[x_car, x_p[0]], ydata=[y_car, y_p[0]],
-                                                             color='black', zorder=1, linewidth=2.0) )
-                    else:
-                        image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[i]], ydata=[y_p[i-1], y_p[i]],
-                                                             color='black', zorder=1, linewidth=2.0) )
-                # and return the image
-                return image
+            # first pendulum
+            x_p.append( x_car + rod_lengths[0] * sin(phi[0]) )
+            y_p.append( rod_lengths[0] * cos(phi[0]) )
     
-            # return the drawing function
-            return draw
+            # the rest
+            for i in xrange(1,N):
+                x_p.append( x_p[i-1] + rod_lengths[i] * sin(phi[i]) )
+                y_p.append( y_p[i-1] + rod_lengths[i] * cos(phi[i]) )
         
-        # create Animation object
-        A = Animation(drawfnc=create_draw_function(N=N), simdata=T.sim)
-        xmin = np.min(T.sim[1][:,0])
-        xmax = np.max(T.sim[1][:,0])
-        A.set_limits(xlim=(xmin - 1.5, xmax + 1.5), ylim=(-2.0,2.0))
+            # create image
     
+            # first the car and joint
+            car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_height), car_width, car_height,
+                                        fill=True, facecolor='grey', linewidth=2.0)
+            joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
+    
+            image.patches.append(car)
+            image.patches.append(joint)
+    
+    
+            # then the pendulums
+            for i in xrange(N):
+                image.patches.append( mpl.patches.Circle(xy=(x_p[i], y_p[i]), 
+                                                         radius=pendulum_sizes[i], 
+                                                         color='black') )
+        
+                if i == 0:
+                    image.lines.append( mpl.lines.Line2D(xdata=[x_car, x_p[0]], ydata=[y_car, y_p[0]],
+                                                         color='black', zorder=1, linewidth=2.0) )
+                else:
+                    image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[i]], ydata=[y_p[i-1], y_p[i]],
+                                                         color='black', zorder=1, linewidth=2.0) )
+            # and return the image
+            return image
+
+        # return the drawing function
+        return draw
+    
+    # create Animation object
+    A = Animation(drawfnc=create_draw_function(N=N), simdata=T.sim)
+    xmin = np.min(T.sim[1][:,0])
+    xmax = np.max(T.sim[1][:,0])
+    A.set_limits(xlim=(xmin - 1.5, xmax + 1.5), ylim=(-2.0,2.0))
+    
+    if 'plot' in sys.argv:
+        A.show(t=S.b)
+    
+    if 'animate' in sys.argv:
         A.animate()
-        A.save('ex_n_bar_pendulum.mp4')
-        
-        
-    
-    IPS()
+        A.save('ex_n_bar_pendulum.gif')

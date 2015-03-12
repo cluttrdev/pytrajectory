@@ -59,38 +59,41 @@ S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+import sys
+import matplotlib as mpl
+from pytrajectory.visualisation import Animation
 
-if do_animation:
-    import matplotlib as mpl
-    from pytrajectory.visualisation import Animation
+def draw(xti, image):
+    x, y, theta = xti[0], xti[2], xti[4]
     
-    def draw(xti, image):
-        x, y, theta = xti[0], xti[2], xti[4]
-        
-        S = np.array( [   [0,     0.3],
-                          [-0.1,  0.1],
-                          [-0.7,  0],
-                          [-0.1,  -0.05],
-                          [ 0,    -0.1],
-                          [0.1,   -0.05],
-                          [ 0.7,  0],
-                          [ 0.1,  0.1]])
+    S = np.array( [   [0,     0.3],
+                      [-0.1,  0.1],
+                      [-0.7,  0],
+                      [-0.1,  -0.05],
+                      [ 0,    -0.1],
+                      [0.1,   -0.05],
+                      [ 0.7,  0],
+                      [ 0.1,  0.1]])
+
+    xx = S[:,0].copy()
+    yy = S[:,1].copy()
+
+    S[:,0] = xx*cos(theta)-yy*sin(theta)+x
+    S[:,1] = yy*cos(theta)+xx*sin(theta)+y
+
+    aircraft = mpl.patches.Polygon(S, closed=True, facecolor='0.75')
+    image.patches.append(aircraft)
     
-        xx = S[:,0].copy()
-        yy = S[:,1].copy()
-    
-        S[:,0] = xx*cos(theta)-yy*sin(theta)+x
-        S[:,1] = yy*cos(theta)+xx*sin(theta)+y
-    
-        aircraft = mpl.patches.Polygon(S, closed=True, facecolor='0.75')
-        image.patches.append(aircraft)
-        
-        return image
-    
+    return image
+
+if 'plot' in sys.argv or 'animate' in sys.argv:
     A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(4,'theta')], plotinputs=[(0,'F1'),(1,'F2')])
     A.set_limits(xlim=(-1,11), ylim=(-1,7))
-    
+
+if 'plot' in sys.argv:
+    A.show(t=S.b)
+
+if 'animate' in sys.argv:
     A.animate()
     A.save('ex3_Aircraft.gif')
