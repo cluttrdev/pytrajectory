@@ -16,7 +16,7 @@ The task in the field of trajectory planning PyTrajectory is intended
 to perform, is the transition of a control system between desired states.
 A possible way to solve such a problem is to treat it as a two-point
 boundary value problem with free parameters. This approach is based on the
-work of K. Graichen and M. Zeitz (e.g. see [Graichen06]_) and was
+work of K. Graichen and M. Zeitz (e.g. see [Graichen05]_) and was
 picked up by O. Schnabel ([Schnabel13]_)  in the project thesis from which 
 PyTrajectory emerged.
 
@@ -405,6 +405,10 @@ or the :ref:`constrained_inverted_pendulum`.
 
 References
 ----------
+
+.. [Graichen05] 
+   Graichen, K. and Hagenmeyer, V. and Zeitz, M. "A new approach to inversion-based feedforward control design 
+   for nonlinear systems" Automatica, Volume 41, Issue, 12, December 2005, Pages 2033-2041
 
 .. [Graichen06] 
    Graichen, K. and Zeitz, M. "Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen 
