@@ -95,6 +95,11 @@ def draw(xti, image):
     
     return image
 
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex2_InvertedDualPendulumSwingUp.pcl')
+
 if 'plot' in sys.argv or 'animate' in sys.argv:
     A = Animation(drawfnc=draw, simdata=S.sim_data,
                   plotsys=[(0,'x'),(2,'phi1'),(4,'phi2')], plotinputs=[(0,'u')])

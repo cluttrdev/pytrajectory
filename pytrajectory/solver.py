@@ -54,11 +54,8 @@ class Solver:
         if (self.method == 'leven'):
             logging.debug("Run Levenberg-Marquardt method")
             self.leven()
-        elif (self.method == 'new_leven'):
-            self.alternate_levenberg_marquardt()
         
-        
-        if (self.sol == None):
+        if (self.sol is None):
             logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:

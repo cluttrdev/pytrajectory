@@ -3,6 +3,7 @@
 import numpy as np
 import sympy as sp
 from scipy import sparse
+import pickle
 
 from trajectories import Trajectory
 from collocation import CollocationSystem
@@ -634,7 +635,7 @@ class ControlSystem(object):
         # ut = self.sim_data[2]
         # visualisation.plot_simulation([t,xt,ut], H)
     
-    def save(self):
+    def save(self, fname=''):
         '''
         Save data using the module :py:mod:`pickle`.
         
@@ -663,9 +664,9 @@ class ControlSystem(object):
         save['sim_data'] = self.sim_data
         
         if not fname:
-            fname = __file__.split('.')[0] + '.pkl'
-        elif not fname.endswith('.pkl'):
-            fname += '.pkl'
+            fname = __file__.split('.')[0] + '.pcl'
+        elif not fname.endswith('.pcl'):
+            fname += '.pcl'
         
         with open(fname, 'wb') as dumpfile:
             pickle.dump(save, dumpfile)

@@ -104,6 +104,11 @@ def draw(xt, image):
     # and return the image
     return image
 
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex0_InvertedPendulumSwingUp.pcl')
+
 # now we can create an instance of the `Animation` class 
 # with our draw function and the simulation results
 #
