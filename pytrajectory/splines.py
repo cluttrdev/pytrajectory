@@ -118,7 +118,8 @@ class Spline(object):
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
         
-        return self._S[i].deriv(d)(t - (i+1)*self._h)
+        #return self._S[i].deriv(d)(t - (i+1)*self._h)
+        return self._S[i].deriv(d)(t - (i)*self._h)
     
     def f(self, t):
         '''This is just a wrapper to evaluate the spline itself.'''
@@ -201,7 +202,8 @@ class Spline(object):
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
         
-        t -= (i+1) * self._h
+        #t -= (i+1) * self._h
+        t -= (i) * self._h
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if d == 0:
@@ -613,9 +615,14 @@ def get_smoothness_matrix(S, N1, N2):
     
     # build block band matrix M for smoothness conditions 
     # in every joining point
-    block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h, -1.0],
-                      [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
-                      [0.0, 2.0, 0.0, 0.0,   6*h,  -2.0,  0.0, 0.0]])
+    
+    #block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h, -1.0],
+    #                  [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
+    #                  [0.0, 2.0, 0.0, 0.0,   6*h,  -2.0,  0.0, 0.0]])
+    
+    block = np.array([[  h**3, h**2,   h, 1.0, 0.0, 0.0, 0.0, -1.0],
+                      [3*h**2,  2*h, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0],
+                      [  6*h,   2.0, 0.0, 0.0, 0.0, -2.0, 0.0, 0.0]])
     
     for k in xrange(n-1):
         M[3*k:3*(k+1),4*k:4*(k+2)] = block
@@ -625,26 +632,26 @@ def get_smoothness_matrix(S, N1, N2):
     # for the spline function itself
     if S._boundary_values.has_key(0):
         if S._boundary_values[0][0] is not None:
-            M[3*(n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
+            M[3*(n-1),0:4] = np.array([0.0, 0.0, 0.0, 1.0])
             r[3*(n-1)] = S._boundary_values[0][0]
         if S._boundary_values[0][1] is not None:
-            M[3*(n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
+            M[3*(n-1)+1,-4:] = np.array([h**3, h**2, h, 1.0])
             r[3*(n-1)+1] = S._boundary_values[0][1]
     # for its 1st derivative
     if S._boundary_values.has_key(1):
         if S._boundary_values[1][0] is not None:
-            M[3*(n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
+            M[3*(n-1)+2,0:4] = np.array([0.0, 0.0, 1.0, 0.0])
             r[3*(n-1)+2] = S._boundary_values[1][0]
         if S._boundary_values[1][1] is not None:
-            M[3*(n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
+            M[3*(n-1)+3,-4:] = np.array([3*h**2, 2*h, 1.0, 0.0])
             r[3*(n-1)+3] = S._boundary_values[1][1]
     # and for its 2nd derivative
     if S._boundary_values.has_key(2):
         if S._boundary_values[2][0] is not None:
-            M[3*(n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
+            M[3*(n-1)+4,0:4] = np.array([0.0, 2.0, 0.0, 0.0])
             r[3*(n-1)+4] = S._boundary_values[2][0]
         if S._boundary_values[2][1] is not None:
-            M[3*(n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
+            M[3*(n-1)+5,-4:] = np.array([6*h, 2.0, 0.0, 0.0])
             r[3*(n-1)+5] = S._boundary_values[2][1]
     
     return M, r
