@@ -3,6 +3,7 @@
 import numpy as np
 import sympy as sp
 from scipy import sparse
+import pickle
 
 from trajectories import Trajectory
 from collocation import CollocationSystem
@@ -634,11 +635,14 @@ class ControlSystem(object):
         # ut = self.sim_data[2]
         # visualisation.plot_simulation([t,xt,ut], H)
     
-    def save(self):
+    def save(self, fname=''):
         '''
-        Save data using the module :py:mod:`pickle`.
+        Save data using the python module :py:mod:`pickle`.
         
-        Currently only saves simulation data.
+        The created pickle dumpfile contains the latest simulation data, i.e.
+        a list of three arrays. The 1st entry is an array with the time steps
+        of the simulation, the 2nd contains the corresponding values of the
+        state variables and the 3rd those of the input variables.
         '''
 
         save = dict()

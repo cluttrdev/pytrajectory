@@ -20,7 +20,7 @@ To install PyTrajectory, simply:
 
     pip install pytrajectory
 
-or download the tarball from [here](https://github.com/akunze3/pytrajectory/tree/master/dist) extract it and run
+or download the tarball from [here](https://github.com/TUD-RST/pytrajectory/tree/master/dist) extract it and run
 
     python setup.py install
 
@@ -31,4 +31,11 @@ Documentation
 =============
 
 The documentation can be found at [readthedocs.org](https://pytrajectory.readthedocs.org).
+
+Examples
+========
+
+In order to see how to use PyTrajectory please have a look at the *Usage* or *Examples*
+section of the documentation. The examples files can also be downloaded
+[here](https://github.com/TUD-RST/pytrajectory/tree/master/dist).
 

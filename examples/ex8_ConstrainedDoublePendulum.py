@@ -249,6 +249,11 @@ def draw(xt, image):
     # and return the image
     return image
 
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex8_ConstrainedDoublePendulum.pcl')
+
 if 'plot' in sys.argv or 'animate' in sys.argv:
     # create Animation object
     A = Animation(drawfnc=draw, simdata=S.sim_data,

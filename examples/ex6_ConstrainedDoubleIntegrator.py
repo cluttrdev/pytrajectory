@@ -51,6 +51,10 @@ def draw(xt, image):
     
     return image
 
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex6_ConstrainedDoubleIntegrator.pcl')
 
 if 'plot' in sys.argv or 'animate' in sys.argv:
     A = Animation(drawfnc=draw, simdata=S.sim_data,
