@@ -637,9 +637,12 @@ class ControlSystem(object):
     
     def save(self, fname=''):
         '''
-        Save data using the module :py:mod:`pickle`.
+        Save data using the python module :py:mod:`pickle`.
         
-        Currently only saves simulation data.
+        The created pickle dumpfile contains the latest simulation data, i.e.
+        a list of three arrays. The 1st entry is an array with the time steps
+        of the simulation, the 2nd contains the corresponding values of the
+        state variables and the 3rd those of the input variables.
         '''
 
         save = dict()
@@ -664,9 +667,9 @@ class ControlSystem(object):
         save['sim_data'] = self.sim_data
         
         if not fname:
-            fname = __file__.split('.')[0] + '.pcl'
-        elif not fname.endswith('.pcl'):
-            fname += '.pcl'
+            fname = __file__.split('.')[0] + '.pkl'
+        elif not fname.endswith('.pkl'):
+            fname += '.pkl'
         
         with open(fname, 'wb') as dumpfile:
             pickle.dump(save, dumpfile)

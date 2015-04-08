@@ -271,6 +271,7 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
             F = np.array(F).ravel()
         else:
             F = np.array(F)
+        
         f_str = repr(F).replace(', dtype=object', '')
         _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
         
