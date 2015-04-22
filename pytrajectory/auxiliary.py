@@ -283,6 +283,52 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     
     return f_num
 
+def cse_lambdify(args, expr, **kwargs):
+    '''
+    ...
+    '''
+    
+    # get symbols for input arguments
+    args_str = ','.join(str(arg) for arg in args)
+    args = sp.symbols(args_str, seq=True)
+    
+    # get the common subexpressions
+    cse_pairs, cse_exprs = sp.cse(expr, symbols=sp.numbered_symbols('r'))
+    
+    # get those arguments which are part of the reduced expression
+    shortcuts = [pair[0] for pair in cse_pairs]
+    cse_args = [arg for arg in args + tuple(shortcuts) if arg in cse_exprs[0].atoms()]
+    
+    # create a function that evaluates the reduced expression
+    f_cse = sp.lambdify(args=cse_args, expr=cse_exprs[0], **kwargs)
+    
+    # create string for the placeholder that should
+    # evaluate the subexpressions
+    cse_args_eval_str = ''
+    for pair in cse_pairs:
+        cse_args_eval_str += '{} = {}; '.format(str(pair[0]), str(pair[1]))
+    
+    cse_evalf_buffer = '''
+def eval_cse(in_args):
+    {args_str} = in_args
+    {cse_str} # placeholder for the evaluation of the subexpressions
+    
+    return {cse_args_str}
+'''
+    cse_evalf_str = cse_evalf_buffer.format(args_str=args_str,
+                                            cse_str=cse_args_eval_str,
+                                            cse_args_str=','.join(str(arg) for arg in cse_args))
+    
+    code = compile(cse_evalf_str, '<string>', 'exec')
+    exec code in sp.__dict__
+    eval_cse = sp.__dict__.get('eval_cse')
+    
+    def f(*args):
+        cse_args_evaluated = eval_cse(args)
+        return f_cse(*cse_args_evaluated)
+    
+    return f
+    
 
 def saturation_functions(y_fnc, dy_fnc, y0, y1):
     '''
@@ -406,8 +452,8 @@ if __name__ == '__main__':
         x1, x2 = x
         u1, = u
 
-        ff = np.array([ x1 + sin(x2),
-                        exp(-u1) - 2*x2])
+        ff = np.array([ x1*x2 + sin(x2),
+                        sin(-x1*x2) - 2*x2])
         return ff
     
     def Df_sym(x, u):
