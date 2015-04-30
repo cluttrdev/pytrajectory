@@ -33,12 +33,12 @@ class Solver:
         The solver to use
     '''
     
-    def __init__(self, F, DF, x0, tol=1e-2, maxIt=100, method='leven'):
+    def __init__(self, F, DF, x0, tol=1e-5, maxIt=100, method='leven'):
         self.F = F
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = 1e-4
+        self.reltol = 1e-5
         self.maxIt = maxIt
         self.method = method
         

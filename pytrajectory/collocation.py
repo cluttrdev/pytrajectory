@@ -56,8 +56,8 @@ class CollocationSystem(object):
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
-        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True)
-        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True)
+        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
+        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
     
     def build(self, sys, trajectories):
         '''
@@ -332,7 +332,7 @@ class CollocationSystem(object):
                     s_new = trajectories._splines[k]
                     s_old = trajectories._old_splines[k]
                     
-                    if 1:
+                    if 0:
                         # how many independent coefficients does the spline have
                         coeffs_size = s_new._indep_coeffs.size
                     
@@ -370,13 +370,23 @@ class CollocationSystem(object):
                                         for k in xrange(s_new.nodes.size-2)])
         
                         # add conditions for unique solution
-                        # 
-                        # natural spline
-                        l = np.hstack([l, 1.0, 0.0])
-                        d = np.hstack([2.0, d, 2.0])
-                        u = np.hstack([0.0, 1.0, u])
-                        r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
-        
+                        #
+                        if 0:
+                            # natural spline
+                            l = np.hstack([l, 1.0, 0.0])
+                            d = np.hstack([2.0, d, 2.0])
+                            u = np.hstack([0.0, 1.0, u])
+                            r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
+                        else:
+                            # boundary derivatives
+                            l = np.hstack([l, 0.0, 0.0])
+                            d = np.hstack([1.0, d, 1.0])
+                            u = np.hstack([0.0, 0.0, u])
+                            
+                            m0 = s_old.df(s_old.a)
+                            mn = s_old.df(s_old.b)
+                            r = np.hstack([m0, r, mn])
+    
                         data = [l,d,u]
                         offsets = [-1, 0, 1]
         

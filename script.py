@@ -49,17 +49,26 @@ else:
     # add conditions for unique solution
     # 
     # natural spline
-    l = np.hstack([l, 1.0, 0.0])
-    d = np.hstack([2.0, d, 2.0])
-    u = np.hstack([0.0, 1.0, u])
-    r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
+    #l = np.hstack([l, 1.0, 0.0])
+    #d = np.hstack([2.0, d, 2.0])
+    #u = np.hstack([0.0, 1.0, u])
+    #r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
 
+    # boundary derivatives
+    l = np.hstack([l, 0.0, 0.0])
+    d = np.hstack([1.0, d, 1.0])
+    u = np.hstack([0.0, 0.0, u])
+
+    m0 = S.df(S.a)
+    mn = S.df(S.b)
+    r = np.hstack([m0, r, mn])
+    
     data = [l,d,u]
     offsets = [-1, 0, 1]
 
     # create tridiagonal coefficient matrix
     D = sparse.dia_matrix((data, offsets), shape=(S_new.n+1, S_new.n+1))
-
+    
     # solve the equation system
     sol = sparse.linalg.spsolve(D.tocsr(),r)
 

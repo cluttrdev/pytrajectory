@@ -197,7 +197,10 @@ con = {0 : [-1.0, 1.0],
 S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
 
 # time to run the iteration
-x, u = S.solve()
+from pytrajectory.log import Timer
+
+with Timer('solve'):
+    x, u = S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation

@@ -191,7 +191,7 @@ def find_integrator_chains(fi, x_sym, u_sym):
     return chains, eqind
 
 
-def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
+def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False, cse=False):
     '''
     This function takes a callable vector field of a control system that is to be evaluated with symbols
     for the state and input variables and returns a corresponding function that can be evaluated with
@@ -211,6 +211,9 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     
     vectorized : bool
         Whether or not to return a vectorized function.
+
+    cse : bool
+        Whether or not to make use of common subexpressions in vector field
     
     Returns
     -------
@@ -243,7 +246,11 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
     if not vectorized:
         # Use lambdify to replace sympy functions in the vectorfield with
         # numpy equivalents
-        _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
+
+        if cse:
+            _f_num = cse_lambdify(x_sym + u_sym, F, modules='numpy')
+        else:
+            _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
         
         # Create a wrapper as the actual function due to the behaviour
         # of lambdify()
@@ -273,13 +280,21 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False):
             F = np.array(F)
         
         f_str = repr(F).replace(', dtype=object', '')
-        _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
+
+        if cse:
+            _f_num = cse_lambdify(x_sym + u_sym, f_str, modules='numpy')
+        else:
+            _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
         
         # Create a wrapper as the actual function due to the behaviour
         # of lambdify()
         def f_num(x, u):
             xu = np.vstack((x, u))
-            return np.array(_f_num(*xu))
+            try:
+                return np.array(_f_num(*xu))
+            except:
+                print "ERROR IN F_NUM"
+                IPS()
     
     return f_num
 
@@ -287,6 +302,10 @@ def cse_lambdify(args, expr, **kwargs):
     '''
     ...
     '''
+    
+    # check input expression
+    if type(expr) == str:
+        expr = sp.Matrix(sp.S(expr.replace('array','')))
     
     # get symbols for input arguments
     args_str = ','.join(str(arg) for arg in args)
@@ -320,12 +339,17 @@ def eval_cse(in_args):
                                             cse_args_str=','.join(str(arg) for arg in cse_args))
     
     code = compile(cse_evalf_str, '<string>', 'exec')
-    exec code in sp.__dict__
-    eval_cse = sp.__dict__.get('eval_cse')
+
+    if kwargs.has_key('modules') and kwargs['modules'] == 'sympy':
+        exec code in sp.__dict__
+        eval_cse = sp.__dict__.get('eval_cse')
+    else:
+        exec code in np.__dict__
+        eval_cse = np.__dict__.get('eval_cse')
     
     def f(*args):
         cse_args_evaluated = eval_cse(args)
-        return f_cse(*cse_args_evaluated)
+        return np.array(f_cse(*cse_args_evaluated))
     
     return f
     
@@ -468,5 +492,4 @@ if __name__ == '__main__':
     x_sym = list(sp.symbols('x1, x2'))
     u_sym = list(sp.symbols('u1,'))
     
-    # PROBLEM: fails if some element of vector field of jacobian is constant...
     IPS()
