@@ -668,7 +668,7 @@ class ControlSystem(object):
         
         if not fname:
             fname = __file__.split('.')[0] + '.pkl'
-        elif not fname.endswith('.pkl'):
+        elif not (fname.endswith('.pkl') or fname.endswith('.pcl')):
             fname += '.pkl'
         
         with open(fname, 'wb') as dumpfile:

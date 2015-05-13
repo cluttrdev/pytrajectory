@@ -1,0 +1,10 @@
+example		time	nparts	eps	maxH
+
+ex0 w/o		12.8s	125	4.7e-4	5.7e-4
+ex0 with	61.1s	625	2.7e-3	1.4e-3
+
+ex3 w/0		2.9s	25	2.9e-3	1.1e-2
+ex3 with	331.2s	625	8.6e-4	2.6e-4
+
+ex4 w/0		???	1215	???	???
+ex4 with	10.8s	135	1.2e-3	5.3e-2

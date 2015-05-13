@@ -50,7 +50,7 @@ S.solve()
 # now that we (hopefully) have found a solution,
 # we can visualise our systems dynamic
 
-# therefore we define a function that draws a image of the system
+# therefore we define a function that draws an image of the system
 # according to the given simulation data
 def draw(xt, image):
     # to draw the image we just need the translation `x` of the
