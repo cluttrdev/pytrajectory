@@ -324,107 +324,70 @@ class CollocationSystem(object):
         else:
             guess = np.empty(0)
             
-            # get new guess for every independent variable
+            # now we compute a new guess for every free coefficient of every new (finer) spline
+            # by interpolating the corresponding old (coarser) spline
             for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k):
                 if (trajectories._splines[k].type == 'x'):
                     logging.debug("Get new guess for spline {}".format(k))
                     
                     s_new = trajectories._splines[k]
                     s_old = trajectories._old_splines[k]
+
+                    # compute values 
+                    values = [s_old.f(t) for t in s_new.nodes]
                     
-                    if 0:
-                        # how many independent coefficients does the spline have
-                        coeffs_size = s_new._indep_coeffs.size
+                    # create vector of step sizes
+                    h = np.array([s_new.nodes[k+1] - s_new.nodes[k] for k in xrange(s_new.nodes.size-1)])
                     
-                        # generate points to evaluate the old spline at
-                        # (new and old spline should be equal in these)
-                        guess_points = np.linspace(s_new.a, s_new.b, coeffs_size+1, endpoint=False)[1:]
-                        #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
+                    # create diagonals for the coefficient matrix of the equation system
+                    l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
+                    d = 2.0*np.ones(s_new.nodes.size-2)
+                    u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
                     
-                        # evaluate the splines
-                        s_old_t = np.array([s_old.f(t) for t in guess_points])
+                    # right hand site of the equation system
+                    r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
+                                  for k in xrange(s_new.nodes.size-2)])
                     
-                        dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
-                        s_new_t = np.array([vec[0] for vec in dep_vecs])
-                        s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
+                    # add conditions for unique solution
+                    #
+                    # boundary derivatives
+                    l = np.hstack([l, 0.0, 0.0])
+                    d = np.hstack([1.0, d, 1.0])
+                    u = np.hstack([0.0, 0.0, u])
                     
-                        old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
-                        #old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
+                    m0 = s_old.df(s_old.a)
+                    mn = s_old.df(s_old.b)
+                    r = np.hstack([m0, r, mn])
                     
-                        guess = np.hstack((guess, old_style_guess))
+                    data = [l,d,u]
+                    offsets = [-1, 0, 1]
                     
-                    ##############################
-                    else:
-                        values = [s_old.f(t) for t in s_new.nodes]
+                    # create tridiagonal coefficient matrix
+                    D = sparse.dia_matrix((data, offsets), shape=(s_new.n+1, s_new.n+1))
                     
-                        # create vector of step sizes
-                        h = np.array([s_new.nodes[k+1] - s_new.nodes[k] for k in xrange(s_new.nodes.size-1)])
-        
-                        # create diagonals for the coefficient matrix of the equation system
-                        l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
-                        d = 2.0*np.ones(s_new.nodes.size-2)
-                        u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
-        
-                        # right hand site of the equation system
-                        r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
-                                        for k in xrange(s_new.nodes.size-2)])
-        
-                        # add conditions for unique solution
-                        #
-                        if 0:
-                            # natural spline
-                            l = np.hstack([l, 1.0, 0.0])
-                            d = np.hstack([2.0, d, 2.0])
-                            u = np.hstack([0.0, 1.0, u])
-                            r = np.hstack([(3.0/h[0])*(values[1]-values[0]), r, (3.0/h[-1])*(values[-1]-values[-2])])
-                        else:
-                            # boundary derivatives
-                            l = np.hstack([l, 0.0, 0.0])
-                            d = np.hstack([1.0, d, 1.0])
-                            u = np.hstack([0.0, 0.0, u])
-                            
-                            m0 = s_old.df(s_old.a)
-                            mn = s_old.df(s_old.b)
-                            r = np.hstack([m0, r, mn])
-    
-                        data = [l,d,u]
-                        offsets = [-1, 0, 1]
-        
-                        # create tridiagonal coefficient matrix
-                        D = sparse.dia_matrix((data, offsets), shape=(s_new.n+1, s_new.n+1))
-        
-                        # solve the equation system
-                        sol = sparse.linalg.spsolve(D.tocsr(),r)
-        
-                        # calculate the coefficients
-                        coeffs = np.zeros((s_new.n, 4))
-        
-                        for i in xrange(s_new.n):
-                            coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
-                                         3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
-                                         sol[i],
-                                         values[i]]
+                    # solve the equation system
+                    sol = sparse.linalg.spsolve(D.tocsr(),r)
                     
-                        coeff_name_split_str = [c.name.split('_')[-2:] for c in s_new._indep_coeffs]
-                        free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
-                        new_style_guess = np.array([coeffs[i] for i in free_coeff_indices])
+                    # calculate the coefficients
+                    coeffs = np.zeros((s_new.n, 4))
+
+                    # compute the coefficients of the interpolant
+                    for i in xrange(s_new.n):
+                        coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
+                                        3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
+                                        sol[i],
+                                        values[i]]
+
+                    # get the indices of the free coefficients
+                    coeff_name_split_str = [c.name.split('_')[-2:] for c in s_new._indep_coeffs]
+                    free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
                     
-                        guess = np.hstack((guess, new_style_guess))
+                    free_coeffs_guess = np.array([coeffs[i] for i in free_coeff_indices])
+                    guess = np.hstack((guess, free_coeffs_guess))
                     
-                    #IPS()
-                    ################################
-                    
-                        
                 else:
                     # if it is a input variable, just take the old solution
                     guess = np.hstack((guess, trajectories._old_splines[k]._indep_coeffs))
-        
-        if 1:
-            try:
-                compare_trajectories(trajectories, free_coeffs=guess, plot=False, embed=False)
-            except Exception as err:
-                print "guess plot error"
-                #IPS()
         
         # the new guess
         self.guess = guess

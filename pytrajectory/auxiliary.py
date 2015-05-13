@@ -187,9 +187,7 @@ def find_integrator_chains(fi, x_sym, u_sym):
         # then every equation has to be solved by collocation
         eqind = range(n)
     
-    
     return chains, eqind
-
 
 def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False, cse=False):
     '''
@@ -248,9 +246,11 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False, cse=False):
         # numpy equivalents
 
         if cse:
-            _f_num = cse_lambdify(x_sym + u_sym, F, modules='numpy')
+            _f_num = cse_lambdify(x_sym + u_sym, F,
+                                  modules=[{'ImmutableMatrix':np.array}, 'numpy'])
         else:
-            _f_num = sp.lambdify(x_sym + u_sym, F, modules='numpy')
+            _f_num = sp.lambdify(x_sym + u_sym, F,
+                                 modules=[{'ImmutableMatrix':np.array}, 'numpy'])
         
         # Create a wrapper as the actual function due to the behaviour
         # of lambdify()
@@ -282,20 +282,18 @@ def sym2num_vectorfield(f_sym, x_sym, u_sym, vectorized=False, cse=False):
         f_str = repr(F).replace(', dtype=object', '')
 
         if cse:
-            _f_num = cse_lambdify(x_sym + u_sym, f_str, modules='numpy')
+            _f_num = cse_lambdify(x_sym + u_sym, F,
+                                  modules=[{'ImmutableMatrix':np.array}, 'numpy'])
         else:
-            _f_num = sp.lambdify(x_sym + u_sym, f_str, modules='numpy')
+            _f_num = sp.lambdify(x_sym + u_sym, f_str,
+                                 modules=[{'ImmutableMatrix':np.array}, 'numpy'])
         
         # Create a wrapper as the actual function due to the behaviour
         # of lambdify()
         def f_num(x, u):
             xu = np.vstack((x, u))
-            try:
-                return np.array(_f_num(*xu))
-            except:
-                print "ERROR IN F_NUM"
-                IPS()
-    
+            return np.array(_f_num(*xu))
+        
     return f_num
 
 def cse_lambdify(args, expr, **kwargs):
@@ -305,21 +303,38 @@ def cse_lambdify(args, expr, **kwargs):
     
     # check input expression
     if type(expr) == str:
-        expr = sp.Matrix(sp.S(expr.replace('array','')))
+        raise TypeError('Not implmented for string input expression!')
+
+    # sympify expression to enable getting atoms
+    is_ndarray = (type(expr) == np.ndarray)
+    try:
+        spexpr = sp.Matrix(expr)
+        #spexpr = sp.sympify(expr)
+    except:
+        if type(expr) == np.ndarray:
+            is_ndarray = True
+
+            if expr.ndim > 2:
+                raise NotImplementedError('Only 1d or 2d array are supported')
+            else:
+                spexpr = sp.Matrix(expr)
     
-    # get symbols for input arguments
-    args_str = ','.join(str(arg) for arg in args)
-    args = sp.symbols(args_str, seq=True)
+    # get symbol sequence of input arguments
+    if type(args) == str:
+        args = sp.symbols(args, seq=True)
+
+    if not hasattr(args, '__iter__'):
+        args = (args,)
     
     # get the common subexpressions
-    cse_pairs, cse_exprs = sp.cse(expr, symbols=sp.numbered_symbols('r'))
+    cse_pairs, cse_reduced_exprs = sp.cse(spexpr, symbols=sp.numbered_symbols('r'))
     
-    # get those arguments which are part of the reduced expression
-    shortcuts = [pair[0] for pair in cse_pairs]
-    cse_args = [arg for arg in args + tuple(shortcuts) if arg in cse_exprs[0].atoms()]
+    # get those arguments which are part of the reduced expression(s)
+    shortcuts = zip(*cse_pairs)[0]
+    cse_args = [arg for arg in tuple(args) + tuple(shortcuts) if arg in cse_reduced_exprs[0].atoms()]
     
     # create a function that evaluates the reduced expression
-    f_cse = sp.lambdify(args=cse_args, expr=cse_exprs[0], **kwargs)
+    f_cse = sp.lambdify(args=cse_args, expr=cse_reduced_exprs[0], **kwargs)
     
     # create string for the placeholder that should
     # evaluate the subexpressions
@@ -332,15 +347,22 @@ def eval_cse(in_args):
     {args_str} = in_args
     {cse_str} # placeholder for the evaluation of the subexpressions
     
-    return {cse_args_str}
+    return ({cse_args_str},)
 '''
+
+    args_str = ','.join(str(a) for a in args)
+    cse_args_str = ','.join(str(a) for a in cse_args)
+
     cse_evalf_str = cse_evalf_buffer.format(args_str=args_str,
                                             cse_str=cse_args_eval_str,
-                                            cse_args_str=','.join(str(arg) for arg in cse_args))
-    
+                                            cse_args_str=cse_args_str)
+
+    # generate bytecode that, if executed, defines the function
+    # which evaluates the cse pairs
     code = compile(cse_evalf_str, '<string>', 'exec')
 
-    if kwargs.has_key('modules') and kwargs['modules'] == 'sympy':
+    # execute the code in sympy/numpy namespace
+    if kwargs.get('modules') == 'sympy':
         exec code in sp.__dict__
         eval_cse = sp.__dict__.get('eval_cse')
     else:
@@ -349,7 +371,7 @@ def eval_cse(in_args):
     
     def f(*args):
         cse_args_evaluated = eval_cse(args)
-        return np.array(f_cse(*cse_args_evaluated))
+        return f_cse(*cse_args_evaluated)
     
     return f
     
@@ -491,5 +513,9 @@ if __name__ == '__main__':
     
     x_sym = list(sp.symbols('x1, x2'))
     u_sym = list(sp.symbols('u1,'))
+
+    x, y, u = sp.symbols('x,y,u')
+    F = f_sym((x,y),(u,))
+    cse_lambdify((x,y,u), F, modules=[{'ImmutableMatrix':np.array}, 'numpy'])
     
     IPS()
