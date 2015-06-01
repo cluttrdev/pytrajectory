@@ -33,7 +33,25 @@ def test_cse_lambdify_num():
                               [-np.sin(3.0) + np.cos(1.0)],
                               [np.exp(-np.sin(3.0) + np.cos(1.0))]]))
 
-def test_cse_lambdify_num_vectorized():
+def test_cse_lambdify_num_vectorized_1d():
+    x, y, z = sp.symbols('x, y, z')
+
+    F = np.array([(x+y) * (y-z),
+                  sp.sin(-(x+y)) + sp.cos(z-y),
+                  sp.exp(sp.sin(-y-x) + sp.cos(-y+z))])
+
+    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y,z), expr=F,
+                                            modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+    f_num = f(np.r_[[1.0]*10], np.r_[[2.0]*10], np.r_[[3.0]*10])
+    f_num_check = np.array([[-3.0],
+                            [-np.sin(3.0) + np.cos(1.0)],
+                            [np.exp(-np.sin(3.0) + np.cos(1.0))]])
+    
+    assert type(f_num)== np.ndarray
+    assert np.allclose(f_num, np.tile(f_num_check, (1,10)))
+
+def test_cse_lambdify_num_vectorized_2d():
     x, y, z = sp.symbols('x, y, z')
 
     F = sp.Matrix([(x+y) * (y-z),

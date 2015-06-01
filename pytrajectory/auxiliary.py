@@ -303,22 +303,20 @@ def cse_lambdify(args, expr, **kwargs):
     
     # check input expression
     if type(expr) == str:
-        raise TypeError('Not implmented for string input expression!')
+        raise TypeError('Not implemented for string input expression!')
 
-    # sympify expression to enable getting atoms
-    is_ndarray = (type(expr) == np.ndarray)
-    try:
-        spexpr = sp.Matrix(expr)
-        #spexpr = sp.sympify(expr)
-    except:
+    # check given expression
+    if not isinstance(expr, sp.Basic):
+        is_ndarray = False
         if type(expr) == np.ndarray:
             is_ndarray = True
 
             if expr.ndim > 2:
-                raise NotImplementedError('Only 1d or 2d array are supported')
+                raise NotImplementedError('Only 1d or 2d numpy.array are supported')
             else:
-                spexpr = sp.Matrix(expr)
-    
+                orig_expr = expr.copy()
+                expr = sp.Matrix(expr)
+
     # get symbol sequence of input arguments
     if type(args) == str:
         args = sp.symbols(args, seq=True)
@@ -327,14 +325,35 @@ def cse_lambdify(args, expr, **kwargs):
         args = (args,)
     
     # get the common subexpressions
-    cse_pairs, cse_reduced_exprs = sp.cse(spexpr, symbols=sp.numbered_symbols('r'))
+    cse_pairs, red_exprs = sp.cse(expr, symbols=sp.numbered_symbols('r'))
+    if len(red_exprs) == 1:
+        red_exprs = red_exprs[0]
     
     # get those arguments which are part of the reduced expression(s)
     shortcuts = zip(*cse_pairs)[0]
-    cse_args = [arg for arg in tuple(args) + tuple(shortcuts) if arg in cse_reduced_exprs[0].atoms()]
+    cse_args = [arg for arg in tuple(args) + tuple(shortcuts) if arg in sp.Set(red_exprs).atoms()]
     
     # create a function that evaluates the reduced expression
-    f_cse = sp.lambdify(args=cse_args, expr=cse_reduced_exprs[0], **kwargs)
+    if is_ndarray:
+        cse_expr = orig_expr
+        # if input expression was 1d array
+        # we have to make sure that the returned reduced expression
+        # is also 1d and not 2d
+        # (because of earlier transformation to a sympy.Matrix)
+        if orig_expr.ndim == 1:
+            for i, row in enumerate(red_exprs[:]):
+                cse_expr[i] = row
+
+            # to make sure we get a 1d array we have to pass the expression
+            # as a string
+            cse_expr = repr(cse_expr).replace(', dtype=object', '')
+    else:
+        cse_expr = red_exprs
+    
+    if not kwargs.get('dummify') == False:
+        kwargs['dummify'] = False
+    
+    f_cse = sp.lambdify(args=cse_args, expr=cse_expr, **kwargs)
     
     # create string for the placeholder that should
     # evaluate the subexpressions
@@ -372,7 +391,7 @@ def eval_cse(in_args):
     def f(*args):
         cse_args_evaluated = eval_cse(args)
         return f_cse(*cse_args_evaluated)
-    
+
     return f
     
 
@@ -494,28 +513,20 @@ def consistency_error(I, x_fnc, u_fnc, dx_fnc, ff_fnc, npts=500, return_error_ar
 if __name__ == '__main__':
     from sympy import sin, cos, exp
     
-    def f_sym(x,u):
-        x1, x2 = x
-        u1, = u
+    x, y, z = sp.symbols('x, y, z')
 
-        ff = np.array([ x1*x2 + sin(x2),
-                        sin(-x1*x2) - 2*x2])
-        return ff
-    
-    def Df_sym(x, u):
-        x1, x2 = x
-        u1, = u
-        
-        df = np.array([[1.0, cos(x2),   0.0  ],
-                       [0.0,   -2.0,  -exp(u1)]])
-        
-        return df
-    
-    x_sym = list(sp.symbols('x1, x2'))
-    u_sym = list(sp.symbols('u1,'))
+    F = np.array([(x+y) * (y-z),
+                  sp.sin(-(x+y)) + sp.cos(z-y),
+                  sp.exp(sp.sin(-y-x) + sp.cos(-y+z))])
 
-    x, y, u = sp.symbols('x,y,u')
-    F = f_sym((x,y),(u,))
-    cse_lambdify((x,y,u), F, modules=[{'ImmutableMatrix':np.array}, 'numpy'])
+    f = cse_lambdify(args=(x,y,z), expr=F,
+                     modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+    f_num = f(np.r_[[1.0]*10], np.r_[[2.0]*10], np.r_[[3.0]*10])
+    f_num_check = np.array([[-3.0],
+                            [-np.sin(3.0) + np.cos(1.0)],
+                            [np.exp(-np.sin(3.0) + np.cos(1.0))]])
+    
+
     
     IPS()

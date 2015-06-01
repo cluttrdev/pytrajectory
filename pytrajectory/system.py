@@ -253,11 +253,6 @@ class ControlSystem(object):
 
         chains, eqind = auxiliary.find_integrator_chains(fi, x_sym, u_sym)
         
-        # if we don't take advantage of the system structure
-        # we need to solve every equation
-        #if not self.mparam['use_chains']:
-        #    eqind = range(len(x_sym))
-        
         # get minimal neccessary number of spline parts
         # for the manipulated variables
         # TODO: implement this!?
@@ -628,7 +623,6 @@ class ControlSystem(object):
         for i in self.eqind:
             H[i] = error[:,i]
 
-        # call utilities.plotsim()
         visualisation.plot_simulation(self.sim_data, H)
         # t = self.sim_data[0]
         # xt = np.array([self.trajectories.x(tt) for tt in t])
