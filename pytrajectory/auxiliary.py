@@ -422,11 +422,14 @@ def cse_lambdify(args, expr, **kwargs):
     
     # next, we create a function that evaluates the reduced expression
     cse_expr = red_exprs
-    
-    reduced_exprs_fnc = sp.lambdify(args=cse_args, expr=cse_expr, **kwargs)
 
+    # if dummify is set to False then sympy.lambdify still returns a numpy.matrix
+    # regardless of the possibly passed module dictionary {'ImmutableMatrix' : numpy.array}
+    #
     #if not kwargs.get('dummify') == False:
     #    kwargs['dummify'] = False
+
+    reduced_exprs_fnc = sp.lambdify(args=cse_args, expr=cse_expr, **kwargs)
 
     # get the function that evaluates the replacement pairs
     modules = kwargs.get('modules')

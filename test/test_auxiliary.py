@@ -7,6 +7,15 @@ import numpy as np
 
 
 class TestCseLambdify(object):
+
+    def test_single_expression(self):
+        x, y = sp.symbols('x, y')
+
+        e = 0.5*(x + y) + sp.asin(sp.sin(0.5*(x+y))) + sp.sin(x+y)**2 + sp.cos(x+y)**2
+
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=e, modules='numpy')
+
+        assert f(1., 1.) == 3.
     
     def test_list(self):
         x, y = sp.symbols('x, y')
@@ -48,8 +57,21 @@ class TestCseLambdify(object):
         assert F.shape == (3,1)
         assert np.allclose(F, np.ones((3,1)))
 
-    def test_array_input(self):
-        pass
+    #@pytest.xfail(reason="Not implemented, yet")
+    #def test_1d_array_input(self):
+    #    x, y = sp.symbols('x, y')
+    # 
+    #    A = np.array([0.5*(x + y), sp.asin(sp.sin(0.5*(x+y))), sp.sin(x+y)**2 + sp.cos(x+y)**2])
+    #
+    #    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=A,
+    #                                            modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+    #
+    #    F = f(1., 1.)
+    #
+    #    assert type(F) == np.ndarray
+    #    assert F.shape == (3,)
+    #    assert F == np.ones(3)
+
         
 
 
