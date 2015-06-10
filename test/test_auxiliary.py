@@ -83,6 +83,9 @@ class TestCseLambdify(object):
         assert isinstance(f_arr(1,1), np.ndarray)
         assert not isinstance(f_arr(1,1), np.matrix)
 
+    # following test is not relevant for pytrajectory
+    # but might be for an outsourcing of the cse_lambdify function
+    @pytest.xfail(reason='..')
     def test_lambdify_returns_numpy_array_with_dummify_false(self):
         x, y = sp.symbols('x, y')
 
@@ -94,3 +97,11 @@ class TestCseLambdify(object):
         assert isinstance(f_arr(1,1), np.ndarray)
         assert not isinstance(f_arr(1,1), np.matrix)
 
+    def test_orig_args_in_reduced_expr(self):
+        x, y = sp.symbols('x, y')
+
+        expr = (x + y)**2 + sp.cos(x + y) + x
+
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x, y), expr=expr, modules='numpy')
+
+        assert f(0., 0.) == 1.

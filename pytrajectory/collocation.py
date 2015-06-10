@@ -56,8 +56,8 @@ class CollocationSystem(object):
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
-        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
-        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
+        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
 
     def build(self, sys, trajectories):
         '''

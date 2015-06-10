@@ -403,10 +403,13 @@ def cse_lambdify(args, expr, **kwargs):
     except TypeError as err:
         raise NotImplementedError("Only sympy expressions are allowed, yet")
     
-    # get symbol sequence of input arguments
+    # get sequence of symbols from input arguments
     if type(args) == str:
         args = sp.symbols(args, seq=True)
-
+    elif hasattr(args, '__iter__'):
+        # this may kill assumptions
+        args = [sp.Symbol(str(a)) for a in args]
+        
     if not hasattr(args, '__iter__'):
         args = (args,)
 
@@ -419,18 +422,17 @@ def cse_lambdify(args, expr, **kwargs):
     shortcuts = zip(*cse_pairs)[0]
     atoms = sp.Set(red_exprs).atoms()
     cse_args = [arg for arg in tuple(args) + tuple(shortcuts) if arg in atoms]
-    
+
     # next, we create a function that evaluates the reduced expression
     cse_expr = red_exprs
 
     # if dummify is set to False then sympy.lambdify still returns a numpy.matrix
     # regardless of the possibly passed module dictionary {'ImmutableMatrix' : numpy.array}
-    #
-    #if not kwargs.get('dummify') == False:
-    #    kwargs['dummify'] = False
+    if kwargs.get('dummify') == False:
+        kwargs['dummify'] = True
 
     reduced_exprs_fnc = sp.lambdify(args=cse_args, expr=cse_expr, **kwargs)
-
+    
     # get the function that evaluates the replacement pairs
     modules = kwargs.get('modules')
 
