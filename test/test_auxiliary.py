@@ -72,7 +72,25 @@ class TestCseLambdify(object):
     #    assert F.shape == (3,)
     #    assert F == np.ones(3)
 
-        
+    def test_lambdify_returns_numpy_array_with_dummify_true(self):
+        x, y = sp.symbols('x, y')
 
+        M = sp.Matrix([[x],
+                       [y]])
 
+        f_arr = sp.lambdify(args=(x,y), expr=M, dummify=True, modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+        assert isinstance(f_arr(1,1), np.ndarray)
+        assert not isinstance(f_arr(1,1), np.matrix)
+
+    def test_lambdify_returns_numpy_array_with_dummify_false(self):
+        x, y = sp.symbols('x, y')
+
+        M = sp.Matrix([[x],
+                       [y]])
+
+        f_arr = sp.lambdify(args=(x,y), expr=M, dummify=False, modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+        assert isinstance(f_arr(1,1), np.ndarray)
+        assert not isinstance(f_arr(1,1), np.matrix)
 
