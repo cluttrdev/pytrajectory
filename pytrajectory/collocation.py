@@ -56,9 +56,9 @@ class CollocationSystem(object):
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
-        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
-        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=False)
-    
+        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+
     def build(self, sys, trajectories):
         '''
         This method is used to set up the equations for the collocation equation system
@@ -242,7 +242,7 @@ class CollocationSystem(object):
         # 
         # to get these indices we iterate over all rows and take those whose indices
         # are contained in `eqind` (module the number of state variables -> `x_len`)
-        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx%x_len in eqind])
+        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx % x_len in eqind])
         
         # define the callable functions for the eqs
         def G(c):
@@ -263,7 +263,7 @@ class CollocationSystem(object):
             G = F - dX
             
             return G.ravel(order='F')
-    
+
         # and its jacobian
         def DG(c):
             # first we calculate the x and u values in all collocation points

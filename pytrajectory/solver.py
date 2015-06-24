@@ -97,8 +97,9 @@ class Solver:
             
             while (roh < b0):                
                 A = DFx.T.dot(DFx) + mu**2*eye
+
                 b = DFx.T.dot(Fx)
-                
+                    
                 #s = -solve(A, b)
                 s = -scp.sparse.linalg.spsolve(A,b)
 

@@ -45,18 +45,18 @@ the collocation method to solve the problem basically works as follows.
 
 We choose :math:`N+1` collocation points :math:`t_j,\ j = 0,...,N` from the interval 
 :math:`[a, b]` where :math:`t_0 = a,\ t_{N} = b` and search for functions 
-:math:`P_i:[a,b] \rightarrow \mathbb{R}` which for all :math:`j = 0,..,N` satisfy the 
+:math:`S_i:[a,b] \rightarrow \mathbb{R}` which for all :math:`j = 0,..,N` satisfy the 
 following conditions:
 
 .. math::
    :nowrap:
 
    \begin{equation}
-      P_i(t_0) = \alpha_i, \qquad P_i(t_N) = \beta_i
+      S_i(t_0) = \alpha_i, \qquad S_i(t_N) = \beta_i
    \end{equation}
    
    \begin{equation}
-      \frac{d}{d t} P_i(t_j) = f_i(P_1(t_j),...,P_n(t_j)) \quad i = 1,...,n
+      \frac{d}{d t} S_i(t_j) = f_i(S_1(t_j),...,S_n(t_j)) \quad i = 1,...,n
    \end{equation}
 
 Through these demands the exact solution of the differential equation system will be approximated. 
@@ -65,19 +65,19 @@ construction of the candidate functions. This results in the following system of
 
 .. math::
 
-   G_1^0(c) := \frac{d}{d t}P_1(t_0) - f(P_1(t_0)) = 0
+   G_1^0(c) := \frac{d}{d t}S_1(t_0) - f(S_1(t_0)) = 0
 
    \qquad \vdots
 
-   G_n^0(c) := \frac{d}{d t}P_n(t_0) - f(P_n(t_0)) = 0
+   G_n^0(c) := \frac{d}{d t}S_n(t_0) - f(S_n(t_0)) = 0
 
    \qquad \vdots
 
-   G_1^1(c) := \frac{d}{d t}P_1(t_1) - f(P_1(t_1)) = 0
+   G_1^1(c) := \frac{d}{d t}S_1(t_1) - f(S_1(t_1)) = 0
 
    \qquad \vdots
 
-   G_n^N(c) := \frac{d}{d t}P_n(t_N) - f(P_n(t_N)) = 0
+   G_n^N(c) := \frac{d}{d t}S_n(t_N) - f(S_n(t_N)) = 0
 
 Solving the boundary value problem is thus reduced to the finding of a zero point 
 of :math:`G = (G_1^0 ,..., G_n^N)^T`, where :math:`c` is the vector of all independent
@@ -104,7 +104,7 @@ The :math:`\eta` polynomial sections can be created as follows.
 
 .. math::
 
-   S_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3} 
+   P_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3} 
 
    c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3
 
@@ -114,13 +114,13 @@ Then, each spline function is defined by
    :nowrap:
 
    \begin{equation*}
-      P_i(t) = 
+      S_i(t) = 
       \begin{cases}
-         S_1(t) & t_0 \leq t < h \\
+         P_1(t) & t_0 \leq t < h \\
          \vdots & \vdots \\
-         S_k(t) & (k-1)h \leq t < k h \\
+         P_k(t) & (k-1)h \leq t < k h \\
          \vdots & \vdots \\
-         S_\eta(t) & (\eta-1)h \leq t \leq \eta h
+         P_\eta(t) & (\eta-1)h \leq t \leq \eta h
       \end{cases}
    \end{equation*}
 
@@ -132,9 +132,9 @@ the nodes :math:`\tau`. Therefor, three smoothness conditions can be set up in a
    :nowrap:
 
    \begin{eqnarray*}
-      S_k(k h) & = & S_{k+1}(k h) \\
-      \frac{d}{d t} S_k(k h) & = & \frac{d}{d t} S_{k+1}(k h) \\
-      \frac{d^2}{d t^2} S_k(k h) & = & \frac{d^2}{d t^2} S_{k+1}(k h)
+      P_k(k h) & = & P_{k+1}(k h) \\
+      \frac{d}{d t} P_k(k h) & = & \frac{d}{d t} P_{k+1}(k h) \\
+      \frac{d^2}{d t^2} P_k(k h) & = & \frac{d^2}{d t^2} P_{k+1}(k h)
    \end{eqnarray*}
 
 In the later equation system these demands result in the block diagonal part of the matrix.
@@ -145,7 +145,7 @@ the differential equation system.
    :nowrap:
 
    \begin{equation*}
-      \frac{d^j}{d t^j} S_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} S_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
+      \frac{d^j}{d t^j} P_1(\tau_0) = \tilde{\alpha}_j \qquad \frac{d^j}{d t^j} P_\eta(\tau_\eta) = \tilde{\beta}_j \qquad j = 0,...,\nu
    \end{equation*}
 
 The degree :math:`\nu` of the boundary conditions depends on the structure of the differential
@@ -228,16 +228,16 @@ it is sufficient to define a candidate function for :math:`x_i` and to win that 
    :nowrap:
 
    \begin{equation*}
-      P_{i+1}(t) = \frac{d}{d t}P_i(t)
+      S_{i+1}(t) = \frac{d}{d t}S_i(t)
    \end{equation*}
 
-Then in addition to the boundary conditions of :math:`P_i(t)` applies
+Then in addition to the boundary conditions of :math:`S_i(t)` applies
 
 .. math::
    :nowrap:
 
    \begin{equation*}
-      \frac{d}{d t}P_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}P_i(t_N=b) = \beta_{i+1}
+      \frac{d}{d t}S_i(t_0=a) = \alpha_{i+1} \qquad \frac{d}{d t}S_i(t_N=b) = \beta_{i+1}
    \end{equation*}
 
 Similar simplifications can be made if relations of the form :math:`\dot{x}_i = u_j` arise.

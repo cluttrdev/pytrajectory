@@ -5,49 +5,103 @@ import pytest
 import sympy as sp
 import numpy as np
 
-def test_cse_lambdify_sym():
-    x, y, z = sp.symbols('x, y, z')
 
-    F = sp.Matrix([(x+y) * (y-z),
-                   sp.sin(-(x+y)) + sp.cos(-y+z),
-                   sp.exp(sp.sin(-(x+y)) + sp.cos(-y+z))])
+class TestCseLambdify(object):
 
-    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y,z), expr=F, modules='sympy')
+    def test_single_expression(self):
+        x, y = sp.symbols('x, y')
 
-    assert f(x,y,z) == F
+        e = 0.5*(x + y) + sp.asin(sp.sin(0.5*(x+y))) + sp.sin(x+y)**2 + sp.cos(x+y)**2
 
-def test_cse_lambdify_num():
-    x, y, z = sp.symbols('x, y, z')
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=e, modules='numpy')
 
-    F = sp.Matrix([(x+y) * (y-z),
-                   sp.sin(-(x+y)) + sp.cos(z-y),
-                   sp.exp(sp.sin(-y-x) + sp.cos(-y+z))])
-
-    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y,z), expr=F,
-                                            modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
-
-    f_num = f(1.0, 2.0, 3.0)
-
-    assert type(f_num)== np.ndarray
-    assert np.allclose(f_num, np.array([[-3.0],
-                              [-np.sin(3.0) + np.cos(1.0)],
-                              [np.exp(-np.sin(3.0) + np.cos(1.0))]]))
-
-def test_cse_lambdify_num_vectorized():
-    x, y, z = sp.symbols('x, y, z')
-
-    F = sp.Matrix([(x+y) * (y-z),
-                   sp.sin(-(x+y)) + sp.cos(z-y),
-                   sp.exp(sp.sin(-y-x) + sp.cos(-y+z))])
-
-    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y,z), expr=F,
-                                            modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
-
-    f_num = f(np.r_[[1.0]*10], np.r_[[2.0]*10], np.r_[[3.0]*10])
-    f_num_check = np.array([[-3.0],
-                            [-np.sin(3.0) + np.cos(1.0)],
-                            [np.exp(-np.sin(3.0) + np.cos(1.0))]])
+        assert f(1., 1.) == 3.
     
-    assert type(f_num)== np.ndarray
-    assert np.allclose(f_num, np.tile(f_num_check, (1,10))[:,np.newaxis,:])
+    def test_list(self):
+        x, y = sp.symbols('x, y')
+        ones = np.ones(10)
+    
+        l = [0.5*(x + y), sp.asin(sp.sin(0.5*(x+y))), sp.sin(x+y)**2 + sp.cos(x+y)**2]
 
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=l, modules='numpy')
+
+        assert f(1., 1.) == [1., 1., 1.]
+        for i in f(ones, ones):
+            assert np.allclose(i, ones)
+
+    def test_matrix_to_matrix(self):
+        x, y = sp.symbols('x, y')
+        ones = np.ones(10)
+    
+        M = sp.Matrix([0.5*(x + y), sp.asin(sp.sin(0.5*(x+y))), sp.sin(x+y)**2 + sp.cos(x+y)**2])
+
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=M,
+                                                modules='numpy')
+
+        assert type(f(1., 1.)) == np.matrix
+        assert np.allclose(f(1. ,1.), np.ones((3,1)))
+
+    def test_matrix_to_array(self):
+        x, y = sp.symbols('x, y')
+        ones = np.ones(10)
+    
+        M = sp.Matrix([0.5*(x + y), sp.asin(sp.sin(0.5*(x+y))), sp.sin(x+y)**2 + sp.cos(x+y)**2])
+
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=M,
+                                                modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+        F = f(1., 1.)
+        
+        assert type(F == np.ndarray)
+        assert not isinstance(F, np.matrix)
+        assert F.shape == (3,1)
+        assert np.allclose(F, np.ones((3,1)))
+
+    #@pytest.xfail(reason="Not implemented, yet")
+    #def test_1d_array_input(self):
+    #    x, y = sp.symbols('x, y')
+    # 
+    #    A = np.array([0.5*(x + y), sp.asin(sp.sin(0.5*(x+y))), sp.sin(x+y)**2 + sp.cos(x+y)**2])
+    #
+    #    f = pytrajectory.auxiliary.cse_lambdify(args=(x,y), expr=A,
+    #                                            modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+    #
+    #    F = f(1., 1.)
+    #
+    #    assert type(F) == np.ndarray
+    #    assert F.shape == (3,)
+    #    assert F == np.ones(3)
+
+    def test_lambdify_returns_numpy_array_with_dummify_true(self):
+        x, y = sp.symbols('x, y')
+
+        M = sp.Matrix([[x],
+                       [y]])
+
+        f_arr = sp.lambdify(args=(x,y), expr=M, dummify=True, modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+        assert isinstance(f_arr(1,1), np.ndarray)
+        assert not isinstance(f_arr(1,1), np.matrix)
+
+    # following test is not relevant for pytrajectory
+    # but might be for an outsourcing of the cse_lambdify function
+    @pytest.mark.xfail(reason='..')
+    def test_lambdify_returns_numpy_array_with_dummify_false(self):
+        x, y = sp.symbols('x, y')
+
+        M = sp.Matrix([[x],
+                       [y]])
+
+        f_arr = sp.lambdify(args=(x,y), expr=M, dummify=False, modules=[{'ImmutableMatrix' : np.array}, 'numpy'])
+
+        assert isinstance(f_arr(1,1), np.ndarray)
+        assert not isinstance(f_arr(1,1), np.matrix)
+
+    def test_orig_args_in_reduced_expr(self):
+        x, y = sp.symbols('x, y')
+
+        expr = (x + y)**2 + sp.cos(x + y) + x
+
+        f = pytrajectory.auxiliary.cse_lambdify(args=(x, y), expr=expr, modules='numpy')
+
+        assert f(0., 0.) == 1.
