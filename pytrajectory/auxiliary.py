@@ -390,8 +390,13 @@ def eval_replacements_fnc(args):
 
 def cse_lambdify(args, expr, **kwargs):
     '''
-    ...
+    Wrapper for sympy.lambdify which makes use of common subexpressions.
     '''
+    
+    # Note:
+    # This was expected to speed up the evaluation of the created functions.
+    # However performance gain is only at ca. 5%
+    
     
     # check input expression
     if type(expr) == str:
