@@ -85,7 +85,7 @@ class TestCseLambdify(object):
 
     # following test is not relevant for pytrajectory
     # but might be for an outsourcing of the cse_lambdify function
-    @pytest.xfail(reason='..')
+    @pytest.mark.xfail(reason='..')
     def test_lambdify_returns_numpy_array_with_dummify_false(self):
         x, y = sp.symbols('x, y')
 

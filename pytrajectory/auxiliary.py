@@ -417,6 +417,11 @@ def cse_lambdify(args, expr, **kwargs):
     cse_pairs, red_exprs = sp.cse(expr, symbols=sp.numbered_symbols('r'))
     if len(red_exprs) == 1:
         red_exprs = red_exprs[0]
+
+    # check if sympy found any common subexpressions
+    if not cse_pairs:
+        # if not, use standard lambdify
+        return sp.lambdify(args, expr, **kwargs)
     
     # now we are looking for those arguments that are part of the reduced expression(s)
     shortcuts = zip(*cse_pairs)[0]
