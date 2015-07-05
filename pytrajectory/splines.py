@@ -72,11 +72,11 @@ class Spline(object):
         # the polynomial spline parts
         #   key: spline part
         #   value: corresponding polynomial
-        self._S = dict()
+        self._P = dict()
         for i in xrange(self.n):
             # create polynomials, e.g. for cubic spline:
-            #   S_i(t)= c_i_3*t^3 + c_i_2*t^2 + c_i_1*t + c_i_0
-            self._S[i] = np.poly1d(self._coeffs[i])
+            #   P_i(t)= c_i_3*t^3 + c_i_2*t^2 + c_i_1*t + c_i_0
+            self._P[i] = np.poly1d(self._coeffs[i])
         
         # initialise array for provisionally evaluation of the spline
         # if there are no values for its free parameters
@@ -98,7 +98,7 @@ class Spline(object):
         self._indep_coeffs = None #np.array([])
     
     def __getitem__(self, key):
-        return self._S[key]
+        return self._P[key]
     
     def _eval(self, t, d=0):
         '''
@@ -118,8 +118,7 @@ class Spline(object):
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
         
-        #return self._S[i].deriv(d)(t - (i+1)*self._h)
-        return self._S[i].deriv(d)(t - (i)*self._h)
+        return self._P[i].deriv(d)(t - (i)*self._h)
     
     def f(self, t):
         '''This is just a wrapper to evaluate the spline itself.'''
@@ -264,7 +263,7 @@ class Spline(object):
             
             # update polynomial parts
             for k in xrange(self.n):
-                self._S[k] = np.poly1d(self._coeffs[k])
+                self._P[k] = np.poly1d(self._coeffs[k])
         
         elif coeffs is None and free_coeffs is not None:
             # a little check
@@ -281,7 +280,7 @@ class Spline(object):
             for k in xrange(self.n):
                 coeffs_k = self._dep_array[k].dot(free_coeffs) + self._dep_array_abs[k]
                 self._coeffs[k] = coeffs_k
-                self._S[k] = np.poly1d(coeffs_k)
+                self._P[k] = np.poly1d(coeffs_k)
         else:
             # not sure...
             logging.error('Not sure what to do, please either pass `coeffs` or `free_coeffs`.')
