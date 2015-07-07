@@ -34,6 +34,8 @@ If you have troubles installing PyTrajectory, please don't hesitate to
 
 PyTrajectory has been developed and tested on Python 2.7
 
+.. _dependencies:
+
 Dependencies
 ------------
 
@@ -87,25 +89,37 @@ Then select the *PATH* (or *Path*) variable, click *Edit* an append the followin
 
   ;C:\Python27\;C:\Python27\Scripts\
 
-The next thing to do is to install a Python software package called *Setuptools* that extends packaging
+If you can't find a variable called *PATH* you can create it by clicking *New*, naming it *PATH*
+and insert the line above without the first *`;`* as the value.
+
+Before going on, open a command line with the shortcut consisting of the *Windows-key* and the *R*-key.
+Run *cmd* and after the command line interface started type the following: ::
+
+  C:\> pip --version
+
+If it prints the version number of *pip* you can skip the next two steps.
+Else, the next thing to do is to install a Python software package called *Setuptools* that extends packaging
 and installation facilities. To do so, download the Python script
 `ez_setup.py <https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py>`_
 and run it by typing ::
 
-  C:\path\to\file\python ez_setup.py
+  C:>\path\to\file\python ez_setup.py
 
 To simplify the installation of new packages we install a software called *pip*. This is simply done
 by downloading the file
 `get_pip.py <https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py>`_
 and running ::
 
-  C:\pyth\to\file\python get_pip.py
+  C:>\pyth\to\file\python get_pip.py
 
-from the command line again. After that, we can run ::
+from the command line again.
 
-  C:\pip install pytrajectory
+After that, (and after you have installed the :ref:`dependencies <dependencies>` with a similar command
+like the next one) you can run ::
 
-and pip will manage to install PyTrajectory along with all its dependencies.
+  C:>\pip install pytrajectory
+
+and pip should manage to install PyTrajectory. 
 
 .. note::
    The information provided in this section follows the guide available
