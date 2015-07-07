@@ -35,10 +35,17 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.pngmath',
 #    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-#    'sphinxcontrib.napoleon' # sphinx <= 1.2
-    'sphinx.ext.napoleon' # sphinx >= 1.3
+    'sphinx.ext.viewcode'
 ]
+
+# add napoleon to the extension to be able to write cleaner docstrings
+import sphinx
+if sphinx.version_info[0] <= 1 and sphinx.version_info[1] <= 2:
+    # up to version 1.2 napoleon is not part of sphinx extensions
+    extensions.append('sphinxcontrib.napoleon')
+else:
+    # from version 1.3 onwards napoleon is part of the extensions
+    extensions.append('sphinx.ext.napoleon')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -54,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pytrajectory'
-copyright = u'2014, Andreas Kunze'
+copyright = u'2015, Andreas Kunze'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
