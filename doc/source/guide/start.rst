@@ -72,6 +72,48 @@ Because the documentation is build automatically upon the source code, there are
 versions of the docs available. Please make sure that you always use matching versions of
 code and documentation.
 
+Windows
+-------
+
+To install PyTrajectory on Windows machines please make sure you have already installed Python
+version 2.7 on your system. If not, please
+`download <https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi>`_
+the latest version and install it by double-clicking the installer file.
+
+To be able to run the Python interpreter from any directory we have to append the *PATH*
+environment variable. This can be done by right-clicking the machine icon (usually on your Desktop,
+called *My Computer*), choosing *Properties*, selecting *Advance* and hitting *Environment Variables*.
+Then select the *PATH* (or *Path*) variable, click *Edit* an append the following at the end of the line ::
+
+  ;C:\Python27\;C:\Python27\Scripts\
+
+The next thing to do is to install a Python software package called *Setuptools* that extends packaging
+and installation facilities. To do so, download the Python script
+`ez_setup.py <https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py>`_
+and run it by typing ::
+
+  C:\path\to\file\python ez_setup.py
+
+To simplify the installation of new packages we install a software called *pip*. This is simply done
+by downloading the file
+`get_pip.py <https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py>`_
+and running ::
+
+  C:\pyth\to\file\python get_pip.py
+
+from the command line again. After that, we can run ::
+
+  C:\pip install pytrajectory
+
+and pip will manage to install PyTrajectory along with all its dependencies.
+
+.. note::
+   The information provided in this section follows the guide available
+   `here <http://docs.python-guide.org/en/latest/starting/install/win/>`_.
+
+
+  
+
 .. _usage:
 
 Usage
