@@ -29,10 +29,10 @@ vectorfield of a control system and to specify the desired boundary values.
 Installation
 ============
 
+PyTrajectory has been developed and tested on Python 2.7
+
 If you have troubles installing PyTrajectory, please don't hesitate to
 :ref:`contact <contacts>` us.
-
-PyTrajectory has been developed and tested on Python 2.7
 
 .. _dependencies:
 
@@ -57,6 +57,8 @@ The easiest way of installing PyTrajectory would be ::
    $ pip install pytrajectory
 
 provided that you have the Python module `pip` installed on your system.
+
+.. _source:
 
 Source
 ------
@@ -125,8 +127,48 @@ and pip should manage to install PyTrajectory.
    The information provided in this section follows the guide available
    `here <http://docs.python-guide.org/en/latest/starting/install/win/>`_.
 
+MAC OSX
+-------
 
-  
+To install PyTrajectory on machines running OSX you first have to make sure there is Python version 2.7
+installed on your system (should be with OSX >= 10.8). To check this, open a terminal and type ::
+
+  python --version
+
+If this is not the case we have to install it (obviously). To do so we will use a package manager called
+*Homebrew* that allows an installation procedure similar to Linux environments. But before we do this pease
+check if you have `XCode <https://developer.apple.com/xcode/>`_ installed.
+
+Homebrew can be installed
+by opening a terminal and typing ::
+
+  $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+Once Homebrew is installed we insert its directory at the top of the *PATH* environment variable by adding
+the following line at the bottom of your `~\.profile` file (you have to relogin for this to take effect) ::
+
+  export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+
+Now, installing Python version 2.7 is as easy as typing ::
+
+  $ brew install python2
+
+into a terminal. Homebrew also will install packages called *Setuptools* and *pip* that manage the installation
+of additional Python packages.
+
+Now, before installing PyTrajectory please make sure to install its :ref:`dependencies <dependencies>` via ::
+
+  $ pip install sympy
+
+and similar commands for the others. After that you can install Pytrajectory by typing ::
+
+  $ pip install pytrajectory
+
+or install it from the :ref:`source files <source>`.  
+
+.. note::
+   The information provided in this section follows the guide available
+   `here <http://docs.python-guide.org/en/latest/starting/install/osx/>`_.
 
 .. _usage:
 
