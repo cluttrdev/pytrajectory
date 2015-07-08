@@ -4,9 +4,9 @@ import os
 
 import logging
 
-DEBUG = True
-LOG2CONSOLE = True
-LOG2FILE = False
+DEBUG = False
+LOG2CONSOLE = False
+LOG2FILE = True
 
 # get logger
 logger = logging.getLogger()
