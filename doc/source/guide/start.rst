@@ -123,6 +123,8 @@ like the next one) you can run ::
 
 and pip should manage to install PyTrajectory. 
 
+Again, if you have troubles installing PyTrajectory, please :ref:`contact <contacts>` us.
+
 .. note::
    The information provided in this section follows the guide available
    `here <http://docs.python-guide.org/en/latest/starting/install/win/>`_.
@@ -133,7 +135,7 @@ MAC OSX
 To install PyTrajectory on machines running OSX you first have to make sure there is Python version 2.7
 installed on your system (should be with OSX >= 10.8). To check this, open a terminal and type ::
 
-  python --version
+  $ python --version
 
 If this is not the case we have to install it (obviously). To do so we will use a package manager called
 *Homebrew* that allows an installation procedure similar to Linux environments. But before we do this pease
@@ -165,6 +167,8 @@ and similar commands for the others. After that you can install Pytrajectory by 
   $ pip install pytrajectory
 
 or install it from the :ref:`source files <source>`.  
+
+Again, if you have troubles installing PyTrajectory, please :ref:`contact <contacts>` us.
 
 .. note::
    The information provided in this section follows the guide available
