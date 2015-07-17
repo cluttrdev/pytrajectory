@@ -408,12 +408,16 @@ References
 
 .. [Graichen05] 
    Graichen, K. and Hagenmeyer, V. and Zeitz, M. "A new approach to inversion-based feedforward control design 
-   for nonlinear systems" Automatica, Volume 41, Issue, 12, December 2005, Pages 2033-2041
+   for nonlinear systems" Automatica, Volume 41, Issue 12, Pages 2033-2041, 2005
 
 .. [Graichen06] 
    Graichen, K. and Zeitz, M. "Inversionsbasierter Vorsteuerungsentwurf mit Ein- und Ausgangsbeschränkungen 
-   (Inversion-Based Feedforward Control Design under Input and Output Constraints)" at - *Automatisierungstechnik*, 54.4/2006: 187-199
+   (Inversion-Based Feedforward Control Design under Input and Output Constraints)" at - *Automatisierungstechnik*, 54.4, Pages 187-199, 2006 
 
+.. [Graichen07]
+   Graichen, K. and Treuer, M and Zeitz, M. "Swing-up of the double pendulum on a cart by feed forward and feedback control with experimental validation"
+   Automatica, Volume 43, Issue 1, Pages 63-71, 2007
+   
 .. [Schnabel13]
    Schnabel, O. "Untersuchungen zur Trajektorienplanung durch Lösung eines Randwertproblems"
    Technische Universität Dresden, Institut für Regelungs- und Steuerungstheorie, 2013
