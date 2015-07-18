@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import ode
 
-
 class Simulator(object):
     '''
     This class simulates the initial value problem that results from solving 

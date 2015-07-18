@@ -7,7 +7,7 @@ Now we consider a cart with an arbitrary number of pendulums attached to it.
 Source Code
 +++++++++++
 
-For example we here consider a triple pendulum, i.e. :math:`N=3`.
+As an example we here consider a triple pendulum, i.e. :math:`N=3`.
 ... to be attached!
 
 .. only:: html

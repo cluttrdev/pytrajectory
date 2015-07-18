@@ -191,7 +191,7 @@ ub = [0.0]
 
 # here we specify the constraints for the velocity of the car
 con = {0 : [-1.0, 1.0],
-        1 : [-5.0, 5.0]}
+        1 : [-2.0, 2.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
 S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
@@ -201,62 +201,70 @@ x, u = S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+import sys
+import matplotlib as mpl
+from pytrajectory.visualisation import Animation
 
-if do_animation:
-    import matplotlib as mpl
-    from pytrajectory.visualisation import Animation
-    
-    def draw(xt, image):
-        x = xt[0]
-        phi1 = xt[2]
-        phi2 = xt[4]
-    
-        car_width = 0.05
-        car_heigth = 0.02
-    
-        rod_length = 2.0 * 0.25
-        pendulum_size = 0.015
-    
-        x_car = x
-        y_car = 0
-    
-        x_pendulum1 = x_car + rod_length * sin(phi1)
-        y_pendulum1 = rod_length * cos(phi1)
-    
-        x_pendulum2 = x_pendulum1 + rod_length * sin(phi2)
-        y_pendulum2 = y_pendulum1 + rod_length * cos(phi2)
-    
-        # create image
-        pendulum1 = mpl.patches.Circle(xy=(x_pendulum1, y_pendulum1), radius=pendulum_size, color='black')
-        pendulum2 = mpl.patches.Circle(xy=(x_pendulum2, y_pendulum2), radius=pendulum_size, color='black')
-        
-        car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
-                                    fill=True, facecolor='grey', linewidth=2.0)
-        joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
-        
-        rod1 = mpl.lines.Line2D([x_car,x_pendulum1], [y_car,y_pendulum1],
-                                color='black', zorder=1, linewidth=2.0)
-        rod2 = mpl.lines.Line2D([x_pendulum1,x_pendulum2], [y_pendulum1,y_pendulum2],
-                                color='black', zorder=1, linewidth=2.0)
-    
-        # add the patches and lines to the image
-        image.patches.append(pendulum1)
-        image.patches.append(pendulum2)
-        image.patches.append(car)
-        image.patches.append(joint)
-        image.lines.append(rod1)
-        image.lines.append(rod2)
-    
-        # and return the image
-        return image
+def draw(xt, image):
+    x = xt[0]
+    phi1 = xt[2]
+    phi2 = xt[4]
 
+    car_width = 0.05
+    car_heigth = 0.02
+
+    rod_length = 2.0 * 0.25
+    pendulum_size = 0.015
+
+    x_car = x
+    y_car = 0
+
+    x_pendulum1 = x_car + rod_length * sin(phi1)
+    y_pendulum1 = rod_length * cos(phi1)
+
+    x_pendulum2 = x_pendulum1 + rod_length * sin(phi2)
+    y_pendulum2 = y_pendulum1 + rod_length * cos(phi2)
+
+    # create image
+    pendulum1 = mpl.patches.Circle(xy=(x_pendulum1, y_pendulum1), radius=pendulum_size, color='black')
+    pendulum2 = mpl.patches.Circle(xy=(x_pendulum2, y_pendulum2), radius=pendulum_size, color='black')
+    
+    car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
+                                fill=True, facecolor='grey', linewidth=2.0)
+    joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
+    
+    rod1 = mpl.lines.Line2D([x_car,x_pendulum1], [y_car,y_pendulum1],
+                            color='black', zorder=1, linewidth=2.0)
+    rod2 = mpl.lines.Line2D([x_pendulum1,x_pendulum2], [y_pendulum1,y_pendulum2],
+                            color='black', zorder=1, linewidth=2.0)
+
+    # add the patches and lines to the image
+    image.patches.append(pendulum1)
+    image.patches.append(pendulum2)
+    image.patches.append(car)
+    image.patches.append(joint)
+    image.lines.append(rod1)
+    image.lines.append(rod2)
+
+    # and return the image
+    return image
+
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex8_ConstrainedDoublePendulum.pcl')
+
+if 'plot' in sys.argv or 'animate' in sys.argv:
     # create Animation object
     A = Animation(drawfnc=draw, simdata=S.sim_data,
-                  plotsys=[(0,'x'),(1,'dx')], plotinputs=[(0,'u')])
+                  plotsys=[(0,'$x$'),(1,'$\\dot{x}$')], plotinputs=[(0,'$u$')])
     xmin = np.min(S.sim_data[1][:,0])
     xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-1.2,1.2))
     
+if 'plot' in sys.argv:
+    A.show(t=S.b)
+
+if 'animate' in sys.argv:
     A.animate()
     A.save('ex8_ConstrainedDoublePendulum.gif')

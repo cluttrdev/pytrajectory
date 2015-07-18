@@ -46,49 +46,57 @@ S.solve()
 
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-do_animation = False
+import sys
+import matplotlib as mpl
+from pytrajectory.visualisation import Animation
 
-if do_animation:
-    import matplotlib as mpl
-    from pytrajectory.visualisation import Animation
+def draw(xt, image):
+    x = xt[0]
+    phi = xt[2]
     
-    def draw(xt, image):
-        x = xt[0]
-        phi = xt[2]
-        
-        car_width = 0.05
-        car_heigth = 0.02
-        
-        rod_length = 0.5
-        pendulum_size = 0.015
-        
-        x_car = x
-        y_car = 0
-        
-        x_pendulum = -rod_length * sin(phi) + x_car
-        y_pendulum = rod_length * cos(phi)
-        
-        pendulum = mpl.patches.Circle(xy=(x_pendulum, y_pendulum), radius=pendulum_size, color='black')
-        car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
-                                    fill=True, facecolor='grey', linewidth=2.0)
-        joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
-        rod = mpl.lines.Line2D([x_car,x_pendulum], [y_car,y_pendulum],
-                                color='black', zorder=1, linewidth=2.0)
-        
-        image.patches.append(pendulum)
-        image.patches.append(car)
-        image.patches.append(joint)
-        image.lines.append(rod)
-        
-        return image
+    car_width = 0.05
+    car_heigth = 0.02
     
+    rod_length = 0.5
+    pendulum_size = 0.015
     
+    x_car = x
+    y_car = 0
+    
+    x_pendulum = -rod_length * sin(phi) + x_car
+    y_pendulum = rod_length * cos(phi)
+    
+    pendulum = mpl.patches.Circle(xy=(x_pendulum, y_pendulum), radius=pendulum_size, color='black')
+    car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_heigth), car_width, car_heigth,
+                                fill=True, facecolor='grey', linewidth=2.0)
+    joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
+    rod = mpl.lines.Line2D([x_car,x_pendulum], [y_car,y_pendulum],
+                            color='black', zorder=1, linewidth=2.0)
+    
+    image.patches.append(pendulum)
+    image.patches.append(car)
+    image.patches.append(joint)
+    image.lines.append(rod)
+    
+    return image
+
+if not 'no-pickle' in sys.argv:
+    # here we save the simulation results so we don't have to run
+    # the iteration again in case the following fails
+    S.save(fname='ex7_ConstrainedInvertedPendulum.pcl')
+
+if 'plot' in sys.argv or 'animate' in sys.argv:
     A = Animation(drawfnc=draw, simdata=S.sim_data,
                         plotsys=[(0,'x'), (1,'dx')],
                         plotinputs=[(0,'u1')])
     xmin = np.min(S.sim_data[1][:,0])
     xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 0.5, xmax + 0.5), ylim=(-0.6,0.6))
+
+if 'plot' in sys.argv:
+    A.show(t=S.b)
+
+if 'animate' in sys.argv:
     A.animate()
     A.save('ex7_ConstrainedInvertedPendulum.gif')
     

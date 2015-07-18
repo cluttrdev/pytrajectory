@@ -31,6 +31,11 @@ Installation
 
 PyTrajectory has been developed and tested on Python 2.7
 
+If you have troubles installing PyTrajectory, please don't hesitate to
+:ref:`contact <contacts>` us.
+
+.. _dependencies:
+
 Dependencies
 ------------
 
@@ -44,6 +49,17 @@ dependencies installed on your system.
    * matplotlib [visualisation]
    * ipython [debugging]
 
+PyPI
+----
+
+The easiest way of installing PyTrajectory would be ::
+
+   $ pip install pytrajectory
+
+provided that you have the Python module `pip` installed on your system.
+
+.. _source:
+
 Source
 ------
 
@@ -54,24 +70,109 @@ into the extracted folder. Then all you have to do is run the following command 
 
    $ python setup.py install
 
-PyPI
-----
-
-The easiest way of installing PyTrajectory would be ::
-
-   $ pip install pytrajectory
-
-or ::
-
-   $ easy_install pytrajectory
-
-provided that you have the Python modules `pip` or `setuptools` installed on your system.
-
 Please note that there are different versions of PyTrajectory available (development version
 in github repository [various branches], release versions at PyPI).
 Because the documentation is build automatically upon the source code, there are also different
 versions of the docs available. Please make sure that you always use matching versions of
 code and documentation.
+
+Windows
+-------
+
+To install PyTrajectory on Windows machines please make sure you have already installed Python
+version 2.7 on your system. If not, please
+`download <https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi>`_
+the latest version and install it by double-clicking the installer file.
+
+To be able to run the Python interpreter from any directory we have to append the *PATH*
+environment variable. This can be done by right-clicking the machine icon (usually on your Desktop,
+called *My Computer*), choosing *Properties*, selecting *Advance* and hitting *Environment Variables*.
+Then select the *PATH* (or *Path*) variable, click *Edit* an append the following at the end of the line ::
+
+  ;C:\Python27\;C:\Python27\Scripts\
+
+If you can't find a variable called *PATH* you can create it by clicking *New*, naming it *PATH*
+and insert the line above without the first *`;`* as the value.
+
+Before going on, open a command line with the shortcut consisting of the *Windows-key* and the *R*-key.
+Run *cmd* and after the command line interface started type the following: ::
+
+  C:\> pip --version
+
+If it prints the version number of *pip* you can skip the next two steps.
+Else, the next thing to do is to install a Python software package called *Setuptools* that extends packaging
+and installation facilities. To do so, download the Python script
+`ez_setup.py <https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py>`_
+and run it by typing ::
+
+  C:>\path\to\file\python ez_setup.py
+
+To simplify the installation of new packages we install a software called *pip*. This is simply done
+by downloading the file
+`get_pip.py <https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py>`_
+and running ::
+
+  C:>\pyth\to\file\python get_pip.py
+
+from the command line again.
+
+After that, (and after you have installed the :ref:`dependencies <dependencies>` with a similar command
+like the next one) you can run ::
+
+  C:>\pip install pytrajectory
+
+and pip should manage to install PyTrajectory. 
+
+Again, if you have troubles installing PyTrajectory, please :ref:`contact <contacts>` us.
+
+.. note::
+   The information provided in this section follows the guide available
+   `here <http://docs.python-guide.org/en/latest/starting/install/win/>`_.
+
+MAC OSX
+-------
+
+To install PyTrajectory on machines running OSX you first have to make sure there is Python version 2.7
+installed on your system (should be with OSX >= 10.8). To check this, open a terminal and type ::
+
+  $ python --version
+
+If this is not the case we have to install it (obviously). To do so we will use a package manager called
+*Homebrew* that allows an installation procedure similar to Linux environments. But before we do this pease
+check if you have `XCode <https://developer.apple.com/xcode/>`_ installed.
+
+Homebrew can be installed
+by opening a terminal and typing ::
+
+  $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+Once Homebrew is installed we insert its directory at the top of the *PATH* environment variable by adding
+the following line at the bottom of your `~\.profile` file (you have to relogin for this to take effect) ::
+
+  export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+
+Now, installing Python version 2.7 is as easy as typing ::
+
+  $ brew install python2
+
+into a terminal. Homebrew also will install packages called *Setuptools* and *pip* that manage the installation
+of additional Python packages.
+
+Now, before installing PyTrajectory please make sure to install its :ref:`dependencies <dependencies>` via ::
+
+  $ pip install sympy
+
+and similar commands for the others. After that you can install Pytrajectory by typing ::
+
+  $ pip install pytrajectory
+
+or install it from the :ref:`source files <source>`.  
+
+Again, if you have troubles installing PyTrajectory, please :ref:`contact <contacts>` us.
+
+.. note::
+   The information provided in this section follows the guide available
+   `here <http://docs.python-guide.org/en/latest/starting/install/osx/>`_.
 
 .. _usage:
 
@@ -231,26 +332,37 @@ a container for the image. In the considered example `xt` is of the form
 and `image` is just a container for the drawn image.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 57-107
+   :lines: 55-105
+
+If we want to save the latest simulation result, maybe because the iteration
+took much time and we don't want to run it again every time, we can do this.
+
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 110
 
 Next, we create an instance of the :py:class:`Animation` class and
 pass our :py:func:`draw` function, the simulation data and some
 lists that specify what trajectory curves to plot along with the
 picture.
 
+If we would like to either plot the system state at the end time
+or want to animate the system we need to create an `Animation` object.
 To set the limits correctly we calculate the minimum and maximum
 value of the cart's movement along the `x`-axis.
 
-Finally, we can start the animation.
+.. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
+   :lines: 118-124
+
+Finally, we can plot the system and/or start the animation.
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 114-124
+   :lines: 126-132
 
 The animation can be saved either as animated .gif file or as a 
 .mp4 video file. 
 
 .. literalinclude:: /../../examples/ex0_InvertedPendulumSwingUp.py
-   :lines: 127
+   :lines: 135
 
 If saved as an animated .gif file you can view 
 single frames using for example `gifview` (GNU/Linux) or the 

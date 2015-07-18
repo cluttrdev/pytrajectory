@@ -4,31 +4,27 @@ About
 =====
 
 [![Build Status](https://travis-ci.org/TUD-RST/pytrajectory.svg?branch=master)](https://travis-ci.org/TUD-RST/pytrajectory)
-[![PyPI Version](https://pypip.in/v/pytrajectory/badge.png)](https://pypi.python.org/pypi/pytrajectory)
+[![PyPI version](https://badge.fury.io/py/PyTrajectory.svg)](http://badge.fury.io/py/PyTrajectory)
 
-PyTrajectory is a Python library for the determination of the feed forward control 
-to achieve a transition between desired states of a nonlinear control system.
+PyTrajectory is a Python library for trajectory generation for nonlinear control systems.
+It relies on solving a boundary value problem (bvp) via a collocation method. It is based
+on the scientific work of Graichen, et al. (see references in
+[*Background*](https://pytrajectory.readthedocs.org/en/master/guide/background.html) section
+of the documentation), but does not depend on proprietary code like Matlabs *bvp4c*.
 
-It is being developed at Dresden University of Technology at the 
-[Institute for Control Theory](http://www.et.tu-dresden.de/rst/).
+It is developed at Dresden University of Technology at the 
+[Institute for Control Theory](http://www.et.tu-dresden.de/rst/), see also
+[other control related software](http://www.tu-dresden.de/rst/software).
 
-
-Installation
-============
-
-To install PyTrajectory, simply:
-
-    pip install pytrajectory
-
-or download the tarball from [here](https://github.com/akunze3/pytrajectory/tree/master/dist) extract it and run
-
-    python setup.py install
-
-from within the extracted folder.
-
-   
 Documentation
 =============
 
 The documentation can be found at [readthedocs.org](https://pytrajectory.readthedocs.org).
 
+Examples
+========
+
+See the *Usage* or *Examples* section of the documentation. The examples files can also be downloaded
+[here](https://github.com/TUD-RST/pytrajectory/tree/master/dist).
+
+The animation above belongs to example 8.

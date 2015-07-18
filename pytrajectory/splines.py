@@ -41,8 +41,10 @@ class Spline(object):
         The type of the spline nodes (equidistant).
     
     '''
-    
+
     def __init__(self, a=0.0, b=1.0, n=5, bv={}, nodes_type='equidistant', tag=''):
+        self._use_std_approach = False
+        
         # interval boundaries
         assert a < b
         self.a = a
@@ -72,11 +74,11 @@ class Spline(object):
         # the polynomial spline parts
         #   key: spline part
         #   value: corresponding polynomial
-        self._S = dict()
+        self._P = dict()
         for i in xrange(self.n):
             # create polynomials, e.g. for cubic spline:
-            #   S_i(t)= c_i_3*t^3 + c_i_2*t^2 + c_i_1*t + c_i_0
-            self._S[i] = np.poly1d(self._coeffs[i])
+            #   P_i(t)= c_i_3*t^3 + c_i_2*t^2 + c_i_1*t + c_i_0
+            self._P[i] = np.poly1d(self._coeffs[i])
         
         # initialise array for provisionally evaluation of the spline
         # if there are no values for its free parameters
@@ -98,7 +100,7 @@ class Spline(object):
         self._indep_coeffs = None #np.array([])
     
     def __getitem__(self, key):
-        return self._S[key]
+        return self._P[key]
     
     def _eval(self, t, d=0):
         '''
@@ -117,8 +119,11 @@ class Spline(object):
         # get polynomial part where t is in
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
-        
-        return self._S[i].deriv(d)(t - (i+1)*self._h)
+
+        if self._use_std_approach:
+            return self._P[i].deriv(d)(t - (i)*self._h)
+        else:
+            return self._P[i].deriv(d)(t - (i+1)*self._h)
     
     def f(self, t):
         '''This is just a wrapper to evaluate the spline itself.'''
@@ -200,8 +205,11 @@ class Spline(object):
         # determine the spline part to evaluate
         i = int(np.floor(t * self.n / self.b))
         if i == self.n: i -= 1
-        
-        t -= (i+1) * self._h
+
+        if self._use_std_approach:
+            t -= (i) * self._h
+        else:
+            t -= (i+1) * self._h
         
         # Calculate vector to for multiplication with coefficient matrix w.r.t. the derivation order
         if d == 0:
@@ -262,7 +270,7 @@ class Spline(object):
             
             # update polynomial parts
             for k in xrange(self.n):
-                self._S[k] = np.poly1d(self._coeffs[k])
+                self._P[k] = np.poly1d(self._coeffs[k])
         
         elif coeffs is None and free_coeffs is not None:
             # a little check
@@ -279,7 +287,7 @@ class Spline(object):
             for k in xrange(self.n):
                 coeffs_k = self._dep_array[k].dot(free_coeffs) + self._dep_array_abs[k]
                 self._coeffs[k] = coeffs_k
-                self._S[k] = np.poly1d(coeffs_k)
+                self._P[k] = np.poly1d(coeffs_k)
         else:
             # not sure...
             logging.error('Not sure what to do, please either pass `coeffs` or `free_coeffs`.')
@@ -391,7 +399,6 @@ class Spline(object):
         
         if ret_array:
             return St
-    
 
 def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
     '''
@@ -613,40 +620,69 @@ def get_smoothness_matrix(S, N1, N2):
     
     # build block band matrix M for smoothness conditions 
     # in every joining point
-    block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h, -1.0],
-                      [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
-                      [0.0, 2.0, 0.0, 0.0,   6*h,  -2.0,  0.0, 0.0]])
-    
+    if S._use_std_approach:
+        block = np.array([[  h**3, h**2,   h, 1.0, 0.0, 0.0, 0.0, -1.0],
+                          [3*h**2,  2*h, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0],
+                          [  6*h,   2.0, 0.0, 0.0, 0.0, -2.0, 0.0, 0.0]])
+    else:
+        block = np.array([[0.0, 0.0, 0.0, 1.0,   h**3, -h**2,  h, -1.0],
+                          [0.0, 0.0, 1.0, 0.0, -3*h**2, 2*h, -1.0, 0.0],
+                          [0.0, 2.0, 0.0, 0.0,   6*h,  -2.0,  0.0, 0.0]])
+        
     for k in xrange(n-1):
         M[3*k:3*(k+1),4*k:4*(k+2)] = block
     
-    # add equations for boundary values
-    
-    # for the spline function itself
-    if S._boundary_values.has_key(0):
-        if S._boundary_values[0][0] is not None:
-            M[3*(n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
-            r[3*(n-1)] = S._boundary_values[0][0]
-        if S._boundary_values[0][1] is not None:
-            M[3*(n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
-            r[3*(n-1)+1] = S._boundary_values[0][1]
-    # for its 1st derivative
-    if S._boundary_values.has_key(1):
-        if S._boundary_values[1][0] is not None:
-            M[3*(n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
-            r[3*(n-1)+2] = S._boundary_values[1][0]
-        if S._boundary_values[1][1] is not None:
-            M[3*(n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
-            r[3*(n-1)+3] = S._boundary_values[1][1]
-    # and for its 2nd derivative
-    if S._boundary_values.has_key(2):
-        if S._boundary_values[2][0] is not None:
-            M[3*(n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
-            r[3*(n-1)+4] = S._boundary_values[2][0]
-        if S._boundary_values[2][1] is not None:
-            M[3*(n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
-            r[3*(n-1)+5] = S._boundary_values[2][1]
-    
+    ## add equations for boundary values
+    if S._use_std_approach:
+        # for the spline function itself
+        if S._boundary_values.has_key(0):
+            if S._boundary_values[0][0] is not None:
+                M[3*(n-1),0:4] = np.array([0.0, 0.0, 0.0, 1.0])
+                r[3*(n-1)] = S._boundary_values[0][0]
+            if S._boundary_values[0][1] is not None:
+                M[3*(n-1)+1,-4:] = np.array([h**3, h**2, h, 1.0])
+                r[3*(n-1)+1] = S._boundary_values[0][1]
+        # for its 1st derivative
+        if S._boundary_values.has_key(1):
+            if S._boundary_values[1][0] is not None:
+                M[3*(n-1)+2,0:4] = np.array([0.0, 0.0, 1.0, 0.0])
+                r[3*(n-1)+2] = S._boundary_values[1][0]
+            if S._boundary_values[1][1] is not None:
+                M[3*(n-1)+3,-4:] = np.array([3*h**2, 2*h, 1.0, 0.0])
+                r[3*(n-1)+3] = S._boundary_values[1][1]
+        # and for its 2nd derivative
+        if S._boundary_values.has_key(2):
+            if S._boundary_values[2][0] is not None:
+                M[3*(n-1)+4,0:4] = np.array([0.0, 2.0, 0.0, 0.0])
+                r[3*(n-1)+4] = S._boundary_values[2][0]
+            if S._boundary_values[2][1] is not None:
+                M[3*(n-1)+5,-4:] = np.array([6*h, 2.0, 0.0, 0.0])
+                r[3*(n-1)+5] = S._boundary_values[2][1]
+    else:
+        # for the spline function itself
+        if S._boundary_values.has_key(0):
+            if S._boundary_values[0][0] is not None:
+                M[3*(n-1),0:4] = np.array([-h**3, h**2, -h, 1.0])
+                r[3*(n-1)] = S._boundary_values[0][0]
+            if S._boundary_values[0][1] is not None:
+                M[3*(n-1)+1,-4:] = np.array([0.0, 0.0, 0.0, 1.0])
+                r[3*(n-1)+1] = S._boundary_values[0][1]
+        # for its 1st derivative
+        if S._boundary_values.has_key(1):
+            if S._boundary_values[1][0] is not None:
+                M[3*(n-1)+2,0:4] = np.array([3*h**2, -2*h, 1.0, 0.0])
+                r[3*(n-1)+2] = S._boundary_values[1][0]
+            if S._boundary_values[1][1] is not None:
+                M[3*(n-1)+3,-4:] = np.array([0.0, 0.0, 1.0, 0.0])
+                r[3*(n-1)+3] = S._boundary_values[1][1]
+        # and for its 2nd derivative
+        if S._boundary_values.has_key(2):
+            if S._boundary_values[2][0] is not None:
+                M[3*(n-1)+4,0:4] = np.array([-6*h, 2.0, 0.0, 0.0])
+                r[3*(n-1)+4] = S._boundary_values[2][0]
+            if S._boundary_values[2][1] is not None:
+                M[3*(n-1)+5,-4:] = np.array([0.0, 2.0, 0.0, 0.0])
+                r[3*(n-1)+5] = S._boundary_values[2][1]
+        
     return M, r
-
 

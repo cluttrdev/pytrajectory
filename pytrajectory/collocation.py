@@ -56,9 +56,9 @@ class CollocationSystem(object):
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
         
-        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True)
-        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True)
-    
+        self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+        self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+
     def build(self, sys, trajectories):
         '''
         This method is used to set up the equations for the collocation equation system
@@ -242,7 +242,7 @@ class CollocationSystem(object):
         # 
         # to get these indices we iterate over all rows and take those whose indices
         # are contained in `eqind` (module the number of state variables -> `x_len`)
-        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx%x_len in eqind])
+        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx % x_len in eqind])
         
         # define the callable functions for the eqs
         def G(c):
@@ -263,7 +263,7 @@ class CollocationSystem(object):
             G = F - dX
             
             return G.ravel(order='F')
-    
+
         # and its jacobian
         def DG(c):
             # first we calculate the x and u values in all collocation points
@@ -324,72 +324,90 @@ class CollocationSystem(object):
         else:
             guess = np.empty(0)
             
-            # get new guess for every independent variable
+            # now we compute a new guess for every free coefficient of every new (finer) spline
+            # by interpolating the corresponding old (coarser) spline
             for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k):
                 if (trajectories._splines[k].type == 'x'):
                     logging.debug("Get new guess for spline {}".format(k))
                     
                     s_new = trajectories._splines[k]
                     s_old = trajectories._old_splines[k]
-                    
-                    # how many independent coefficients does the spline have
-                    coeffs_size = s_new._indep_coeffs.size
-                    
-                    # generate points to evaluate the old spline at
-                    # (new and old spline should be equal in these)
-                    #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=False)
-                    guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
-                    
-                    # evaluate the splines
-                    s_old_t = np.array([s_old.f(t) for t in guess_points])
-                    
-                    dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
-                    s_new_t = np.array([vec[0] for vec in dep_vecs])
-                    s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
-                    
-                    #old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
-                    old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
-                    
-                    guess = np.hstack((guess, old_style_guess))
+
+                    if s_new._use_std_approach:
+                        # compute values 
+                        values = [s_old.f(t) for t in s_new.nodes]
                         
+                        # create vector of step sizes
+                        h = np.array([s_new.nodes[k+1] - s_new.nodes[k] for k in xrange(s_new.nodes.size-1)])
+                        
+                        # create diagonals for the coefficient matrix of the equation system
+                        l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
+                        d = 2.0*np.ones(s_new.nodes.size-2)
+                        u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(s_new.nodes.size-2)])
+                        
+                        # right hand site of the equation system
+                        r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
+                                      for k in xrange(s_new.nodes.size-2)])
+                        
+                        # add conditions for unique solution
+                        
+                        # boundary derivatives
+                        l = np.hstack([l, 0.0, 0.0])
+                        d = np.hstack([1.0, d, 1.0])
+                        u = np.hstack([0.0, 0.0, u])
+                        
+                        m0 = s_old.df(s_old.a)
+                        mn = s_old.df(s_old.b)
+                        r = np.hstack([m0, r, mn])
+                        
+                        data = [l,d,u]
+                        offsets = [-1, 0, 1]
+                        
+                        # create tridiagonal coefficient matrix
+                        D = sparse.dia_matrix((data, offsets), shape=(s_new.n+1, s_new.n+1))
+                        
+                        # solve the equation system
+                        sol = sparse.linalg.spsolve(D.tocsr(),r)
+                        
+                        # calculate the coefficients
+                        coeffs = np.zeros((s_new.n, 4))
+                        
+                        # compute the coefficients of the interpolant
+                        for i in xrange(s_new.n):
+                            coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
+                                            3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
+                                            sol[i],
+                                            values[i]]
+                        
+                        # get the indices of the free coefficients
+                        coeff_name_split_str = [c.name.split('_')[-2:] for c in s_new._indep_coeffs]
+                        free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
+                        
+                        free_coeffs_guess = np.array([coeffs[i] for i in free_coeff_indices])
+                        guess = np.hstack((guess, free_coeffs_guess))
+                    else:
+                        # how many independent coefficients does the spline have
+                        coeffs_size = s_new._indep_coeffs.size
+                        
+                        # generate points to evaluate the old spline at
+                        # (new and old spline should be equal in these)
+                        #guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=False)
+                        guess_points = np.linspace(s_new.a, s_new.b, coeffs_size, endpoint=True)
+                        
+                        # evaluate the splines
+                        s_old_t = np.array([s_old.f(t) for t in guess_points])
+                        
+                        dep_vecs = [s_new.get_dependence_vectors(t) for t in guess_points]
+                        s_new_t = np.array([vec[0] for vec in dep_vecs])
+                        s_new_t_abs = np.array([vec[1] for vec in dep_vecs])
+                        
+                        #old_style_guess = np.linalg.solve(s_new_t, s_old_t - s_new_t_abs)
+                        old_style_guess = np.linalg.lstsq(s_new_t, s_old_t - s_new_t_abs)[0]
+                        
+                        guess = np.hstack((guess, old_style_guess))
                 else:
                     # if it is a input variable, just take the old solution
                     guess = np.hstack((guess, trajectories._old_splines[k]._indep_coeffs))
-        
-        if 0:
-            
-            try:
-                import matplotlib.pyplot as plt
-            
-                tt = np.linspace(trajectories._a, trajectories._b, 1000)
-                xt_old = np.zeros((1000,len(trajectories._x_sym)))
-            
-                for i, x in enumerate(trajectories._x_sym):
-                    fx = trajectories._old_splines[x]
-                    xt_old[:,i] = [fx(t) for t in tt]
-            
-                sol_bak = 1.0*self.sol
-                splines_bak = trajectories._splines.copy()
-            
-                trajectories.set_coeffs(guess)
-                xt_new = np.zeros((1000,len(trajectories._x_sym)))
-                
-                for i, x in enumerate(trajectories._x_sym):
-                    fx = trajectories._splines[x]
-                    xt_new[:,i] = [fx(t) for t in tt]
-                
-                print np.abs(xt_old-xt_new).max()
-                IPS()
-                
-                self.sol = sol_bak
-                trajectories._splines = splines_bak
-                for s in trajectories._splines.values():
-                    s._prov_flag = True
-                
-            except Exception as err:
-                print "guess plot error"
-                IPS()
-                pass
         
         # the new guess
         self.guess = guess
@@ -469,6 +487,49 @@ def collocation_nodes(a, b, npts, coll_type):
         cpts = np.linspace(a, b, npts, endpoint=True)
     
     return cpts
+
+def compare_trajectories(trajectories, free_coeffs, plot=True, embed=True):
+    import matplotlib.pyplot as plt
+    import matplotlib.lines as mlines
     
+    tt = np.linspace(trajectories._a, trajectories._b, 1000)
     
+    xt_old = np.zeros((1000,len(trajectories._x_sym)))
+    x_old_nodes = []
+    for i, x in enumerate(trajectories._x_sym):
+        s = trajectories._old_splines[x]
+        xt_old[:,i] = [s.f(t) for t in tt]
+        x_old_nodes.append([s.f(t) for t in s.nodes])
+    x_old_nodes = np.array(x_old_nodes).T
+    old_nodes = s.nodes
+
+    splines_bak = trajectories._splines.copy()
+    trajectories.set_coeffs(free_coeffs)
+    
+    xt_new = np.zeros((1000,len(trajectories._x_sym)))
+    x_new_nodes = []
+    for i, x in enumerate(trajectories._x_sym):
+        s = trajectories._splines[x]
+        xt_new[:,i] = [s.f(t) for t in tt]
+        x_new_nodes.append([s.f(t) for t in s.nodes])
+    x_new_nodes = np.array(x_new_nodes).T
+    new_nodes = s.nodes
+    
+    print np.abs(xt_old-xt_new).max()
+    
+    if plot or np.abs(xt_old-xt_new).max() > 0.5:
+        plt.plot(tt, xt_old,'r--')
+        plt.plot(old_nodes, x_old_nodes, 'ro', markersize=8, fillstyle='full')
         
+        plt.plot(tt, xt_new, 'g')
+        plt.plot(new_nodes, x_new_nodes, 'go', markersize=5, fillstyle='full')
+        
+        plt.show()
+    
+    if embed or np.abs(xt_old-xt_new).max() > 0.5:
+        IPS()
+    
+    trajectories._splines = splines_bak
+    for s in trajectories._splines.values():
+        s._prov_flag = True
+

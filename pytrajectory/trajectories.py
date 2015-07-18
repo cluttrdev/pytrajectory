@@ -5,9 +5,6 @@ from splines import Spline, differentiate
 from log import logging
 import auxiliary
 
-from IPython import embed as IPS
-
-
 class Trajectory(object):
     '''
     This class handles the creation and managing of the spline functions 

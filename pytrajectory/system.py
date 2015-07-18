@@ -3,6 +3,7 @@
 import numpy as np
 import sympy as sp
 from scipy import sparse
+import pickle
 
 from trajectories import Trajectory
 from collocation import CollocationSystem
@@ -10,8 +11,6 @@ from simulation import Simulator
 import auxiliary
 import visualisation
 from log import logging, Timer
-
-from IPython import embed as IPS
 
 
 class ControlSystem(object):
@@ -251,11 +250,6 @@ class ControlSystem(object):
         fi = self.ff_sym(x_sym, u_sym)
 
         chains, eqind = auxiliary.find_integrator_chains(fi, x_sym, u_sym)
-        
-        # if we don't take advantage of the system structure
-        # we need to solve every equation
-        #if not self.mparam['use_chains']:
-        #    eqind = range(len(x_sym))
         
         # get minimal neccessary number of spline parts
         # for the manipulated variables
@@ -627,18 +621,20 @@ class ControlSystem(object):
         for i in self.eqind:
             H[i] = error[:,i]
 
-        # call utilities.plotsim()
         visualisation.plot_simulation(self.sim_data, H)
         # t = self.sim_data[0]
         # xt = np.array([self.trajectories.x(tt) for tt in t])
         # ut = self.sim_data[2]
         # visualisation.plot_simulation([t,xt,ut], H)
     
-    def save(self):
+    def save(self, fname=''):
         '''
-        Save data using the module :py:mod:`pickle`.
+        Save data using the python module :py:mod:`pickle`.
         
-        Currently only saves simulation data.
+        The created pickle dumpfile contains the latest simulation data, i.e.
+        a list of three arrays. The 1st entry is an array with the time steps
+        of the simulation, the 2nd contains the corresponding values of the
+        state variables and the 3rd those of the input variables.
         '''
 
         save = dict()
@@ -664,7 +660,7 @@ class ControlSystem(object):
         
         if not fname:
             fname = __file__.split('.')[0] + '.pkl'
-        elif not fname.endswith('.pkl'):
+        elif not (fname.endswith('.pkl') or fname.endswith('.pcl')):
             fname += '.pkl'
         
         with open(fname, 'wb') as dumpfile:

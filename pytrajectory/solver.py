@@ -33,12 +33,12 @@ class Solver:
         The solver to use
     '''
     
-    def __init__(self, F, DF, x0, tol=1e-2, maxIt=100, method='leven'):
+    def __init__(self, F, DF, x0, tol=1e-5, maxIt=100, method='leven'):
         self.F = F
         self.DF = DF
         self.x0 = x0
         self.tol = tol
-        self.reltol = 1e-4
+        self.reltol = 2e-5
         self.maxIt = maxIt
         self.method = method
         
@@ -54,11 +54,8 @@ class Solver:
         if (self.method == 'leven'):
             logging.debug("Run Levenberg-Marquardt method")
             self.leven()
-        elif (self.method == 'new_leven'):
-            self.alternate_levenberg_marquardt()
         
-        
-        if (self.sol == None):
+        if (self.sol is None):
             logging.warning("Wrong solver, returning initial value.")
             return self.x0
         else:
@@ -79,7 +76,8 @@ class Solver:
         
         eye = scp.sparse.identity(len(self.x0))
 
-        mu = 0.1
+        #mu = 0.1
+        mu = 1.0
         
         # borders for convergence-control
         b0 = 0.2
@@ -100,9 +98,9 @@ class Solver:
             
             while (roh < b0):                
                 A = DFx.T.dot(DFx) + mu**2*eye
+
                 b = DFx.T.dot(Fx)
-                
-                #s = -solve(A, b)
+                    
                 s = -scp.sparse.linalg.spsolve(A,b)
 
                 xs = x + np.array(s).flatten()
@@ -116,7 +114,7 @@ class Solver:
                 
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
-                #log.info("  roh= %f    mu= %f"%(roh,mu))
+                #logging.debug("  roh= %f    mu= %f"%(roh,mu))
                 
                 # the following was believed to be some kind of bug, hence the warning
                 # but that was not the case...
