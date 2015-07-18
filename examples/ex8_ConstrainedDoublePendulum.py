@@ -191,7 +191,7 @@ ub = [0.0]
 
 # here we specify the constraints for the velocity of the car
 con = {0 : [-1.0, 1.0],
-        1 : [-5.0, 5.0]}
+        1 : [-2.0, 2.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
 S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=2e-1, su=20, kx=2, use_chains=False)
@@ -257,7 +257,7 @@ if not 'no-pickle' in sys.argv:
 if 'plot' in sys.argv or 'animate' in sys.argv:
     # create Animation object
     A = Animation(drawfnc=draw, simdata=S.sim_data,
-                  plotsys=[(0,'x'),(1,'dx')], plotinputs=[(0,'u')])
+                  plotsys=[(0,'$x$'),(1,'$\\dot{x}$')], plotinputs=[(0,'$u$')])
     xmin = np.min(S.sim_data[1][:,0])
     xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 1.0, xmax + 1.0), ylim=(-1.2,1.2))
