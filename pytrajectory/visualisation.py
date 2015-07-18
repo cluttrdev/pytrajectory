@@ -169,7 +169,7 @@ class Animation():
             self.set_label(ax='ax_u%d'%i, label=label)
         
         # enable LaTeX text rendering --> slow
-        #plt.rc('text', usetex=True)
+        plt.rc('text', usetex=True)
     
     class Image():
         '''
