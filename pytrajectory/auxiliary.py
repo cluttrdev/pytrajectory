@@ -6,8 +6,6 @@ import time
 
 from log import logging, Timer
 
-from IPython import embed as IPS
-
 class IntegChain(object):
     '''
     This class provides a representation of an integrator chain.

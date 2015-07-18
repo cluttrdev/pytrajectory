@@ -12,8 +12,6 @@ import auxiliary
 import visualisation
 from log import logging, Timer
 
-from IPython import embed as IPS
-
 
 class ControlSystem(object):
     '''
