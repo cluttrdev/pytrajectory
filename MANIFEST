@@ -10,4 +10,5 @@ pytrajectory/splines.py
 pytrajectory/system.py
 pytrajectory/trajectories.py
 pytrajectory/visualisation.py
+test/test_auxiliary.py
 test/test_examples.py
