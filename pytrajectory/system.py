@@ -210,7 +210,7 @@ class ControlSystem(object):
             Indices of the equations that have to be solved using collocation.
         '''
 
-        logging.info("Analysing System Structure")
+        logging.debug("Analysing System Structure")
         
         # first, determine system dimensions
         logging.debug("Determine system/input dimensions")
