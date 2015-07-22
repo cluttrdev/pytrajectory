@@ -124,8 +124,8 @@ Then, each spline function is defined by
       \end{cases}
    \end{equation*}
 
-In addition to the steadiness the spline functions should be twice steadily differentiable in 
-the nodes :math:`\tau`. Therefor, three smoothness conditions can be set up in all 
+The spline functions should be twice continuously differentiable in 
+the nodes :math:`\tau`. Therefore, three smoothness conditions can be set up in all 
 :math:`\tau_k, k = 1,...,\eta-1`.
 
 .. math::
