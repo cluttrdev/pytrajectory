@@ -37,15 +37,15 @@ class CollocationSystem(object):
         The type of the collocation points
     
     '''
-    def __init__(self, sys, tol=1e-5, sol_steps=100, method='leven', coll_type='equidistant'):
+    def __init__(self, sys, **kwargs):
         # TODO: get rid of the following
         self.sys = sys
         
-        # Save some information
-        self._tol = tol
-        self._sol_steps = sol_steps
-        self._method = method
-        self._coll_type = coll_type
+        # set parameters
+        self._tol = kwargs.get('tol', 1e-5)
+        self._sol_steps = kwargs.get('sol_steps', 100)
+        self._method = kwargs.get('method', 'leven')
+        self._coll_type = kwargs.get('coll_type', 'equidistant')
         
         # we don't have a soution, yet
         self.sol = None
@@ -220,9 +220,9 @@ class CollocationSystem(object):
         Df_vec = self._Df_vectorized
         
         # in the later evaluation of the equation system `G` and its jacobian `DG`
-        # there will be created the matrices `F` and DF in which every x rows represent the 
+        # there will be created the matrices `F` and DF in which every nx rows represent the 
         # evaluation of the control systems vectorfield and its jacobian in a specific collocation
-        # point, where x is the number of state variables
+        # point, where nx is the number of state variables
         # 
         # if we make use of the system structure, i.e. the integrator chains, not every
         # equation of the vector field has to be solved and because of that, not every row 
@@ -241,7 +241,7 @@ class CollocationSystem(object):
         # this (-> `take_indices`) will be the array with indices of the rows we need
         # 
         # to get these indices we iterate over all rows and take those whose indices
-        # are contained in `eqind` (module the number of state variables -> `x_len`)
+        # are contained in `eqind` (modulo the number of state variables -> `x_len`)
         take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx % x_len in eqind])
         
         # define the callable functions for the eqs

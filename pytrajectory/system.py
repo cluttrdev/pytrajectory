@@ -62,35 +62,21 @@ class ControlSystem(object):
         sol_steps     100             Maximum number of iteration steps for the eqs solver
         nodes_type    'equidistant'   The type of the spline nodes
         ============= =============   ============================================================
-    
     '''
+
     def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
+        # set method parameters
+        self._kx = kwargs.get('kx', 2)
+        self._maxIt = kwargs.get('maxIt', 10)
+        self._eps = kwargs.get('eps', 1e-2)
+        self._ierr = kwargs.get('ierr', 1e-1)
+
         # Save the symbolic vectorfield
         self.ff_sym = ff
         
         # The borders of the considered time interval
         self.a = a
         self.b = b
-        
-        # Set default values for method parameters
-        method_param = {'sx' : 5,
-                        'su' : 5,
-                        'kx' : 2,
-                        'delta' : 2,
-                        'maxIt' : 10,
-                        'eps' : 1e-2,
-                        'ierr' : 1e-1,
-                        'tol' : 1e-5,
-                        'method' : 'leven',
-                        'use_chains' : True,
-                        'coll_type' : 'equidistant',
-                        'sol_steps' : 100,
-                        'nodes_type' : 'equidistant'}
-        
-        # Change default values of given kwargs
-        for k, v in kwargs.items():
-            if method_param.has_key(k):
-                method_param[k] = v
         
         # Analyse the given system to set some parameters
         n, m, x_sym, u_sym, chains, eqind = self.analyse(xa)
@@ -112,29 +98,15 @@ class ControlSystem(object):
         self.eqind = eqind
         
         # Transform lists of boundary values into dictionaries
-        boundary_values = dict()
-        
-        for i, xx in enumerate(self.x_sym):
-            boundary_values[xx] = (xa[i], xb[i])
-        
-        if ua and ub:
-            for i, uu in enumerate(self.u_sym):
-                boundary_values[uu] = (ua[i], ub[i])
-        elif ua and not ub:
-            for i, uu in enumerate(self.u_sym):
-                boundary_values[uu] = (ua[i], None)
-        elif not ua and ub:
-            for i, uu in enumerate(self.u_sym):
-                boundary_values[uu] = (None, ub[i])
-        elif not ua and not ub:
-            for i, uu in enumerate(self.u_sym):
-                boundary_values[uu] = (None, None)
-        
-        self._boundary_values = boundary_values
+        self._boundary_values = dict()
+        state_bv = _get_boundary_dict_from_lists(symbols=self.x_sym, start_values=xa, end_values=xb)
+        input_bv = _get_boundary_dict_from_lists(symbols=self.u_sym, start_values=ua, end_values=ub)
+        self._boundary_values.update(state_bv)
+        self._boundary_values.update(input_bv)
         
         # Handle system constraints if there are any
         self.constraints = constraints
-        if self.constraints:
+        if self.constraints is not None:
             # transform the constrained vectorfield into an unconstrained one
             ff_sym, boundary_values, orig_backup = self.unconstrain()
             
@@ -144,7 +116,7 @@ class ControlSystem(object):
             
             # we cannot make use of an integrator chain
             # if it contains a constrained variable
-            method_param['use_chains'] = False
+            kwargs['use_chains'] = False
             # TODO: implement it so that just those chains are not used 
             #       which actually contain a constrained variable
         
@@ -153,27 +125,21 @@ class ControlSystem(object):
         self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, vectorized=False)
         
         # Create trajectory object
-        self.trajectories = Trajectory(sys=self, sx=method_param['sx'], su=method_param['su'],
-                                        use_chains=method_param['use_chains'],
-                                        nodes_type=method_param['nodes_type'])
+        self.trajectories = Trajectory(sys=self, **kwargs)
+                                       #sx=method_param['sx'], su=method_param['su'],
+                                       #use_chains=method_param['use_chains'],
+                                       #nodes_type=method_param['nodes_type'])
 
         # and equation system objects
-        self.eqs = CollocationSystem(sys=self, tol=method_param['tol'], sol_steps=method_param['sol_steps'], 
-                                        method=method_param['method'], coll_type=method_param['coll_type'])
-        
-        # Reset iteration number
-        self.nIt = 0
-        self._maxIt = method_param['maxIt']
-        self._kx = method_param['kx']
+        self.eqs = CollocationSystem(sys=self, **kwargs)
+                                     #tol=method_param['tol'], sol_steps=method_param['sol_steps'], 
+                                     #method=method_param['method'], coll_type=method_param['coll_type'])
         
         # We didn't really do anything yet, so this should be false
         self.reached_accuracy = False
-        self._ierr = method_param['ierr']
-        self._eps = method_param['eps']
-
+        
         # and likewise this should not be existent yet
         self.sol = None
-    
     
     def analyse(self, xa):
         '''
@@ -316,6 +282,7 @@ class ControlSystem(object):
         for k, v in self.constraints.items():
             # check if boundary values are within saturation limits
             bv_a, bv_b = boundary_values[x_sym[k]]
+            
             if not ( v[0] < bv_a < v[1] ) or \
                 not ( v[0] < bv_b < v[1] ):
                 logging.error('Boundary values have to be strictly within the saturation limits!')
@@ -435,6 +402,8 @@ class ControlSystem(object):
         callable
             Callable function for the input variables.
         '''
+
+        self._swapped = False
         
         # do the first iteration step
         logging.info("1st Iteration: %d spline parts"%self.trajectories._sx)
@@ -442,21 +411,25 @@ class ControlSystem(object):
         
         # this was the first iteration
         # now we are getting into the loop
-        while not self.reached_accuracy and self.nIt < self._maxIt:
+        nIt = 1
+        while not self.reached_accuracy and nIt < self._maxIt:
             # raise the number of spline parts
             self.trajectories._sx = int(round(self._kx * self.trajectories._sx))
             
-            if self.nIt == 1:
+            if nIt == 1:
                 logging.info("2nd Iteration: {} spline parts".format(self.trajectories._sx))
-            elif self.nIt == 2:
+            elif nIt == 2:
                 logging.info("3rd Iteration: {} spline parts".format(self.trajectories._sx))
-            elif self.nIt >= 3:
-                logging.info("{}th Iteration: {} spline parts".format(self.nIt+1, self.trajectories._sx))
+            elif nIt >= 3:
+                logging.info("{}th Iteration: {} spline parts".format(nIt+1, self.trajectories._sx))
 
             # start next iteration step
             self._iterate()
 
-        # as a last we, if there were any constraints to be taken care of,
+            # increment iteration number
+            nIt += 1
+
+        # as a last, if there were any constraints to be taken care of,
         # we project the unconstrained variables back on the original constrained ones
         if self.constraints:
             self.constrain()
@@ -479,9 +452,16 @@ class ControlSystem(object):
 
         As a last, the resulting initial value problem is simulated.
         '''
-        
-        # Increase iteration number
-        self.nIt += 1
+
+        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 80 and not self._swapped:
+            for k,v in self.trajectories._splines.items():
+                v._swap_approaches()
+
+            self._swapped = True
+            self.trajectories._use_std_approach = True
+
+            from IPython import embed as IPS
+            IPS()
         
         # Initialise the spline function objects
         self.trajectories.init_splines(boundary_values=self._boundary_values)
@@ -504,6 +484,10 @@ class ControlSystem(object):
         
         # check if desired accuracy is reached
         self.check_accuracy()
+
+        if self._swapped:
+            from IPython import embed as IPS
+            IPS()
     
     def simulate(self):
         '''
@@ -665,4 +649,37 @@ class ControlSystem(object):
         
         with open(fname, 'wb') as dumpfile:
             pickle.dump(save, dumpfile)
+
+def _get_boundary_dict_from_lists(symbols, start_values, end_values):
+    '''
+    Transforms given lists of boundary values into dictionaries.
+
+    Parameters
+    ----------
+
+    symbols : iterable
+        List of strings representing the system state or input variables
+
+    start_values : iterable
+        List of initial values for the variables
+
+    end_values : iterable
+        List of final values for the variables
+    '''
+
+    boundary_values = dict()
         
+    if start_values and end_values:
+        for i, sym in enumerate(symbols):
+            boundary_values[sym] = (start_values[i], end_values[i])
+    elif start_values and not end_values:
+        for i, sym in enumerate(symbols):
+            boundary_values[sym] = (start_values[i], None)
+    elif not start_values and end_values:
+        for i, sym in enumerate(symbols):
+            boundary_values[sym] = (None, end_values[i])
+    elif not start_values and not end_values:
+        for i, sym in enumerate(symbols):
+            boundary_values[sym] = (None, None)
+
+    return boundary_values

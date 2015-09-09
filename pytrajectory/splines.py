@@ -22,7 +22,7 @@ class Spline(object):
     Parameters
     ----------
     
-    a : float
+    a : float 
         Left border of the spline interval.
     
     b : float
@@ -39,11 +39,26 @@ class Spline(object):
     
     nodes_type : str
         The type of the spline nodes (equidistant).
-    
     '''
 
-    def __init__(self, a=0.0, b=1.0, n=5, bv={}, nodes_type='equidistant', tag=''):
-        self._use_std_approach = False
+    def __init__(self, a=0.0, b=1.0, n=5, bv={},
+                 nodes_type='equidistant', tag='',
+                 use_std_approach=False):
+        # there are two different approaches implemented for evaluating
+        # the splines which mainly differ in the node that is used in the 
+        # evaluation of the polynomial parts
+        #
+        # the reason for this is that in the project thesis from which
+        # PyTrajectory emerged, the author didn't use the standard approach
+        # usually used when dealing with spline interpolation
+        #
+        # later this standard approach has been implemented and was intended
+        # to replace the other one, but it turned out that when using this
+        # standard approach some examples suddendly fail
+        #
+        # until this issue is resolved the user is enabled to choose between
+        # the two approaches be altering the following attribute
+        self._use_std_approach = use_std_approach
         
         # interval boundaries
         assert a < b
@@ -101,6 +116,31 @@ class Spline(object):
     
     def __getitem__(self, key):
         return self._P[key]
+
+    def _switch_approaches(self):
+        '''
+        Changes the spline approach.
+        '''
+        
+        # first we create an equivalent spline which uses the
+        # respectively other approach
+        S = Spline(a=self.a, b=self.b, n=self.n,
+                   bv=self._boundary_values,
+                   use_std_approach=not self._use_std_approach)
+        
+        # solve smoothness conditions to get dependence arrays
+        S.make_steady()
+        
+        # copy the attributes of the spline
+        self._dep_array = S._dep_array
+        self._dep_array_abs = S._dep_array_abs
+        
+        # compute the equivalent coefficients (all at once)
+        switched_coeffs = _switch_coeffs(S=self, all_coeffs=True)
+        
+        self.set_coefficients(coeffs=switched_coeffs)
+
+        self._use_std_approach = S._use_std_approach
     
     def _eval(self, t, d=0):
         '''
@@ -226,7 +266,6 @@ class Spline(object):
         
         return dep_vec, dep_vec_abs
     
-    
     def set_coefficients(self, free_coeffs=None, coeffs=None):
         '''
         This function is used to set up numerical values either for all the spline's coefficients
@@ -295,7 +334,6 @@ class Spline(object):
         
         # now we have numerical values for the coefficients so we can set this to False
         self._prov_flag = False
-    
     
     def interpolate(self, fnc=None, points=None):
         '''
@@ -427,7 +465,6 @@ def get_spline_nodes(a=0.0, b=1.0, n=10, nodes_type='equidistant'):
         raise NotImplementedError()
     
     return nodes
-    
     
 def differentiate(spline_fnc):
     '''
@@ -685,4 +722,91 @@ def get_smoothness_matrix(S, N1, N2):
                 r[3*(n-1)+5] = S._boundary_values[2][1]
         
     return M, r
+
+def _switch_coeffs(S, all_coeffs=False, dep_arrays=None):
+    '''
+    Computes the equivalent spline coefficients for the standard
+    case when given those of a spline using the non-standard approach,
+    i.e. the one used in the project thesis.
+    '''
+
+    assert not S._prov_flag
+
+    # get size of polynomial intervals
+    h = S._h
+
+    # this is the difference between the spline
+    # nodes of the two approaches
+    if not S._use_std_approach:
+        dh = -h
+    else:
+        dh = h
+        #raise NotImplementedError('Currently can only swap to standard approach!')
+
+    # this is the conversion matrix between the two approaches
+    #
+    # todo: how did we get it? --> docs  
+    M = np.array([[    1.,    0.,  0., 0.],
+                  [  3*dh,    1.,  0., 0.],
+                  [3*dh**2,  2*dh, 1., 0.],
+                  [  dh**3, dh**2, dh, 1.]])
+
+    if all_coeffs:
+        # compute all coeffs of the standard approach spline at once
+        coeffs = S._coeffs
+        switched_coeffs = M.dot(coeffs.T).T.astype(float)
+    else:
+        # just compute the independent coefficients
+
+        # therefore we need the dependence arrays of the spline
+        # using the standard approach, so we create a suitable one
+        # if they were not given
+        if dep_arrays is None:
+            S = Spline(a=S.a, b=S.b, n=S.n,
+                       bv=S._boundary_values,
+                       use_std_approach=not S._use_std_approach)
+            S.make_steady()
+
+            new_M = S._dep_array
+            new_m = S._dep_array_abs
+        else:
+            new_M, new_m = dep_arrays
+
+        old_M = S._dep_array
+        old_m = S._dep_array_abs
+
+        coeffs = S._indep_coeffs
+
+        tmp = old_M.dot(coeffs) + old_m
+        tmp = M.dot(tmp.T).T - new_m
+
+        new_M_inv = np.linalg.pinv(np.vstack(new_M))
+
+        switched_coeffs = new_M_inv.dot(np.hstack(tmp))
+
+    return switched_coeffs
+
+if __name__ == '__main__':
+    from IPython import embed as IPS
+    import matplotlib.pyplot as plt
+    
+    bv = {0 : [0.0, 1.0],
+          1 : [1.0, 0.0]}
+    
+    A = Spline(a=0.0, b=1.0, n=10, bv=bv, use_std_approach=True)
+    A.make_steady()
+
+    s = np.size(A._indep_coeffs)
+    c = np.random.randint(0, 10, s)
+    A.set_coefficients(free_coeffs=c)
+
+    val0 = np.array(A.plot(show=False, ret_array=True))
+    A._switch_approaches()
+    val1 = np.array(A.plot(show=False, ret_array=True))
+
+    diff = np.abs(val0 - val1).max()
+    
+    t_points = np.linspace(0., 1., len(val0))
+
+    IPS()
 

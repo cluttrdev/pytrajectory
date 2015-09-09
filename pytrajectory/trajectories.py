@@ -31,7 +31,7 @@ class Trajectory(object):
         Type of the spline nodes
     '''
     
-    def __init__(self, sys, sx=5, su=5, use_chains=True, nodes_type='equidistant'):
+    def __init__(self, sys, **kwargs):
         # Save the control system instance
         # TODO: get rid of this need
         self.sys = sys
@@ -41,11 +41,14 @@ class Trajectory(object):
         self._b = sys.b
         self._x_sym = sys.x_sym
         self._u_sym = sys.u_sym
-        self._sx = sx
-        self._su = su
+
+        # set parameters
+        self._sx = kwargs.get('sx', 5)
+        self._su = kwargs.get('su', 5)
         self._chains = sys.chains
-        self._use_chains = use_chains
-        self._nodes_type = nodes_type
+        self._use_chains = kwargs.get('use_chains', True)
+        self._nodes_type = kwargs.get('nodes_type', 'equidistant')
+        self._use_std_approach = kwargs.get('use_std_approach', False)
         
         # Initialise dictionaries as containers for all
         # spline functions that will be created
@@ -151,11 +154,13 @@ class Trajectory(object):
                 # w.r.t. its lower end (whether it is an input variable or not)
                 if chain.lower.startswith('x'):
                     splines[upper] = Spline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper,
-                                                 nodes_type=self._nodes_type)
+                                            nodes_type=self._nodes_type,
+                                            use_std_approach=self._use_std_approach)
                     splines[upper].type = 'x'
                 elif chain.lower.startswith('u'):
                     splines[upper] = Spline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper,
-                                                 nodes_type=self._nodes_type)
+                                            nodes_type=self._nodes_type,
+                                            use_std_approach=self._use_std_approach)
                     splines[upper].type = 'u'
         
                 # search for boundary values to satisfy
@@ -196,7 +201,8 @@ class Trajectory(object):
         for i, xx in enumerate(self._x_sym):
             if not x_fnc.has_key(xx):
                 splines[xx] = Spline(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx,
-                                     nodes_type=self._nodes_type)
+                                     nodes_type=self._nodes_type,
+                                     use_std_approach=self._use_std_approach)
                 splines[xx].make_steady()
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx].f
@@ -205,7 +211,8 @@ class Trajectory(object):
         for j, uu in enumerate(self._u_sym):
             if not u_fnc.has_key(uu):
                 splines[uu] = Spline(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu,
-                                     nodes_type=self._nodes_type)
+                                     nodes_type=self._nodes_type,
+                                     use_std_approach=self._use_std_approach)
                 splines[uu].make_steady()
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
