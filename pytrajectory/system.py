@@ -453,7 +453,7 @@ class ControlSystem(object):
         As a last, the resulting initial value problem is simulated.
         '''
 
-        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 80 and not self._swapped:
+        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 160 and not self._swapped:
             for k,v in self.trajectories._splines.items():
                 v._swap_approaches()
 
@@ -470,14 +470,25 @@ class ControlSystem(object):
         self.eqs.get_guess(trajectories=self.trajectories)
         
         # Build the collocation equations system
-        with Timer('Building equation system'):
-            G, DG = self.eqs.build(sys=self, trajectories=self.trajectories)
+        #G, DG = self.eqs.build(sys=self, trajectories=self.trajectories)
+        C = self.eqs.build(sys=self, trajectories=self.trajectories)
+        G, DG = C.G, C.DG
         
         # Solve the collocation equation system
         sol = self.eqs.solve(G, DG)
         
         # Set the found solution
         self.trajectories.set_coeffs(sol)
+
+        if 1 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 40 and not self._swapped:
+            for k,v in self.trajectories._splines.items():
+                v._switch_approaches()
+
+            self._swapped = True
+            self.trajectories._use_std_approach = True
+
+            from IPython import embed as IPS
+            IPS()
         
         # Solve the resulting initial value problem
         self.simulate()

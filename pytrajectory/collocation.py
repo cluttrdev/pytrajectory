@@ -86,6 +86,11 @@ class CollocationSystem(object):
         
         '''
 
+        class Container(object):
+            def __init__(self, **kwargs):
+                for key, value in kwargs.iteritems():
+                    self.__setattr__(str(key), value)
+
         logging.debug("Building Equation System")
         
         # make functions local
@@ -158,8 +163,13 @@ class CollocationSystem(object):
 
                 i,j = indic[xx]
 
-                mx[i:j], Mx_abs[eqx] = x_fnc[xx](p)
-                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx](p)
+                # determine derivation order according to integrator chains
+                dorder_fx = _get_derivation_order(x_fnc[xx])
+                dorder_dfx = _get_derivation_order(dx_fnc[xx])
+                assert dorder_dfx == dorder_fx + 1
+                
+                mx[i:j], Mx_abs[eqx] = x_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_fx)
+                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_dfx)
 
                 Mx[eqx] = mx
                 Mdx[eqx] = mdx
@@ -169,8 +179,9 @@ class CollocationSystem(object):
                 mu = np.zeros(c_len)
 
                 i,j = indic[uu]
-            
-                mu[i:j], Mu_abs[equ] = u_fnc[uu](p)
+
+                dorder_fu = _get_derivation_order(u_fnc[uu])
+                mu[i:j], Mu_abs[equ] = u_fnc[uu].im_self.get_dependence_vectors(p, d=dorder_fu)
             
                 Mu[equ] = mu
                 equ += 1
@@ -246,6 +257,7 @@ class CollocationSystem(object):
         
         # define the callable functions for the eqs
         def G(c):
+            # TODO: check if both spline approaches result in same values here
             X = Mx.dot(c) + Mx_abs
             U = Mu.dot(c) + Mu_abs
             
@@ -292,9 +304,15 @@ class CollocationSystem(object):
             DG = DF_csr - DdX
         
             return DG
+
+        C = Container(G=G, DG=DG,
+                      Mx=Mx, Mx_abs=Mx_abs,
+                      Mu=Mu, Mu_abs=Mu_abs,
+                      Mdx=Mdx, Mdx_abs=Mdx_abs)
         
         # return the callable functions
-        return G, DG
+        #return G, DG
+        return C
     
     
     def get_guess(self, trajectories):
@@ -533,3 +551,31 @@ def compare_trajectories(trajectories, free_coeffs, plot=True, embed=True):
     for s in trajectories._splines.values():
         s._prov_flag = True
 
+def _get_derivation_order(fnc):
+    '''
+    Returns derivation order of function according to place in integrator chain.
+    '''
+
+    from .splines import Spline
+    
+    if fnc.im_func == Spline.f.im_func:
+        return 0
+    elif fnc.im_func == Spline.df.im_func:
+        return 1
+    elif fnc.im_func == Spline.ddf:
+        return 2
+    else:
+        raise ValueError()
+
+def _build_sol_from_free_coeffs(splines):
+    '''
+    Concatenates the values of the independent coeffs
+    of all splines in given dict to build pseudo solution.
+    '''
+
+    sol = np.empty(0)
+    for k, v in sorted(splines.items(), key = lambda (k, v): k):
+        assert not v._prov_flag
+        sol = np.hstack([sol, v._indep_coeffs])
+
+    return sol

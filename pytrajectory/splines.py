@@ -138,8 +138,15 @@ class Spline(object):
         # compute the equivalent coefficients (all at once)
         switched_coeffs = _switch_coeffs(S=self, all_coeffs=True)
         
-        self.set_coefficients(coeffs=switched_coeffs)
+        # get the indices of the free coefficients
+        coeff_name_split_str = [c.name.split('_')[-2:] for c in S._indep_coeffs]
+        free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
 
+        # get free coeffs values
+        switched_free_coeffs = np.array([switched_coeffs[i] for i in free_coeff_indices])
+
+        #self.set_coefficients(coeffs=switched_coeffs)
+        self.set_coefficients(free_coeffs=switched_free_coeffs)
         self._use_std_approach = S._use_std_approach
     
     def _eval(self, t, d=0):
@@ -802,6 +809,7 @@ if __name__ == '__main__':
 
     val0 = np.array(A.plot(show=False, ret_array=True))
     A._switch_approaches()
+    #A._switch_approaches()
     val1 = np.array(A.plot(show=False, ret_array=True))
 
     diff = np.abs(val0 - val1).max()
