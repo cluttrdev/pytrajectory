@@ -54,7 +54,12 @@ class CollocationSystem(object):
         # and its jacobian for the faster evaluation of the collocation equation system `G`
         # and its jacobian `DG` (--> see self.build())
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
+
+        # TODO: check order of variables of differentiation ([x,u] vs. [u,x])
+        #       because in dot products in later evaluation of `DG` with vector `c`
+        #       values for u come first in `c`
         Df = sp.Matrix(f).jacobian(sys.x_sym+sys.u_sym)
+        #Df = sp.Matrix(f).jacobian(sys.u_sym+sys.x_sym)
         
         self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
         self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
@@ -109,127 +114,13 @@ class CollocationSystem(object):
         # now we generate the collocation points
         cpts = collocation_nodes(a=a, b=b, npts=(trajectories._sx * delta + 1), coll_type=self._coll_type)
     
-        # here we do something that will be explained after we've done it  ;-)
-        indic = dict()
-        i = 0
-        j = 0
-    
-        # iterate over spline quantities
-        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k):
-            # increase j by the number of indep coeffs on which it depends
-            j += len(v)
-            indic[k] = (i, j)
-            i = j
-    
-        # iterate over all quantities including inputs
-        # and take care of integrator chain elements
-        if trajectories._use_chains:
-            for sq in x_sym+u_sym:
-                for ic in trajectories._chains:
-                    if sq in ic:
-                        indic[sq] = indic[ic.upper]
-    
-        # as promised: here comes the explanation
-        #
-        # now, the dictionary 'indic' looks something like
-        #
-        # indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}
-        #
-        # which means, that in the vector of all independent parameters of all splines
-        # the 0th up to the 5th item [remember: Python starts indexing at 0 and leaves out the last]
-        # belong to the spline created for u1, the items with indices from 6 to 11 belong to the
-        # spline created for x1 and so on...
+        # determine for each spline the index range of its free coeffs in the concatenated
+        # vector of all free coeffs
+        indic = self._get_index_dict(trajectories)
 
-        # total number of independent coefficients
-        free_param = np.hstack(sorted(trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
-        c_len = free_param.size
-        
-        lx = len(cpts)*len(x_sym)
-        lu = len(cpts)*len(u_sym)
+        # compute dependence matrices
+        Mx, Mx_abs, Mdx, Mdx_abs, Mu, Mu_abs = self._build_dependence_matrices(trajectories, indic)
 
-        Mx = [None]*lx
-        Mx_abs = [None]*lx
-        Mdx = [None]*lx
-        Mdx_abs = [None]*lx
-        Mu = [None]*lu
-        Mu_abs = [None]*lu
-
-        eqx = 0
-        equ = 0
-        for p in cpts:
-            for xx in x_sym:
-                mx = np.zeros(c_len)
-                mdx = np.zeros(c_len)
-
-                i,j = indic[xx]
-
-                # determine derivation order according to integrator chains
-                dorder_fx = _get_derivation_order(x_fnc[xx])
-                dorder_dfx = _get_derivation_order(dx_fnc[xx])
-                assert dorder_dfx == dorder_fx + 1
-                
-                mx[i:j], Mx_abs[eqx] = x_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_fx)
-                mdx[i:j], Mdx_abs[eqx] = dx_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_dfx)
-
-                Mx[eqx] = mx
-                Mdx[eqx] = mdx
-                eqx += 1
-
-            for uu in u_sym:
-                mu = np.zeros(c_len)
-
-                i,j = indic[uu]
-
-                dorder_fu = _get_derivation_order(u_fnc[uu])
-                mu[i:j], Mu_abs[equ] = u_fnc[uu].im_self.get_dependence_vectors(p, d=dorder_fu)
-            
-                Mu[equ] = mu
-                equ += 1
-
-        Mx = np.array(Mx)
-        Mx_abs = np.array(Mx_abs)
-        Mdx = np.array(Mdx)
-        Mdx_abs = np.array(Mdx_abs)
-        Mu = np.array(Mu)
-        Mu_abs = np.array(Mu_abs)
-        
-        # the following would be created with every call to self.DG but it is possible to
-        # only do it once. So we do it here to speed things up.
-
-        # here we compute the jacobian matrix of the derivatives of the system state functions
-        # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
-        DdX = Mdx.reshape((len(cpts),-1,free_param.size))
-        if trajectories._use_chains:
-            DdX = DdX[:,sys.eqind,:]
-        DdX = np.vstack(DdX)
-
-        # here we compute the jacobian matrix of the system/input functions as they also depend on
-        # the free parameters
-        DXU = []
-        x_len = len(sys.x_sym)
-        u_len = len(sys.u_sym)
-        xu_len = x_len + u_len
-
-        for i in xrange(len(cpts)):
-            DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)], Mu[u_len*i:u_len*(i+1)] )))
-        DXU_old = DXU
-        DXU = np.vstack(DXU)
-        
-        # create sparse matrices
-        Mx = sparse.csr_matrix(Mx)
-        Mx_abs = sparse.csr_matrix(Mx_abs)
-        Mdx = sparse.csr_matrix(Mdx)
-        Mdx_abs = sparse.csr_matrix(Mdx_abs)
-        Mu = sparse.csr_matrix(Mu)
-        Mu_abs = sparse.csr_matrix(Mu_abs)
-
-        DdX = sparse.csr_matrix(DdX)
-        DXU = sparse.csr_matrix(DXU)
-        
-        # localize vectorized functions for the control system's vector field and its jacobian
-        ff_vec = self._ff_vectorized
-        Df_vec = self._Df_vectorized
-        
         # in the later evaluation of the equation system `G` and its jacobian `DG`
         # there will be created the matrices `F` and DF in which every nx rows represent the 
         # evaluation of the control systems vectorfield and its jacobian in a specific collocation
@@ -244,49 +135,84 @@ class CollocationSystem(object):
             eqind = sys.eqind
         else:
             eqind = range(len(sys.x_sym))
-        
+
         # `eqind` now contains the indices of the equations/rows of the vector field
         # that have to be solved
-        cp_len = len(cpts)
+        n_cpts = trajectories._sx * delta + 1
         
         # this (-> `take_indices`) will be the array with indices of the rows we need
         # 
         # to get these indices we iterate over all rows and take those whose indices
         # are contained in `eqind` (modulo the number of state variables -> `x_len`)
-        take_indices = np.array([idx for idx in xrange(cp_len*x_len) if idx % x_len in eqind])
+        take_indices = np.tile(eqind, (n_cpts,)) + np.arange(n_cpts).repeat(len(eqind)) * len(trajectories._x_sym)
+        
+        # here we determine the jacobian matrix of the derivatives of the system state functions
+        # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
+        DdX = Mdx[take_indices, :]
+        
+        # here we compute the jacobian matrix of the system/input splines as they also depend on
+        # the free parameters
+        DXU = []
+        x_len = len(sys.x_sym)
+        u_len = len(sys.u_sym)
+        xu_len = x_len + u_len
+
+        for i in xrange(len(cpts)):
+            DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)].toarray(), Mu[u_len*i:u_len*(i+1)].toarray() )))
+            #DXU.append(np.vstack(( Mu[u_len*i:u_len*(i+1)].toarray(), Mx[x_len*i:x_len*(i+1)].toarray() )))
+        DXU_old = DXU
+        DXU = np.vstack(DXU)
+
+        DXU = sparse.csr_matrix(DXU)
+
+        # localize vectorized functions for the control system's vector field and its jacobian
+        ff_vec = self._ff_vectorized
+        Df_vec = self._Df_vectorized
+
+        # transform matrix formats for faster dot products
+        Mx = Mx.tocsr()
+        Mx_abs = Mx_abs.tocsr()
+        Mdx = Mdx.tocsr()
+        Mdx_abs = Mdx_abs.tocsr()
+        Mu = Mu.tocsr()
+        Mu_abs = Mu_abs.tocsr()
+
+        DdX = DdX.tocsr()
         
         # define the callable functions for the eqs
         def G(c):
             # TODO: check if both spline approaches result in same values here
-            X = Mx.dot(c) + Mx_abs
-            U = Mu.dot(c) + Mu_abs
+            X = Mx.dot(c)[:,None] + Mx_abs
+            U = Mu.dot(c)[:,None] + Mu_abs
             
             X = np.array(X).reshape((x_len, -1), order='F')
             U = np.array(U).reshape((u_len, -1), order='F')
         
             # evaluate system equations and select those related
             # to lower ends of integrator chains (via eqind)
-            # other equations need not to be solved
-            F = ff_vec(X, U).take(eqind, axis=0)
+            # other equations need not be solved
+            #F = ff_vec(X, U).take(eqind, axis=0)
+            F = ff_vec(X, U).ravel(order='F').take(take_indices, axis=0)[:,None]
         
-            dX = Mdx.dot(c) + Mdx_abs
-            dX = np.array(dX).reshape((x_len, -1), order='F').take(eqind, axis=0)
+            dX = Mdx.dot(c)[:,None] + Mdx_abs
+            dX = dX.take(take_indices, axis=0)
+            #dX = np.array(dX).reshape((x_len, -1), order='F').take(eqind, axis=0)
     
             G = F - dX
-            
-            return G.ravel(order='F')
+
+            return np.asarray(G).ravel(order='F')
 
         # and its jacobian
         def DG(c):
             # first we calculate the x and u values in all collocation points
             # with the current numerical values of the free parameters
-            X = Mx.dot(c) + Mx_abs
+            X = Mx.dot(c)[:,None] + Mx_abs
             X = np.array(X).reshape((x_len, -1), order='F')
-            U = Mu.dot(c) + Mu_abs
+            U = Mu.dot(c)[:,None] + Mu_abs
             U = np.array(U).reshape((u_len, -1), order='F')
             
             # get the jacobian blocks and turn them into the right shape
-            DF_blocks = Df_vec(X,U).swapaxes(0,2).swapaxes(1,2)
+            DF_blocks = Df_vec(X,U).transpose([2,0,1])
 
             # build a block diagonal matrix from the blocks
             DF_csr = sparse.block_diag(DF_blocks, format='csr').dot(DXU)
@@ -308,12 +234,142 @@ class CollocationSystem(object):
         C = Container(G=G, DG=DG,
                       Mx=Mx, Mx_abs=Mx_abs,
                       Mu=Mu, Mu_abs=Mu_abs,
-                      Mdx=Mdx, Mdx_abs=Mdx_abs)
+                      Mdx=Mdx, Mdx_abs=Mdx_abs,
+                      cpts=cpts,
+                      guess=self.guess)
         
         # return the callable functions
         #return G, DG
         return C
+
+    def _get_index_dict(self, trajectories):
+        # here we do something that will be explained after we've done it  ;-)
+        indic = dict()
+        i = 0
+        j = 0
     
+        # iterate over spline quantities
+        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k):
+            # increase j by the number of indep coeffs on which it depends
+            j += len(v)
+            indic[k] = (i, j)
+            i = j
+    
+        # iterate over all quantities including inputs
+        # and take care of integrator chain elements
+        if trajectories._use_chains:
+            for sq in trajectories._x_sym + trajectories._u_sym:
+                for ic in trajectories._chains:
+                    if sq in ic:
+                        indic[sq] = indic[ic.upper]
+    
+        # as promised: here comes the explanation
+        #
+        # now, the dictionary 'indic' looks something like
+        #
+        # indic = {u1 : (0, 6), x3 : (18, 24), x4 : (24, 30), x1 : (6, 12), x2 : (12, 18)}
+        #
+        # which means, that in the vector of all independent parameters of all splines
+        # the 0th up to the 5th item [remember: Python starts indexing at 0 and leaves out the last]
+        # belong to the spline created for u1, the items with indices from 6 to 11 belong to the
+        # spline created for x1 and so on...
+
+        return indic
+
+    def _build_dependence_matrices(self, trajectories, indic):
+        # first we compute the collocation points
+        cpts = collocation_nodes(a=trajectories._a, b=trajectories._b,
+                                 npts=trajectories._sx * 2 + 1,
+                                 coll_type=self._coll_type)
+
+        x_fnc = trajectories._x_fnc
+        dx_fnc = trajectories._dx_fnc
+        u_fnc = trajectories._u_fnc
+
+        x_sym = trajectories._x_sym
+        u_sym = trajectories._u_sym
+        
+        # total number of independent coefficients
+        free_param = np.hstack(sorted(trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
+        n_dof = free_param.size
+        
+        lx = len(cpts)*len(x_sym)
+        lu = len(cpts)*len(u_sym)
+        
+        # initialize sparse dependence matrices
+        Mx = sparse.lil_matrix((lx, n_dof))
+        Mx_abs = sparse.lil_matrix((lx, 1))
+        
+        Mdx = sparse.lil_matrix((lx, n_dof))
+        Mdx_abs = sparse.lil_matrix((lx, 1))
+        
+        Mu = sparse.lil_matrix((lu, n_dof))
+        Mu_abs = sparse.lil_matrix((lu, 1))
+        
+        for ip, p in enumerate(cpts):
+            for ix, xx in enumerate(x_sym):
+                # get index range of `xx` in vector of all indep coeffs
+                i,j = indic[xx]
+
+                # determine derivation order according to integrator chains
+                dorder_fx = _get_derivation_order(x_fnc[xx])
+                dorder_dfx = _get_derivation_order(dx_fnc[xx])
+                assert dorder_dfx == dorder_fx + 1
+
+                # get dependence vector for the collocation point and spline variable
+                mx, mx_abs = x_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_fx)
+                mdx, mdx_abs = dx_fnc[xx].im_self.get_dependence_vectors(p, d=dorder_dfx)
+
+                k = ip * len(x_sym) + ix
+                
+                Mx[k, i:j] = mx
+                Mx_abs[k] = mx_abs
+
+                Mdx[k, i:j] = mdx
+                Mdx_abs[k] = mdx_abs
+                
+            for iu, uu in enumerate(u_sym):
+                # get index range of `xx` in vector of all indep coeffs
+                i,j = indic[uu]
+
+                dorder_fu = _get_derivation_order(u_fnc[uu])
+
+                # get dependence vector for the collocation point and spline variable
+                mu, mu_abs = u_fnc[uu].im_self.get_dependence_vectors(p, d=dorder_fu)
+
+                k = ip * len(u_sym) + iu
+                
+                Mu[k, i:j] = mu
+                Mu_abs[k] = mu_abs
+
+        return Mx, Mx_abs, Mdx, Mdx_abs, Mu, Mu_abs
+
+    def _build_dependence_jacobians(self, Mx, Mdx, Mu):
+
+        
+        
+        
+        # here we compute the jacobian matrix of the derivatives of the system state functions
+        # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
+        DdX = Mdx.reshape((len(cpts),-1,free_param.size))
+        if trajectories._use_chains:
+            DdX = DdX[:,sys.eqind,:]
+        DdX = np.vstack(DdX)
+
+        # here we compute the jacobian matrix of the system/input functions as they also depend on
+        # the free parameters
+        DXU = []
+        x_len = len(sys.x_sym)
+        u_len = len(sys.u_sym)
+        xu_len = x_len + u_len
+
+        for i in xrange(len(cpts)):
+            DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)], Mu[u_len*i:u_len*(i+1)] )))
+        DXU_old = DXU
+        DXU = np.vstack(DXU)
+        
+        DdX = sparse.csr_matrix(DdX)
+        DXU = sparse.csr_matrix(DXU)
     
     def get_guess(self, trajectories):
         '''
@@ -562,8 +618,10 @@ def _get_derivation_order(fnc):
         return 0
     elif fnc.im_func == Spline.df.im_func:
         return 1
-    elif fnc.im_func == Spline.ddf:
+    elif fnc.im_func == Spline.ddf.im_func:
         return 2
+    elif fnc.im_func == Spline.dddf.im_func:
+        return 3
     else:
         raise ValueError()
 

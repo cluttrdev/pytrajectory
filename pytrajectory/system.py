@@ -12,6 +12,8 @@ import auxiliary
 import visualisation
 from log import logging, Timer
 
+# DEBUGGING
+from IPython import embed as IPS
 
 class ControlSystem(object):
     '''
@@ -480,7 +482,11 @@ class ControlSystem(object):
         # Set the found solution
         self.trajectories.set_coeffs(sol)
 
-        if 1 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 40 and not self._swapped:
+        if self.trajectories._splines.values()[-1].n >= 40:
+            from IPython import embed as IPS
+            IPS()
+        
+        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 40 and not self._swapped:
             for k,v in self.trajectories._splines.items():
                 v._switch_approaches()
 
@@ -694,3 +700,43 @@ def _get_boundary_dict_from_lists(symbols, start_values, end_values):
             boundary_values[sym] = (None, None)
 
     return boundary_values
+
+
+def _test_dependence_matrix_evaluation(trajectories, eqs_C, sol=None):
+
+    if sol is not None:
+        c = sol
+    else:
+        if 0:
+            # set coeffs to one
+            c = np.ones(eqs_C.Mx.shape[1])
+            trajectories.set_coeffs(sol=c)
+        else:
+            # set coeffs randomly
+            np.random.seed(1)
+            c = np.random.random(eqs_C.Mx.shape[1])
+            trajectories.set_coeffs(sol=c)
+    
+    # evaluate each state variable in the collocation points
+    valx = []
+    for x, fx in sorted(trajectories._x_fnc.items(), key=lambda (k, v) : k[-1]):
+        valx.append([fx(p) for p in eqs_C.cpts])
+    valx = np.vstack(valx)
+
+    valu =[]
+    for u, fu in sorted(trajectories._u_fnc.items(), key=lambda (k, v) : k[-1]):
+        valu.append([fu(p) for p in eqs_C.cpts])
+    valu = np.vstack(valu)
+
+    X = eqs_C.Mx.dot(c)[:,None] + eqs_C.Mx_abs
+    U = eqs_C.Mu.dot(c)[:,None] + eqs_C.Mu_abs
+
+    X = np.array(X).reshape((len(trajectories._x_sym), -1), order='F')
+    U = np.array(U).reshape((len(trajectories._u_sym), -1), order='F')
+
+    print np.allclose(valx, X)
+    print np.allclose(valu, U)
+    
+    IPS()
+
+    
