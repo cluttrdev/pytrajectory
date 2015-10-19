@@ -455,9 +455,9 @@ class ControlSystem(object):
         As a last, the resulting initial value problem is simulated.
         '''
 
-        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 160 and not self._swapped:
+        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 80 and not self._swapped:
             for k,v in self.trajectories._splines.items():
-                v._swap_approaches()
+                v._switch_approaches()
 
             self._swapped = True
             self.trajectories._use_std_approach = True
@@ -482,7 +482,7 @@ class ControlSystem(object):
         # Set the found solution
         self.trajectories.set_coeffs(sol)
 
-        if self.trajectories._splines.values()[-1].n >= 40:
+        if 0 and self.trajectories._splines.values()[-1].n >= 40:
             from IPython import embed as IPS
             IPS()
         
@@ -706,16 +706,17 @@ def _test_dependence_matrix_evaluation(trajectories, eqs_C, sol=None):
 
     if sol is not None:
         c = sol
+        
     else:
         if 0:
             # set coeffs to one
             c = np.ones(eqs_C.Mx.shape[1])
-            trajectories.set_coeffs(sol=c)
         else:
             # set coeffs randomly
             np.random.seed(1)
             c = np.random.random(eqs_C.Mx.shape[1])
-            trajectories.set_coeffs(sol=c)
+    
+    trajectories.set_coeffs(sol=c)
     
     # evaluate each state variable in the collocation points
     valx = []
