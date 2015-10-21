@@ -32,10 +32,6 @@ class Trajectory(object):
     '''
     
     def __init__(self, sys, **kwargs):
-        # Save the control system instance
-        # TODO: get rid of this need
-        self.sys = sys
-        
         # Save some information about the control system
         self._a = sys.a
         self._b = sys.b
@@ -43,25 +39,56 @@ class Trajectory(object):
         self._u_sym = sys.u_sym
 
         # set parameters
-        self._sx = kwargs.get('sx', 5)
-        self._su = kwargs.get('su', 5)
+        #self._n_parts_x = kwargs.get('sx', 5)
+        #self._n_parts_u = kwargs.get('su', 5)
+        #self._kx = kwargs.get('kx', 2)
+        #self._chains = sys.chains
+        #self._use_chains = kwargs.get('use_chains', True)
+        #self._nodes_type = kwargs.get('nodes_type', 'equidistant')
+        #self._use_std_approach = kwargs.get('use_std_approach', False)
+        self._parameters = dict()
+        self._parameters['n_parts_x'] = kwargs.get('sx', 5)
+        self._parameters['n_parts_u'] = kwargs.get('su', 5)
+        self._parameters['kx'] = kwargs.get('kx', 2)
         self._chains = sys.chains
-        self._use_chains = kwargs.get('use_chains', True)
-        self._nodes_type = kwargs.get('nodes_type', 'equidistant')
-        self._use_std_approach = kwargs.get('use_std_approach', False)
+        self._parameters['use_chains'] = kwargs.get('use_chains', True)
+        self._parameters['nodes_type'] = kwargs.get('nodes_type', 'equidistant')
+        self._parameters['use_std_approach'] = kwargs.get('use_std_approach', False)
         
         # Initialise dictionaries as containers for all
         # spline functions that will be created
-        self._splines = dict()
-        self._x_fnc = dict()
-        self._u_fnc = dict()
-        self._dx_fnc = dict()
+        self.splines = dict()
+        self.x_fnc = dict()
+        self.u_fnc = dict()
+        self.dx_fnc = dict()
         
         # This will be the free parameters of the control problem
         # (list of all independent spline coefficients)
         self.indep_coeffs = []
         
         self._old_splines = None
+
+    @property
+    def n_parts_x(self):
+        '''
+        Number of polynomial spline parts for system variables.
+        '''
+        return self._parameters['n_parts_x']
+
+    @property
+    def n_parts_u(self):
+        '''
+        Number of polynomial spline parts for input variables.
+        '''
+        return self._parameters['n_parts_u']
+
+    def _raise_spline_parts(self, k=None):
+        if k is not None:
+            self._parameters['n_parts_x'] *= int(k)
+        else:
+            self._parameters['n_parts_x'] *= self._parameters['kx']
+
+        return self.n_parts_x
     
     def x(self, t):
         '''
@@ -78,7 +105,7 @@ class Trajectory(object):
             logging.warning("Time point 't' has to be in (a,b)")
             arr = None
         else:
-            arr = np.array([self._x_fnc[xx](t) for xx in self._x_sym])
+            arr = np.array([self.x_fnc[xx](t) for xx in self._x_sym])
         
         return arr
     
@@ -95,9 +122,9 @@ class Trajectory(object):
         
         if not self._a <= t <= self._b:
             #logging.warning("Time point 't' has to be in (a,b)")
-            arr = np.array([self._u_fnc[uu](self._b) for uu in self._u_sym])
+            arr = np.array([self.u_fnc[uu](self._b) for uu in self._u_sym])
         else:
-            arr = np.array([self._u_fnc[uu](t) for uu in self._u_sym])
+            arr = np.array([self.u_fnc[uu](t) for uu in self._u_sym])
         
         return arr
     
@@ -116,7 +143,7 @@ class Trajectory(object):
             logging.warning("Time point 't' has to be in (a,b)")
             arr = None
         else:
-            arr = np.array([self._dx_fnc[xx](t) for xx in self._x_sym])
+            arr = np.array([self.dx_fnc[xx](t) for xx in self._x_sym])
         
         return arr
     
@@ -134,7 +161,7 @@ class Trajectory(object):
         logging.debug("Initialise Splines")
         
         # store the old splines to calculate the guess later
-        self._old_splines = self._splines.copy()
+        self._old_splines = self.splines.copy()
         
         bv = boundary_values
         
@@ -144,7 +171,7 @@ class Trajectory(object):
         u_fnc = dict()
         dx_fnc = dict()
         
-        if self._use_chains:
+        if self._parameters['use_chains']:
             # first handle variables that are part of an integrator chain
             for chain in self._chains:
                 upper = chain.upper
@@ -153,14 +180,14 @@ class Trajectory(object):
                 # here we just create a spline object for the upper ends of every chain
                 # w.r.t. its lower end (whether it is an input variable or not)
                 if chain.lower.startswith('x'):
-                    splines[upper] = Spline(self._a, self._b, n=self._sx, bv={0:bv[upper]}, tag=upper,
-                                            nodes_type=self._nodes_type,
-                                            use_std_approach=self._use_std_approach)
+                    splines[upper] = Spline(self._a, self._b, n=self.n_parts_x, bv={0:bv[upper]}, tag=upper,
+                                            nodes_type=self._parameters['nodes_type'],
+                                            use_std_approach=self._parameters['use_std_approach'])
                     splines[upper].type = 'x'
                 elif chain.lower.startswith('u'):
-                    splines[upper] = Spline(self._a, self._b, n=self._su, bv={0:bv[lower]}, tag=upper,
-                                            nodes_type=self._nodes_type,
-                                            use_std_approach=self._use_std_approach)
+                    splines[upper] = Spline(self._a, self._b, n=self.n_parts_u, bv={0:bv[lower]}, tag=upper,
+                                            nodes_type=self._parameters['nodes_type'],
+                                            use_std_approach=self._parameters['use_std_approach'])
                     splines[upper].type = 'u'
         
                 # search for boundary values to satisfy
@@ -200,9 +227,9 @@ class Trajectory(object):
         # now handle the variables which are not part of any chain
         for i, xx in enumerate(self._x_sym):
             if not x_fnc.has_key(xx):
-                splines[xx] = Spline(self._a, self._b, n=self._sx, bv={0:bv[xx]}, tag=xx,
-                                     nodes_type=self._nodes_type,
-                                     use_std_approach=self._use_std_approach)
+                splines[xx] = Spline(self._a, self._b, n=self.n_parts_x, bv={0:bv[xx]}, tag=xx,
+                                     nodes_type=self._parameters['nodes_type'],
+                                     use_std_approach=self._parameters['use_std_approach'])
                 splines[xx].make_steady()
                 splines[xx].type = 'x'
                 x_fnc[xx] = splines[xx].f
@@ -210,9 +237,9 @@ class Trajectory(object):
         offset = len(self._x_sym)
         for j, uu in enumerate(self._u_sym):
             if not u_fnc.has_key(uu):
-                splines[uu] = Spline(self._a, self._b, n=self._su, bv={0:bv[uu]}, tag=uu,
-                                     nodes_type=self._nodes_type,
-                                     use_std_approach=self._use_std_approach)
+                splines[uu] = Spline(self._a, self._b, n=self.n_parts_u, bv={0:bv[uu]}, tag=uu,
+                                     nodes_type=self._parameters['nodes_type'],
+                                     use_std_approach=self._parameters['use_std_approach'])
                 splines[uu].make_steady()
                 splines[uu].type = 'u'
                 u_fnc[uu] = splines[uu].f
@@ -226,10 +253,10 @@ class Trajectory(object):
             indep_coeffs[ss] = splines[ss]._indep_coeffs
         
         self.indep_coeffs = indep_coeffs
-        self._splines = splines
-        self._x_fnc = x_fnc
-        self._u_fnc = u_fnc
-        self._dx_fnc = dx_fnc
+        self.splines = splines
+        self.x_fnc = x_fnc
+        self.u_fnc = u_fnc
+        self.dx_fnc = dx_fnc
         
     def set_coeffs(self, sol):
         '''
@@ -257,15 +284,15 @@ class Trajectory(object):
             subs[k] = sol[:i]
             sol = sol[i:]
         
-        if self._use_chains:
+        if self._parameters['use_chains']:
             for var in self._x_sym + self._u_sym:
                 for ic in self._chains:
                     if var in ic:
                         subs[var] = subs[ic.upper]
         
         # set numerical coefficients for each spline and derivative
-        for k in self._splines.keys():
-            self._splines[k].set_coefficients(free_coeffs=subs[k])
+        for k in self.splines.keys():
+            self.splines[k].set_coefficients(free_coeffs=subs[k])
         
         # yet another dictionary for solution and coeffs
         coeffs_sol = dict()
@@ -280,5 +307,19 @@ class Trajectory(object):
             i = j
 
         self.coeffs_sol = coeffs_sol
-    
+
+    def save(self):
+
+        save = dict()
+
+        # parameters
+        save['parameters'] = self._parameters
+
+        # splines
+        save['splines'] = dict((var, spline.save()) for var, spline in self.splines.iteritems())
+
+        # sol
+        save['coeffs_col'] = self.coeffs_sol
+
+        return save
         

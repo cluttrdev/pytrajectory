@@ -4,6 +4,7 @@ import sympy as sp
 from scipy import sparse
 
 from log import logging, Timer
+from trajectories import Trajectory
 from solver import Solver
 
 from auxiliary import sym2num_vectorfield
@@ -42,10 +43,15 @@ class CollocationSystem(object):
         self.sys = sys
         
         # set parameters
-        self._tol = kwargs.get('tol', 1e-5)
-        self._sol_steps = kwargs.get('sol_steps', 100)
-        self._method = kwargs.get('method', 'leven')
-        self._coll_type = kwargs.get('coll_type', 'equidistant')
+        #self._tol = kwargs.get('tol', 1e-5)
+        #self._sol_steps = kwargs.get('sol_steps', 100)
+        #self._method = kwargs.get('method', 'leven')
+        #self._coll_type = kwargs.get('coll_type', 'equidistant')
+        self._parameters = dict()
+        self._parameters['tol'] = kwargs.get('tol', 1e-5)
+        self._parameters['sol_steps'] = kwargs.get('sol_steps', 100)
+        self._parameters['method'] = kwargs.get('method', 'leven')
+        self._parameters['coll_type'] = kwargs.get('coll_type', 'equidistant')
         
         # we don't have a soution, yet
         self.sol = None
@@ -54,7 +60,7 @@ class CollocationSystem(object):
         # and its jacobian for the faster evaluation of the collocation equation system `G`
         # and its jacobian `DG` (--> see self.build())
         f = sys.ff_sym(sp.symbols(sys.x_sym), sp.symbols(sys.u_sym))
-
+        
         # TODO: check order of variables of differentiation ([x,u] vs. [u,x])
         #       because in dot products in later evaluation of `DG` with vector `c`
         #       values for u come first in `c`
@@ -63,8 +69,12 @@ class CollocationSystem(object):
         
         self._ff_vectorized = sym2num_vectorfield(f, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
         self._Df_vectorized = sym2num_vectorfield(Df, sys.x_sym, sys.u_sym, vectorized=True, cse=True)
+        self._f = f
+        self._Df = Df
 
-    def build(self, sys, trajectories):
+        self.trajectories = Trajectory(sys, **kwargs)
+
+    def build(self):
         '''
         This method is used to set up the equations for the collocation equation system
         and defines functions for the numerical evaluation of the system and its jacobian.
@@ -98,28 +108,16 @@ class CollocationSystem(object):
 
         logging.debug("Building Equation System")
         
-        # make functions local
-        x_fnc = trajectories._x_fnc
-        dx_fnc = trajectories._dx_fnc
-        u_fnc = trajectories._u_fnc
-
         # make symbols local
-        x_sym = trajectories._x_sym
-        u_sym = trajectories._u_sym
+        x_sym = self.trajectories._x_sym
+        u_sym = self.trajectories._u_sym
 
-        a = sys.a
-        b = sys.b
-        delta = 2#sys.mparam['delta']
-
-        # now we generate the collocation points
-        cpts = collocation_nodes(a=a, b=b, npts=(trajectories._sx * delta + 1), coll_type=self._coll_type)
-    
         # determine for each spline the index range of its free coeffs in the concatenated
         # vector of all free coeffs
-        indic = self._get_index_dict(trajectories)
+        indic = self._get_index_dict()
 
         # compute dependence matrices
-        Mx, Mx_abs, Mdx, Mdx_abs, Mu, Mu_abs = self._build_dependence_matrices(trajectories, indic)
+        Mx, Mx_abs, Mdx, Mdx_abs, Mu, Mu_abs = self._build_dependence_matrices(indic)
 
         # in the later evaluation of the equation system `G` and its jacobian `DG`
         # there will be created the matrices `F` and DF in which every nx rows represent the 
@@ -131,20 +129,21 @@ class CollocationSystem(object):
         # of the matrices `F` and `DF` is neccessary
         # 
         # therefore we now create an array with the indices of all rows we need from these matrices
-        if trajectories._use_chains:
-            eqind = sys.eqind
+        if self.trajectories._parameters['use_chains']:
+            eqind = self.sys.eqind
         else:
-            eqind = range(len(sys.x_sym))
+            eqind = range(len(x_sym))
 
         # `eqind` now contains the indices of the equations/rows of the vector field
         # that have to be solved
-        n_cpts = trajectories._sx * delta + 1
+        delta = 2
+        n_cpts = self.trajectories.n_parts_x * delta + 1
         
         # this (-> `take_indices`) will be the array with indices of the rows we need
         # 
         # to get these indices we iterate over all rows and take those whose indices
         # are contained in `eqind` (modulo the number of state variables -> `x_len`)
-        take_indices = np.tile(eqind, (n_cpts,)) + np.arange(n_cpts).repeat(len(eqind)) * len(trajectories._x_sym)
+        take_indices = np.tile(eqind, (n_cpts,)) + np.arange(n_cpts).repeat(len(eqind)) * len(x_sym)
         
         # here we determine the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
@@ -153,11 +152,11 @@ class CollocationSystem(object):
         # here we compute the jacobian matrix of the system/input splines as they also depend on
         # the free parameters
         DXU = []
-        x_len = len(sys.x_sym)
-        u_len = len(sys.u_sym)
+        x_len = len(x_sym)
+        u_len = len(u_sym)
         xu_len = x_len + u_len
 
-        for i in xrange(len(cpts)):
+        for i in xrange(n_cpts):
             DXU.append(np.vstack(( Mx[x_len*i:x_len*(i+1)].toarray(), Mu[u_len*i:u_len*(i+1)].toarray() )))
             #DXU.append(np.vstack(( Mu[u_len*i:u_len*(i+1)].toarray(), Mx[x_len*i:x_len*(i+1)].toarray() )))
         DXU_old = DXU
@@ -220,7 +219,7 @@ class CollocationSystem(object):
             # if we make use of the system structure
             # we have to select those rows which correspond to the equations
             # that have to be solved
-            if trajectories._use_chains:
+            if self.trajectories._parameters['use_chains']:
                 DF_csr = sparse.csr_matrix(DF_csr.toarray().take(take_indices, axis=0))
                 # TODO: is the performance gain that results from not having to solve
                 #       some equations (use integrator chains) greater than
@@ -235,21 +234,20 @@ class CollocationSystem(object):
                       Mx=Mx, Mx_abs=Mx_abs,
                       Mu=Mu, Mu_abs=Mu_abs,
                       Mdx=Mdx, Mdx_abs=Mdx_abs,
-                      cpts=cpts,
                       guess=self.guess)
         
         # return the callable functions
         #return G, DG
         return C
 
-    def _get_index_dict(self, trajectories):
+    def _get_index_dict(self):
         # here we do something that will be explained after we've done it  ;-)
         indic = dict()
         i = 0
         j = 0
     
         # iterate over spline quantities
-        for k, v in sorted(trajectories.indep_coeffs.items(), key=lambda (k, v): k):
+        for k, v in sorted(self.trajectories.indep_coeffs.items(), key=lambda (k, v): k):
             # increase j by the number of indep coeffs on which it depends
             j += len(v)
             indic[k] = (i, j)
@@ -257,9 +255,9 @@ class CollocationSystem(object):
     
         # iterate over all quantities including inputs
         # and take care of integrator chain elements
-        if trajectories._use_chains:
-            for sq in trajectories._x_sym + trajectories._u_sym:
-                for ic in trajectories._chains:
+        if self.trajectories._parameters['use_chains']:
+            for sq in self.trajectories._x_sym + self.trajectories._u_sym:
+                for ic in self.trajectories._chains:
                     if sq in ic:
                         indic[sq] = indic[ic.upper]
     
@@ -276,21 +274,21 @@ class CollocationSystem(object):
 
         return indic
 
-    def _build_dependence_matrices(self, trajectories, indic):
+    def _build_dependence_matrices(self, indic):
         # first we compute the collocation points
-        cpts = collocation_nodes(a=trajectories._a, b=trajectories._b,
-                                 npts=trajectories._sx * 2 + 1,
-                                 coll_type=self._coll_type)
+        cpts = collocation_nodes(a=self.trajectories._a, b=self.trajectories._b,
+                                 npts=self.trajectories.n_parts_x * 2 + 1,
+                                 coll_type=self._parameters['coll_type'])
 
-        x_fnc = trajectories._x_fnc
-        dx_fnc = trajectories._dx_fnc
-        u_fnc = trajectories._u_fnc
+        x_fnc = self.trajectories.x_fnc
+        dx_fnc = self.trajectories.dx_fnc
+        u_fnc = self.trajectories.u_fnc
 
-        x_sym = trajectories._x_sym
-        u_sym = trajectories._u_sym
+        x_sym = self.trajectories._x_sym
+        u_sym = self.trajectories._u_sym
         
         # total number of independent coefficients
-        free_param = np.hstack(sorted(trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
+        free_param = np.hstack(sorted(self.trajectories.indep_coeffs.values(), key=lambda arr: arr[0].name))
         n_dof = free_param.size
         
         lx = len(cpts)*len(x_sym)
@@ -352,7 +350,7 @@ class CollocationSystem(object):
         # here we compute the jacobian matrix of the derivatives of the system state functions
         # (as they depend on the free parameters in a linear fashion its just the above matrix Mdx)
         DdX = Mdx.reshape((len(cpts),-1,free_param.size))
-        if trajectories._use_chains:
+        if self.trajectories._parameters['use_chains']:
             DdX = DdX[:,sys.eqind,:]
         DdX = np.vstack(DdX)
 
@@ -371,7 +369,7 @@ class CollocationSystem(object):
         DdX = sparse.csr_matrix(DdX)
         DXU = sparse.csr_matrix(DXU)
     
-    def get_guess(self, trajectories):
+    def get_guess(self, interpolate=None):
         '''
         This method is used to determine a starting value (guess) for the
         solver of the collocation equation system.
@@ -385,27 +383,24 @@ class CollocationSystem(object):
         in these points.
 
         The solution of this system is the new start value for the solver.
-        
-        Parameters
-        ----------
-        
-        trajectories : pytrajectory.trajectories.Trajectory
-        
         '''
-        if not trajectories._old_splines:
-            free_coeffs_all = np.hstack(trajectories.indep_coeffs.values())
-            guess = 0.1 * np.ones(free_coeffs_all.size)
+        if not self.trajectories._old_splines:
+            if interpolate is None:
+                free_coeffs_all = np.hstack(self.trajectories.indep_coeffs.values())
+                guess = 0.1 * np.ones(free_coeffs_all.size)
+            else:
+                pass
         else:
             guess = np.empty(0)
             
             # now we compute a new guess for every free coefficient of every new (finer) spline
             # by interpolating the corresponding old (coarser) spline
-            for k, v in sorted(trajectories.indep_coeffs.items(), key = lambda (k, v): k):
-                if (trajectories._splines[k].type == 'x'):
+            for k, v in sorted(self.trajectories.indep_coeffs.items(), key = lambda (k, v): k):
+                if (self.trajectories.splines[k].type == 'x'):
                     logging.debug("Get new guess for spline {}".format(k))
                     
-                    s_new = trajectories._splines[k]
-                    s_old = trajectories._old_splines[k]
+                    s_new = self.trajectories.splines[k]
+                    s_old = self.trajectories._old_splines[k]
 
                     if s_new._use_std_approach:
                         # compute values 
@@ -481,7 +476,7 @@ class CollocationSystem(object):
                         guess = np.hstack((guess, old_style_guess))
                 else:
                     # if it is a input variable, just take the old solution
-                    guess = np.hstack((guess, trajectories._old_splines[k]._indep_coeffs))
+                    guess = np.hstack((guess, self.trajectories._old_splines[k]._indep_coeffs))
         
         # the new guess
         self.guess = guess
@@ -504,13 +499,32 @@ class CollocationSystem(object):
         logging.debug("Solving Equation System")
         
         # create our solver
-        solver = Solver(F=G, DF=DG, x0=self.guess, tol=self._tol,
-                        maxIt=self._sol_steps, method=self._method)
+        solver = Solver(F=G, DF=DG, x0=self.guess, tol=self._parameters['tol'],
+                        maxIt=self._parameters['sol_steps'], method=self._parameters['method'])
         
         # solve the equation system
         self.sol = solver.solve()
         
         return self.sol
+
+    def save(self):
+
+        save = dict()
+
+        # parameters
+        save['parameters'] = self._parameters
+
+        # vector field and jacobian
+        save['f'] = self._f
+        save['Df'] = self._Df
+
+        # guess
+        save['guess'] = self.guess
+        
+        # solution
+        save['solution'] = self.solution
+
+        return save
 
 def collocation_nodes(a, b, npts, coll_type):
     '''

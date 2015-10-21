@@ -68,10 +68,13 @@ class ControlSystem(object):
 
     def __init__(self, ff, a=0.0, b=1.0, xa=[], xb=[], ua=[], ub=[], constraints=None, **kwargs):
         # set method parameters
-        self._kx = kwargs.get('kx', 2)
-        self._maxIt = kwargs.get('maxIt', 10)
-        self._eps = kwargs.get('eps', 1e-2)
-        self._ierr = kwargs.get('ierr', 1e-1)
+        self._parameters = dict()
+        #self._maxIt = kwargs.get('maxIt', 10)
+        #self._eps = kwargs.get('eps', 1e-2)
+        #self._ierr = kwargs.get('ierr', 1e-1)
+        self._parameters['maxIt'] = kwargs.get('maxIt', 10)
+        self._parameters['eps'] = kwargs.get('eps', 1e-2)
+        self._parameters['ierr'] = kwargs.get('ierr', 1e-1)
 
         # Save the symbolic vectorfield
         self.ff_sym = ff
@@ -126,12 +129,6 @@ class ControlSystem(object):
         # a numeric one for faster evaluation
         self.ff = auxiliary.sym2num_vectorfield(self.ff_sym, self.x_sym, self.u_sym, vectorized=False)
         
-        # Create trajectory object
-        self.trajectories = Trajectory(sys=self, **kwargs)
-                                       #sx=method_param['sx'], su=method_param['su'],
-                                       #use_chains=method_param['use_chains'],
-                                       #nodes_type=method_param['nodes_type'])
-
         # and equation system objects
         self.eqs = CollocationSystem(sys=self, **kwargs)
                                      #tol=method_param['tol'], sol_steps=method_param['sol_steps'], 
@@ -243,14 +240,17 @@ class ControlSystem(object):
             The new value
         '''
         
-        if param in {'kx', 'maxIt', 'eps', 'ierr'}:
-            setattr(self, '_{}'.format(param), value)
-        elif param in {'sx', 'su', 'use_chains', 'nodes_type'}:
+        if param in {'maxIt', 'eps', 'ierr'}:
+            #setattr(self, '_{}'.format(param), value)
+            self._parameters[param] = value
+        elif param in {'sx', 'su', 'kx', 'use_chains', 'nodes_type'}:
             if param == 'nodes_type' and value != 'equidistant':
                 raise NotImplementedError()
-            setattr(self.trajectories, '_{}'.format(param), value)
+            #setattr(self.eqs.trajectories, '_{}'.format(param), value)
+            self.eqs.trajectories._parameters[param] = value
         elif param in {'tol', 'method', 'coll_type', 'sol_steps'}:
-            setattr(self.eqs, '_{}'.format(param), value)
+            #setattr(self.eqs, '_{}'.format(param), value)
+            self.eqs._parameters[param] = value
         else:
             raise AttributeError("Invalid method parameter ({})".format(param))
     
@@ -354,8 +354,8 @@ class ControlSystem(object):
         
         # get a copy of the current function dictionaries
         # (containing functions for unconstrained variables y_i)
-        x_fnc = self.trajectories._x_fnc.copy()
-        dx_fnc = self.trajectories._dx_fnc.copy()
+        x_fnc = self.eqs.trajectories.x_fnc.copy()
+        dx_fnc = self.eqs.trajectories.dx_fnc.copy()
         
         # iterate over all constraints
         for k, v in self.constraints.items():
@@ -373,12 +373,12 @@ class ControlSystem(object):
             psi_y, dpsi_dy = auxiliary.saturation_functions(y_fnc, dy_fnc, y0, y1)
             
             # put created compositions into dictionaries of solution functions
-            self.trajectories._x_fnc[xk] = psi_y
-            self.trajectories._dx_fnc[xk] = dpsi_dy
+            self.eqs.trajectories.x_fnc[xk] = psi_y
+            self.eqs.trajectories.dx_fnc[xk] = dpsi_dy
             
             # remove solutions for unconstrained auxiliary variable and its derivative
-            self.trajectories._x_fnc.pop(yk)
-            self.trajectories._dx_fnc.pop(yk)
+            self.eqs.trajectories.x_fnc.pop(yk)
+            self.eqs.trajectories.dx_fnc.pop(yk)
         
         # restore the original boundary values, variables and vectorfield functions
         # TODO: should the constrained stuff be saved (not longer needed?)
@@ -386,7 +386,7 @@ class ControlSystem(object):
         self.x_sym = self.orig_backup['x_sym']
         self.ff = self.orig_backup['ff_num']
         self.ff_sym = self.orig_backup['ff_sym']
-        self.trajectories._x_sym = self.x_sym
+        self.eqs.trajectories._x_sym = self.x_sym
     
     def solve(self):
         '''
@@ -405,31 +405,30 @@ class ControlSystem(object):
             Callable function for the input variables.
         '''
 
-        self._swapped = False
-        
         # do the first iteration step
-        logging.info("1st Iteration: %d spline parts"%self.trajectories._sx)
+        logging.info("1st Iteration: {} spline parts".format(self.eqs.trajectories.n_parts_x))
         self._iterate()
         
         # this was the first iteration
         # now we are getting into the loop
-        nIt = 1
-        while not self.reached_accuracy and nIt < self._maxIt:
+        self.nIt = 1
+        #while not self.reached_accuracy and nIt < self._maxIt:
+        while not self.reached_accuracy and self.nIt < self._parameters['maxIt']:
             # raise the number of spline parts
-            self.trajectories._sx = int(round(self._kx * self.trajectories._sx))
+            self.eqs.trajectories._raise_spline_parts()
             
-            if nIt == 1:
-                logging.info("2nd Iteration: {} spline parts".format(self.trajectories._sx))
-            elif nIt == 2:
-                logging.info("3rd Iteration: {} spline parts".format(self.trajectories._sx))
-            elif nIt >= 3:
-                logging.info("{}th Iteration: {} spline parts".format(nIt+1, self.trajectories._sx))
+            if self.nIt == 1:
+                logging.info("2nd Iteration: {} spline parts".format(self.eqs.trajectories.n_parts_x))
+            elif self.nIt == 2:
+                logging.info("3rd Iteration: {} spline parts".format(self.eqs.trajectories.n_parts_x))
+            elif self.nIt >= 3:
+                logging.info("{}th Iteration: {} spline parts".format(self.nIt+1, self.eqs.trajectories.n_parts_x))
 
             # start next iteration step
             self._iterate()
 
             # increment iteration number
-            nIt += 1
+            self.nIt += 1
 
         # as a last, if there were any constraints to be taken care of,
         # we project the unconstrained variables back on the original constrained ones
@@ -437,7 +436,7 @@ class ControlSystem(object):
             self.constrain()
         
         # return the found solution functions
-        return self.trajectories.x, self.trajectories.u
+        return self.eqs.trajectories.x, self.eqs.trajectories.u
     
     def _iterate(self):
         '''
@@ -455,57 +454,29 @@ class ControlSystem(object):
         As a last, the resulting initial value problem is simulated.
         '''
 
-        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 80 and not self._swapped:
-            for k,v in self.trajectories._splines.items():
-                v._switch_approaches()
-
-            self._swapped = True
-            self.trajectories._use_std_approach = True
-
-            from IPython import embed as IPS
-            IPS()
-        
         # Initialise the spline function objects
-        self.trajectories.init_splines(boundary_values=self._boundary_values)
+        self.eqs.trajectories.init_splines(boundary_values=self._boundary_values)
         
         # Get an initial value (guess)
-        self.eqs.get_guess(trajectories=self.trajectories)
+        self.eqs.get_guess()
         
         # Build the collocation equations system
         #G, DG = self.eqs.build(sys=self, trajectories=self.trajectories)
-        C = self.eqs.build(sys=self, trajectories=self.trajectories)
+        C = self.eqs.build()
         G, DG = C.G, C.DG
         
         # Solve the collocation equation system
         sol = self.eqs.solve(G, DG)
         
         # Set the found solution
-        self.trajectories.set_coeffs(sol)
+        self.eqs.trajectories.set_coeffs(sol)
 
-        if 0 and self.trajectories._splines.values()[-1].n >= 40:
-            from IPython import embed as IPS
-            IPS()
-        
-        if 0 and self.trajectories._splines and self.trajectories._splines.values()[-1].n >= 40 and not self._swapped:
-            for k,v in self.trajectories._splines.items():
-                v._switch_approaches()
-
-            self._swapped = True
-            self.trajectories._use_std_approach = True
-
-            from IPython import embed as IPS
-            IPS()
-        
         # Solve the resulting initial value problem
         self.simulate()
         
         # check if desired accuracy is reached
         self.check_accuracy()
 
-        if self._swapped:
-            from IPython import embed as IPS
-            IPS()
-    
     def simulate(self):
         '''
         This method is used to solve the resulting initial value problem
@@ -533,7 +504,7 @@ class ControlSystem(object):
             start.append(start_dict[x])
         
         # create simulation object
-        S = Simulator(ff, T, start, self.trajectories.u)
+        S = Simulator(ff, T, start, self.eqs.trajectories.u)
         
         logging.debug("start: %s"%str(start))
         
@@ -580,15 +551,18 @@ class ControlSystem(object):
         
         logging.debug(40*"-")
         
-        if self._ierr:
+        #if self._ierr:
+        ierr = self._parameters['ierr']
+        eps = self._parameters['eps']
+        if ierr:
             # calculate maximum consistency error on the whole interval
-            maxH = auxiliary.consistency_error((a,b), self.trajectories.x, self.trajectories.u, self.trajectories.dx, self.ff)
+            maxH = auxiliary.consistency_error((a,b), self.eqs.trajectories.x, self.eqs.trajectories.u, self.eqs.trajectories.dx, self.ff)
             
-            reached_accuracy = (maxH < self._ierr) and (max(err) < self._eps)
+            reached_accuracy = (maxH < ierr) and (max(err) < eps)
             logging.debug('maxH = %f'%maxH)
         else:
             # just check if tolerance for the boundary values is satisfied
-            reached_accuracy = max(err) < self._eps
+            reached_accuracy = max(err) < eps
         
         if reached_accuracy:
             logging.info("  --> reached desired accuracy: "+str(reached_accuracy))
@@ -613,9 +587,9 @@ class ControlSystem(object):
 
         # calculate the error functions H_i(t)
         max_con_err, error = auxiliary.consistency_error((self.a, self.b), 
-                                                          self.trajectories.x,
-                                                          self.trajectories.u, 
-                                                          self.trajectories.dx, 
+                                                          self.eqs.trajectories.x,
+                                                          self.eqs.trajectories.u, 
+                                                          self.eqs.trajectories.dx, 
                                                           self.ff, len(self.sim_data[0]), True)
         
         H = dict()
@@ -623,10 +597,6 @@ class ControlSystem(object):
             H[i] = error[:,i]
 
         visualisation.plot_simulation(self.sim_data, H)
-        # t = self.sim_data[0]
-        # xt = np.array([self.trajectories.x(tt) for tt in t])
-        # ut = self.sim_data[2]
-        # visualisation.plot_simulation([t,xt,ut], H)
     
     def save(self, fname=''):
         '''
@@ -638,33 +608,28 @@ class ControlSystem(object):
         state variables and the 3rd those of the input variables.
         '''
 
-        save = dict()
+        save = dict.fromkeys(['sys', 'eqs', 'traj'])
 
-        # system data
-        #save['ff_sym'] = self.ff_sym
-        #save['ff'] = self.ff
-        #save['a'] = self.a
-        #save['b'] = self.b
-
-        # boundary values
-        #save['xa'] = self.xa
-        #save['xb'] = self.xb
-        #save['uab'] = self.uab
-
-        # solution functions       
-        #save['x'] = self.x
-        #save['u'] = self.u
-        #save['dx'] = self.dx
-
+        # system state
+        save['sys'] = dict()
+        save['sys']['state'] = dict.fromkeys(['nIt', 'reached_accuracy'])
+        save['sys']['state']['nIt'] = self.nIt
+        
         # simulation results
-        save['sim_data'] = self.sim_data
+        save['sys']['sim_data'] = self.sim_data
+
+        # parameters
+        save['sys']['parameters'] = self._parameters
+
+        save['eqs'] = self.eqs.save()
+        save['traj'] = self.eqs.trajectories.save()
         
         if not fname:
-            fname = __file__.split('.')[0] + '.pkl'
-        elif not (fname.endswith('.pkl') or fname.endswith('.pcl')):
-            fname += '.pkl'
+            fname = __file__.split('.')[0] + '.pcl'
+        elif not (fname.endswith('.pcl') or fname.endswith('.pcl')):
+            fname += '.pcl'
         
-        with open(fname, 'wb') as dumpfile:
+        with open(fname, 'w') as dumpfile:
             pickle.dump(save, dumpfile)
 
 def _get_boundary_dict_from_lists(symbols, start_values, end_values):

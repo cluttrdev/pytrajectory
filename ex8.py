@@ -202,6 +202,9 @@ S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con,
 # time to run the iteration
 x, u = S.solve()
 
+from IPython import embed as IPS
+IPS()
+
 # the following code provides an animation of the system above
 # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
 import sys
