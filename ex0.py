@@ -44,8 +44,11 @@ ub = [0.0]
 S = ControlSystem(f, a, b, xa, xb, ua, ub, kx=5, use_chains=False)
 
 # time to run the iteration
+S.set_param('use_std_approach', True)
 S.solve()
 
+from IPython import embed as IPS
+IPS()
 1/0
 # now that we (hopefully) have found a solution,
 # we can visualise our systems dynamic

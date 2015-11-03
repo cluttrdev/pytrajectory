@@ -402,7 +402,13 @@ class CollocationSystem(object):
                     s_new = self.trajectories.splines[k]
                     s_old = self.trajectories._old_splines[k]
 
-                    if s_new._use_std_approach:
+                    df0 = s_old.df(self.trajectories._a)
+                    dfn = s_old.df(self.trajectories._b)
+
+                    free_coeffs_guess = s_new.interpolate(s_old.f, m0=df0, mn=dfn)
+                    guess = np.hstack((guess, free_coeffs_guess))
+                    
+                    if 0 and s_new._use_std_approach:
                         # compute values 
                         values = [s_old.f(t) for t in s_new.nodes]
                         
@@ -454,7 +460,7 @@ class CollocationSystem(object):
                         
                         free_coeffs_guess = np.array([coeffs[i] for i in free_coeff_indices])
                         guess = np.hstack((guess, free_coeffs_guess))
-                    else:
+                    elif 0:
                         # how many independent coefficients does the spline have
                         coeffs_size = s_new._indep_coeffs.size
                         
@@ -522,7 +528,7 @@ class CollocationSystem(object):
         save['guess'] = self.guess
         
         # solution
-        save['solution'] = self.solution
+        save['sol'] = self.sol
 
         return save
 

@@ -243,7 +243,7 @@ class ControlSystem(object):
         if param in {'maxIt', 'eps', 'ierr'}:
             #setattr(self, '_{}'.format(param), value)
             self._parameters[param] = value
-        elif param in {'sx', 'su', 'kx', 'use_chains', 'nodes_type'}:
+        elif param in {'sx', 'su', 'kx', 'use_chains', 'nodes_type', 'use_std_approach'}:
             if param == 'nodes_type' and value != 'equidistant':
                 raise NotImplementedError()
             #setattr(self.eqs.trajectories, '_{}'.format(param), value)
@@ -407,6 +407,7 @@ class ControlSystem(object):
 
         # do the first iteration step
         logging.info("1st Iteration: {} spline parts".format(self.eqs.trajectories.n_parts_x))
+        self.nIt = 0
         self._iterate()
         
         # this was the first iteration
@@ -598,7 +599,7 @@ class ControlSystem(object):
 
         visualisation.plot_simulation(self.sim_data, H)
     
-    def save(self, fname=''):
+    def save(self, fname=None):
         '''
         Save data using the python module :py:mod:`pickle`.
         
@@ -614,6 +615,7 @@ class ControlSystem(object):
         save['sys'] = dict()
         save['sys']['state'] = dict.fromkeys(['nIt', 'reached_accuracy'])
         save['sys']['state']['nIt'] = self.nIt
+        save['sys']['state']['reached_accuracy'] = self.reached_accuracy
         
         # simulation results
         save['sys']['sim_data'] = self.sim_data
@@ -624,13 +626,14 @@ class ControlSystem(object):
         save['eqs'] = self.eqs.save()
         save['traj'] = self.eqs.trajectories.save()
         
-        if not fname:
-            fname = __file__.split('.')[0] + '.pcl'
-        elif not (fname.endswith('.pcl') or fname.endswith('.pcl')):
-            fname += '.pcl'
+        if fname is not None:
+            if not (fname.endswith('.pcl') or fname.endswith('.pcl')):
+                fname += '.pcl'
         
-        with open(fname, 'w') as dumpfile:
-            pickle.dump(save, dumpfile)
+            with open(fname, 'w') as dumpfile:
+                pickle.dump(save, dumpfile)
+
+        return save
 
 def _get_boundary_dict_from_lists(symbols, start_values, end_values):
     '''
