@@ -85,7 +85,7 @@ class IntegChain(object):
         return self._elements[-1]
 
 
-def find_integrator_chains(fi, x_sym, u_sym):
+def find_integrator_chains(dyn_sys):
     '''
     Searches for integrator chains in given vector field matrix `fi`,
     i.e. equations of the form :math:`\dot{x}_i = x_j`.
@@ -93,14 +93,8 @@ def find_integrator_chains(fi, x_sym, u_sym):
     Parameters
     ----------
     
-    fi : array_like
-        Matrix representation for the vectorfield of the control system.
-    
-    x_sym : list
-        Symbols for the state variables.
-    
-    u_sym : list
-        Symbols for the input variables.
+    dyn_sys : ...
+        tba...
     
     Returns
     -------
@@ -111,23 +105,30 @@ def find_integrator_chains(fi, x_sym, u_sym):
     list
         Indices of the equations that have to be solved using collocation.
     '''
+
+    # next, we look for integrator chains
+    logging.debug("Looking for integrator chains")
+
+    # create symbolic variables to find integrator chains
+    state_sym = sp.symbols(dyn_sys.states)
+    input_sym = sp.symbols(dyn_sys.inputs)
+    f = dyn_sys.f_sym(state_sym, input_sym)
     
-    n = len(x_sym)
-    assert n == len(fi)
+    assert dyn_sys.n_states == len(f)
     
     chaindict = {}
-    for i in xrange(len(fi)):
+    for i in xrange(len(f)):
         # substitution because of sympy difference betw. 1.0 and 1
-        if isinstance(fi[i], sp.Basic):
-            fi[i] = fi[i].subs(1.0, 1)
+        if isinstance(f[i], sp.Basic):
+            f[i] = f[i].subs(1.0, 1)
 
-        for xx in x_sym:
-            if fi[i] == xx:
-                chaindict[xx] = x_sym[i]
+        for xx in state_sym:
+            if f[i] == xx:
+                chaindict[xx] = state_sym[i]
 
-        for uu in u_sym:
-            if fi[i] == uu:
-                chaindict[uu] = x_sym[i]
+        for uu in input_sym:
+            if f[i] == uu:
+                chaindict[uu] = state_sym[i]
 
     # chaindict looks like this:  {u_1 : x_2, x_4 : x_3, x_2 : x_1}
     # where x_4 = d/dt x_3 and so on
@@ -141,7 +142,7 @@ def find_integrator_chains(fi, x_sym, u_sym):
     # create ordered lists that temporarily represent the integrator chains
     tmpchains = []
 
-    # therefore we flip the dictionary to work our way through its keys
+    # therefore we flip the dictionary to walk through its keys
     # (former values)
     dictchain = {v:k for k,v in chaindict.items()}
 
@@ -167,24 +168,23 @@ def find_integrator_chains(fi, x_sym, u_sym):
     # (--> lower ends of integrator chains)
     eqind = []
     
-    x_sym_str = [sym.name for sym in x_sym]
     if chains:
         # iterate over all integrator chains
         for ic in chains:
             # if lower end is a system variable
             # then its equation has to be solved
             if ic.lower.startswith('x'):
-                idx = x_sym_str.index(ic.lower)
+                idx = dyn_sys.states.index(ic.lower)
                 eqind.append(idx)
         eqind.sort()
         
         # if every integrator chain ended with input variable
         if not eqind:
-            eqind = range(n)
+            eqind = range(dyn_sys.n_states)
     else:
         # if integrator chains should not be used
         # then every equation has to be solved by collocation
-        eqind = range(n)
+        eqind = range(dyn_sys.n_states)
     
     return chains, eqind
 
