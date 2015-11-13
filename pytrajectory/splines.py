@@ -37,13 +37,13 @@ class Spline(object):
     bv : dict
         Boundary values the spline function and/or its derivatives should satisfy.
     
-    nodes_type : str
-        The type of the spline nodes (equidistant).
+    use_std_approach : bool
+        Whether to use the standard spline interpolation approach
+        or the ones used in the project thesis
     '''
 
     def __init__(self, a=0.0, b=1.0, n=5, bv={},
-                 nodes_type='equidistant', tag='',
-                 use_std_approach=False):
+                 tag='', use_std_approach=False):
         # there are two different approaches implemented for evaluating
         # the splines which mainly differ in the node that is used in the 
         # evaluation of the polynomial parts
@@ -81,8 +81,8 @@ class Spline(object):
         self._coeffs_sym = self._coeffs.copy()
         
         # calculate nodes of the spline
-        self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type)
-        self._nodes_type = nodes_type
+        self.nodes = get_spline_nodes(self.a, self.b, self.n+1, nodes_type='equidistant')
+        self._nodes_type = 'equidistant' #nodes_type
         
         # size of each polynomial part
         self._h = (self.b - self.a) / float(self.n)
@@ -288,7 +288,6 @@ class Spline(object):
         
         coeffs : numpy.ndarray
             Array with coefficients of the polynomial spline parts.
-        
         '''
 
         # deside what to do
@@ -347,8 +346,7 @@ class Spline(object):
     def interpolate(self, fnc=None, m0=None, mn=None):
         '''
         Determines the spline's coefficients such that it interpolates
-        a given function `fnc` or discrete `points`.
-        
+        a given function.
         '''
         
         points = self.nodes
@@ -363,7 +361,6 @@ class Spline(object):
         
             # generate points to evaluate the function at
             # (function and spline interpolant should be equal in these)
-            #points = np.linspace(S.a, S.b, coeffs_size, endpoint=False)
             nodes = np.linspace(self.a, self.b, coeffs_size, endpoint=True)
         
             # evaluate the function

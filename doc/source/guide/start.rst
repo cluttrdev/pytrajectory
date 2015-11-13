@@ -112,7 +112,7 @@ by downloading the file
 `get_pip.py <https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py>`_
 and running ::
 
-  C:>\pyth\to\file\python get_pip.py
+  C:>\path\to\file\python get_pip.py
 
 from the command line again.
 

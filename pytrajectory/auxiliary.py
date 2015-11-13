@@ -93,8 +93,8 @@ def find_integrator_chains(dyn_sys):
     Parameters
     ----------
     
-    dyn_sys : ...
-        tba...
+    dyn_sys : pytrajectory.system.DynamicalSystem
+        Instance of a dynamical system
     
     Returns
     -------

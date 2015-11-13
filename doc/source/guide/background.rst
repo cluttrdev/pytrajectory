@@ -106,7 +106,7 @@ The :math:`\eta` polynomial sections can be created as follows.
 
    P_k(t) = c_{k,0}(t-k h)^3 + c_{k,1}(t-k h)^2 + c_{k,2}(t-k h) + c_{k,3} 
 
-   c_{k,l} \in \mathbb{R},\qquad k = 1,...,\eta,\ l = 0,...,3
+   c_{k,l} \in \mathbb{R},\qquad k = 0,...,\eta-1,\ l = 0,...,3
 
 Then, each spline function is defined by
 
@@ -161,23 +161,23 @@ equation system. With these conditions and those above one obtains the following
    \begin{equation*}
    \textstyle
    \underbrace{\begin{bmatrix}
-         0 & 0   & 0  & 1 &  h^3  & -h^2   &  h & -1 \\
-         0 & 0   & 1  & 0 & -3h^2 &  2h    & -1 &  0  &&&& \bigzero \\
-         0 & 2   & 0  & 0 &   6h  &  -2    &  0 &  0 \\
-           &     &    &   &   0   &   0    &  0 &  1  &  h^3  & -h^2 &  h & -1 \\
-           &  \bigzero   &    &   &   0   &   0    &  1 &  0  & -3h^2 &  2h  & -1 &  0 &&&&&& \bigzero \\
-           &     &    &   &   0   &   2    &  0 &  0  &   6h  &  -2  &  0 &  0 \\
+         h^3  &  h^2   &  h &  1 & 0 &  0   &  0  & -1 \\
+         3h^2 &  2h    &  1 &  0 & 0 &  0   & -1  &  0    &&&& \bigzero \\
+          6h  &   2    &  0 &  0 & 0 & -2   &  0  &  0 \\
+           &     &    &   &   h^3  & h^2 &  h & 1 & 0   &   0    &  0 &  -1 \\
+           &  \bigzero   &    &    & 3h^2 &  2h  & 1 &  0  & 0 &  0  & -1 &  0 &&&&&& \bigzero \\
+           &     &    &   &   6h   &   2    &  0 &  0  &   0  &  -2  &  0 &  0 \\
            &&&&&&&&&&& \ddots \\ 
-           &     &    &   &       &        &    &     &       &      &    &    & 0 & 0 & 0 & 1 &  h^3  & -h^2 &  h & -1 \\
-           &     &    &   &       &        &  \bigzero  &     &       &      &    &    & 0 & 0 & 1 & 0 & -3h^2 &  2h  & -1 &  0 \\
-           &     &    &   &       &        &    &     &       &      &    &    & 0 & 2 & 0 & 0 &   6h  &  -2  &  0 &  0 \\
+           &     &    &   &       &        &    &     &       &      &    &    & h^3 & h^2 & h & 1 &  0  & 0 &  0 & -1 \\
+           &     &    &   &       &        &  \bigzero  &     &       &      &    &    & 3h^2 & 2h & 1 & 0 & 0 &  0  & -1 &  0 \\
+           &     &    &   &       &        &    &     &       &      &    &    & 6h & 2 & 0 & 0 &   0  &  -2  &  0 &  0 \\
            &     &    &   &       &        &    &     &       &      &    &    &   & \\
-      -h^3 & h^2 & -h & 1 \\
-      3h^2 & -2h &  1 & 0 &&&&&&&& \bigzero \\
-      -6h  &  2  &  0 & 0 \\
-           &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    0 &  0 &  1 \\
-           &     &    &   &       &        &  \bigzero  &     &       &      &    &    &   &   &   &   &   0   &    0 &  1 &  0 \\
-           &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   0   &    2 &  0 &  0 \\
+         0 & 0 & 0 & -1 \\
+         0 & 0 &  -1 & 0 &&&&&&&& \bigzero \\
+         0 &  -2  &  0 & 0 \\
+           &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   h^3   &    h^2 &  h &  1 \\
+           &     &    &   &       &        &  \bigzero  &     &       &      &    &    &   &   &   &   &   3h^2   &    2h &  1 &  0 \\
+           &     &    &   &       &        &    &     &       &      &    &    &   &   &   &   &   6h   &    2 &  0 &  0 \\
    \end{bmatrix}}_{=: \boldsymbol{M}}
    \cdot
    \underbrace{\begin{bmatrix}

@@ -14,22 +14,9 @@ class Trajectory(object):
     Parameters
     ----------
     
-    sys : system.ControlSystem
-        Instance of a control system providing information like
-        vector field function, integrator chains, boundary values
-        and so on
-        
-    sx : int
-        Initial number of spline parts for state variables
-    
-    su : int
-        Initial number of spline parts for input variables
-        
-    use_chains : bool
-        Whether or not to make use of system structure
-        
-    nodes_type : str
-        Type of the spline nodes
+    sys : system.DynamicalSystem
+        Instance of a dynamical system providing information like
+        vector field function and boundary values
     '''
     
     def __init__(self, sys, **kwargs):

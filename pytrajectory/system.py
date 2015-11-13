@@ -54,16 +54,12 @@ class ControlSystem(object):
         sx            5               Initial number of spline parts for the system variables
         su            5               Initial number of spline parts for the input variables
         kx            2               Factor for raising the number of spline parts
-        delta         2               Constant for calculation of collocation points
         maxIt         10              Maximum number of iteration steps
         eps           1e-2            Tolerance for the solution of the initial value problem
         ierr          1e-1            Tolerance for the error on the whole interval
         tol           1e-5            Tolerance for the solver of the equation system
-        method        'leven'         The solver algorithm to use
         use_chains    True            Whether or not to use integrator chains
-        coll_type     'equidistant'   The type of the collocation points
         sol_steps     100             Maximum number of iteration steps for the eqs solver
-        nodes_type    'equidistant'   The type of the spline nodes
         ============= =============   ============================================================
     '''
 
@@ -242,24 +238,12 @@ class ControlSystem(object):
             self.eqs.trajectories.x_fnc[xk] = psi_y
             self.eqs.trajectories.dx_fnc[xk] = dpsi_dy
             
-            # remove solutions for unconstrained auxiliary variable and its derivative
-            #self.eqs.trajectories.x_fnc.pop(yk)
-            #self.eqs.trajectories.dx_fnc.pop(yk)
-        
-        # restore the original boundary values, variables and vectorfield functions
-        # TODO: should the constrained stuff be saved (not longer needed?)
-        #self._boundary_values = self.orig_backup['boundary_values']
-        #self.x_sym = self.orig_backup['x_sym']
-        #self.ff = self.orig_backup['ff_num']
-        #self.ff_sym = self.orig_backup['ff_sym']
-        #self.eqs.trajectories._x_sym = self.x_sym
-        
     def solve(self):
         '''
         This is the main loop.
         
-        While the desired accuracy has not been reached, the number of
-        spline parts is raised and one iteration step is done.
+        While the desired accuracy has not been reached, the collocation system will
+        be set up and solved with a iteratively raised number of spline parts.
         
         Returns
         -------
@@ -308,8 +292,7 @@ class ControlSystem(object):
         '''
         This method is used to run one iteration step.
 
-        First, new splines are initialised for the variables that are the upper
-        end of an integrator chain.
+        First, new splines are initialised.
 
         Then, a start value for the solver is determined and the equation
         system is set up.
@@ -327,7 +310,6 @@ class ControlSystem(object):
         self.eqs.get_guess()
         
         # Build the collocation equations system
-        #G, DG = self.eqs.build(sys=self, trajectories=self.trajectories)
         C = self.eqs.build()
         G, DG = C.G, C.DG
         
@@ -388,7 +370,6 @@ class ControlSystem(object):
         If set by the user it also calculates some kind of consistency error
         that shows how "well" the spline functions comply with the system
         dynamic given by the vector field.
-        
         '''
         
         # this is the solution of the simulation
@@ -472,11 +453,6 @@ class ControlSystem(object):
     def save(self, fname=None):
         '''
         Save data using the python module :py:mod:`pickle`.
-        
-        The created pickle dumpfile contains the latest simulation data, i.e.
-        a list of three arrays. The 1st entry is an array with the time steps
-        of the simulation, the 2nd contains the corresponding values of the
-        state variables and the 3rd those of the input variables.
         '''
 
         save = dict.fromkeys(['sys', 'eqs', 'traj'])

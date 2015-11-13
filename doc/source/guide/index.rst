@@ -8,4 +8,4 @@ PyTrajectory User's Guide
    start
    background
    examples/index
-   notes
+..   notes
