@@ -29,7 +29,7 @@ class Trajectory(object):
         self._parameters['n_parts_u'] = kwargs.get('su', 10)
         self._parameters['kx'] = kwargs.get('kx', 2)
         self._parameters['nodes_type'] = kwargs.get('nodes_type', 'equidistant')
-        self._parameters['use_std_approach'] = kwargs.get('use_std_approach', False)
+        self._parameters['use_std_approach'] = kwargs.get('use_std_approach', True)
         
         self._chains, self._eqind = auxiliary.find_integrator_chains(sys)
         self._parameters['use_chains'] = kwargs.get('use_chains', True)

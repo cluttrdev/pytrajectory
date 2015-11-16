@@ -205,6 +205,9 @@ The vectors :math:`\boldsymbol{a}` and :math:`\boldsymbol{b}` belong to the two 
 With this allocation, the system of equations can be solved for :math:`\boldsymbol{b}` and the parameters in :math:`\boldsymbol{a}`
 remain as the free parameters of the spline function.
 
+.. note::
+   There is implemented a different approach for defining the candidate functions, see :ref:`non-standard-approach`.
+
 
 .. _system_structure:
 

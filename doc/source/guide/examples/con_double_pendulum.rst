@@ -1,3 +1,5 @@
+.. _con-double-pendulum:
+
 Constrained swing up of the inverted double pendulum
 ----------------------------------------------------
 

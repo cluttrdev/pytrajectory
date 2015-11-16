@@ -43,7 +43,7 @@ class Spline(object):
     '''
 
     def __init__(self, a=0.0, b=1.0, n=5, bv={},
-                 tag='', use_std_approach=False):
+                 tag='', use_std_approach=False, **kwargs):
         # there are two different approaches implemented for evaluating
         # the splines which mainly differ in the node that is used in the 
         # evaluation of the polynomial parts
