@@ -197,7 +197,7 @@ con = {0 : [-1.0, 1.0],
 S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=None,
                   eps=2e-1, su=20, kx=2,
                   use_chains=False,
-                  use_std_approach=True)
+                  use_std_approach=False)
 
 # time to run the iteration
 x, u = S.solve()
