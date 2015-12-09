@@ -352,70 +352,90 @@ class Spline(object):
         points = self.nodes
         assert callable(fnc)
         
-        assert self._steady_flag
-    
-        # compute values 
-        values = [fnc(t) for t in self.nodes]
-        
-        # create vector of step sizes
-        h = np.array([self.nodes[k+1] - self.nodes[k] for k in xrange(self.nodes.size-1)])
-        
-        # create diagonals for the coefficient matrix of the equation system
-        l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(self.nodes.size-2)])
-        d = 2.0*np.ones(self.nodes.size-2)
-        u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(self.nodes.size-2)])
-        
-        # right hand site of the equation system
-        r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
-                      for k in xrange(self.nodes.size-2)])
-        
-        # add conditions for unique solution
-        
-        # boundary derivatives
-        l = np.hstack([l, 0.0, 0.0])
-        d = np.hstack([1.0, d, 1.0])
-        u = np.hstack([0.0, 0.0, u])
-        
-        if m0 is None:
-            m0 = (values[1] - values[0]) / (self.nodes[1] - self.nodes[0])
-            
-        if mn is None:
-            mn = (values[-1] - values[-2]) / (self.nodes[-1] - self.nodes[-2])
-            
-        r = np.hstack([m0, r, mn])
-        
-        data = [l,d,u]
-        offsets = [-1, 0, 1]
-        
-        # create tridiagonal coefficient matrix
-        D = sparse.dia_matrix((data, offsets), shape=(self.n+1, self.n+1))
-        
-        # solve the equation system
-        sol = sparse.linalg.spsolve(D.tocsr(),r)
-        
-        # calculate the coefficients
-        coeffs = np.zeros((self.n, 4))
-        
-        # compute the coefficients of the interpolant
-        if self._use_std_approach:
-            for i in xrange(self.n):
-                coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
-                                3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
-                                sol[i],
-                                values[i]]
-        else:
-            for i in xrange(self.n):
-                coeffs[i, :] = [2.0/h[i]**3 * (values[i]-values[i+1]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
-                                3.0/h[i]**2 * (values[i]-values[i+1]) + 1.0/h[i] * (sol[i]+2*sol[i+1]),
-                                sol[i+1],
-                                values[i+1]]
-        
-        # get the indices of the free coefficients
-        coeff_name_split_str = [c.name.split('_')[-2:] for c in self._indep_coeffs_sym]
-        free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
-        
-        free_coeffs = np.array([coeffs[i] for i in free_coeff_indices])
+        if 0 and not self._use_std_approach:
+            assert self._steady_flag
 
+            # how many independent coefficients does the spline have
+            coeffs_size = self._indep_coeffs.size
+        
+            # generate points to evaluate the function at
+            # (function and spline interpolant should be equal in these)
+            nodes = np.linspace(self.a, self.b, coeffs_size, endpoint=True)
+        
+            # evaluate the function
+            fnc_t = np.array([fnc(t) for t in nodes])
+        
+            dep_vecs = [self.get_dependence_vectors(t) for t in nodes]
+            S_dep_mat = np.array([vec[0] for vec in dep_vecs])
+            S_dep_mat_abs = np.array([vec[1] for vec in dep_vecs])
+        
+            # solve the equation system
+            #free_coeffs = np.linalg.solve(S_dep_mat, fnc_t - S_dep_mat_abs)
+            free_coeffs = np.linalg.lstsq(S_dep_mat, fnc_t - S_dep_mat_abs)[0]
+
+        else:
+            # compute values 
+            values = [fnc(t) for t in self.nodes]
+            
+            # create vector of step sizes
+            h = np.array([self.nodes[k+1] - self.nodes[k] for k in xrange(self.nodes.size-1)])
+            
+            # create diagonals for the coefficient matrix of the equation system
+            l = np.array([h[k+1] / (h[k] + h[k+1]) for k in xrange(self.nodes.size-2)])
+            d = 2.0*np.ones(self.nodes.size-2)
+            u = np.array([h[k] / (h[k] + h[k+1]) for k in xrange(self.nodes.size-2)])
+            
+            # right hand site of the equation system
+            r = np.array([(3.0/h[k])*l[k]*(values[k+1] - values[k]) + (3.0/h[k+1])*u[k]*(values[k+2]-values[k+1])\
+                          for k in xrange(self.nodes.size-2)])
+            
+            # add conditions for unique solution
+            
+            # boundary derivatives
+            l = np.hstack([l, 0.0, 0.0])
+            d = np.hstack([1.0, d, 1.0])
+            u = np.hstack([0.0, 0.0, u])
+            
+            if m0 is None:
+                m0 = (values[1] - values[0]) / (self.nodes[1] - self.nodes[0])
+                
+            if mn is None:
+                mn = (values[-1] - values[-2]) / (self.nodes[-1] - self.nodes[-2])
+                
+            r = np.hstack([m0, r, mn])
+            
+            data = [l,d,u]
+            offsets = [-1, 0, 1]
+            
+            # create tridiagonal coefficient matrix
+            D = sparse.dia_matrix((data, offsets), shape=(self.n+1, self.n+1))
+            
+            # solve the equation system
+            sol = sparse.linalg.spsolve(D.tocsr(),r)
+            
+            # calculate the coefficients
+            coeffs = np.zeros((self.n, 4))
+            
+            # compute the coefficients of the interpolant
+            if self._use_std_approach:
+                for i in xrange(self.n):
+                    coeffs[i, :] = [-2.0/h[i]**3 * (values[i+1]-values[i]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
+                                    3.0/h[i]**2 * (values[i+1]-values[i]) - 1.0/h[i] * (2*sol[i]+sol[i+1]),
+                                    sol[i],
+                                    values[i]]
+            else:
+                for i in xrange(self.n):
+                    coeffs[i, :] = [2.0/h[i]**3 * (values[i]-values[i+1]) + 1.0/h[i]**2 * (sol[i]+sol[i+1]),
+                                    3.0/h[i]**2 * (values[i]-values[i+1]) + 1.0/h[i] * (sol[i]+2*sol[i+1]),
+                                    sol[i+1],
+                                    values[i+1]]
+                    
+            # get the indices of the free coefficients
+            coeff_name_split_str = [c.name.split('_')[-2:] for c in self._indep_coeffs_sym]
+            free_coeff_indices = [(int(s[0]), int(s[1])) for s in coeff_name_split_str]
+            
+            free_coeffs = np.array([coeffs[i] for i in free_coeff_indices])
+        
         # set solution for the free coefficients
         #self.set_coefficients(free_coeffs=free_coeffs)
 

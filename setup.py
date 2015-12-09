@@ -10,7 +10,7 @@ setup(name='PyTrajectory',
     requires=['numpy (>=1.8.1)',
                 'sympy (>=0.7.5)',
                 'scipy (>=0.13.0)',
-                'matplotlib'],
+                'matplotlib (<1.5.0)'],
     
     # metadata
     author='Andreas Kunze, Carsten Knoll, Oliver Schnabel',
@@ -21,6 +21,6 @@ setup(name='PyTrajectory',
     PyTrajectory is a Python library for the determination of the feed forward 
     control to achieve a transition between desired states of a nonlinear control system.
     ''',
-      setup_requires=['numpy>=1.8.1', 'sympy>=0.7.5', 'scipy>=0.13.0', 'matplotlib'],
-      install_requires=['numpy>=1.8.1', 'sympy>=0.7.5', 'scipy>=0.13.0', 'matplotlib']
+      setup_requires=['numpy>=1.8.1', 'sympy>=0.7.5', 'scipy>=0.13.0', 'matplotlib<1.5.0'],
+      install_requires=['numpy>=1.8.1', 'sympy>=0.7.5', 'scipy>=0.13.0', 'matplotlib<1.5.0']
     )

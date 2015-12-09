@@ -36,13 +36,13 @@ aligned vertically upwards (:math:`\varphi = 0`). As a further condition
 (:math:`u_1(0) = u_1(T) = 0`).
 The operating time here is :math:`T = 1 [s]`.
 
+.. only:: html
+
+   .. image:: /../pic/inv_pend_trans.gif
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex1_InvertedPendulumTranslation.py
    :lines: 1-48
-
-.. only:: html
-
-   .. image:: /../pic/inv_pend_trans.gif
 

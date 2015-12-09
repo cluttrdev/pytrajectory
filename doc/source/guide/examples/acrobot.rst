@@ -63,6 +63,9 @@ The initial and final states thus are
       x(T) = \begin{bmatrix} 0 \\ 0 \\ \frac{1}{2} \pi \\ 0 \end{bmatrix}
    \end{equation*}
 
+.. only:: html
+
+   .. image:: /../pic/acrobot.gif
 
 Source Code
 +++++++++++
@@ -70,7 +73,4 @@ Source Code
 .. literalinclude:: /../../examples/ex5_Acrobot.py
    :lines: 1-58
 
-.. only:: html
-
-   .. image:: /../pic/acrobot.gif
 

@@ -183,7 +183,7 @@ f = solve_motion_equations(M, B, state_vars, input_vars)
 a = 0.0
 xa = [0.0, 0.0, pi, 0.0, pi, 0.0]
 
-b = 5.0
+b = 4.0
 xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 ua = [0.0]
@@ -194,7 +194,7 @@ con = {0 : [-1.0, 1.0],
        1 : [-2.0, 2.0]}
 
 # now we create our Trajectory object and alter some method parameters via the keyword arguments
-S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=None,
+S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con,
                   eps=2e-1, su=20, kx=2,
                   use_chains=False,
                   use_std_approach=False)

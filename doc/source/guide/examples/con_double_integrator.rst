@@ -30,12 +30,13 @@ So instead we use the dictionary ::
 
    >>> con = {1 : [-0.1, 0.65]}
 
+.. only:: html
+
+   .. image:: /../pic/con_double_integrator.gif
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex6_ConstrainedDoubleIntegrator.py
    :lines: 1-29
 
-.. only:: html
-
-   .. image:: /../pic/con_double_integrator.gif
