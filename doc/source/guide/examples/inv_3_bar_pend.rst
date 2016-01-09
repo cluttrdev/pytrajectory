@@ -13,8 +13,8 @@ Therefore, the function :py:func:`n_bar_pendulum` generates the mass matrix
 for a general :math:`n`\ -bar pendulum, which we use for the case :math:`n = 3`.
 
 The formulas this function uses are taken from the project report
-*'Simulation of the inverted pendulum'* written by *Christian Wachinger* and
-*Michael Pock* at the *Mathematics Departement, Technical University Munich*
+*'Simulation of the inverted pendulum'* written by `C. Wachinger <http://far.in.tum.de/Main/ChristianWachinger>`_,
+*M. Pock* and *P. Rentrop* at the *Mathematics Departement, Technical University Munich*
 in December 2004.
 
 .. only:: html
