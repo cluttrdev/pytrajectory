@@ -16,11 +16,6 @@ install:
  - conda install --yes -c conda conda-env
  - conda create -n testenv --yes $DEPS pip python=$TRAVIS_PYTHON_VERSION
  - source activate testenv
-# - pip install numpy
-# - pip install scipy
-# - pip install sympy
-# - pip install matplotlib
-# - pip install ipython
  - python setup.py install
 
 # command to run tests
