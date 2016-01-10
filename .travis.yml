@@ -9,7 +9,7 @@ python:
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda2/bin:$PATH
   - export DEPS="sympy=0.7.5 numpy=1.8 scipy=0.13 matplotlib ipython pytest"
-  - conda update --yes --no-deps conda
+#  - conda update --yes --no-deps conda
   - conda update --yes conda
 
 install:
