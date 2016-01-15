@@ -481,6 +481,14 @@ class ControlSystem(object):
 
         return save
 
+    @property
+    def a(self):
+        return self.dyn_sys.a
+
+    @property
+    def b(self):
+        return self.dyn_sys.b
+    
 class DynamicalSystem(object):
     '''
     Provides access to information about the dynamical system that is the

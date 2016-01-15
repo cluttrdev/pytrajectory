@@ -334,7 +334,7 @@ f = solve_motion_equations(M, B, state_vars, input_vars)
 a = 0.0
 xa = [0.0, 0.0, pi, 0.0, pi, 0.0, pi, 0.0]
 
-b = 7.0
+b = 3.5
 xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 ua = [0.0]
@@ -422,4 +422,4 @@ if 'plot' in sys.argv:
     
 if 'animate' in sys.argv:
     A.animate()
-    A.save('ex_n_bar_pendulum.gif')
+    A.save('ex9_TriplePendulum.gif')

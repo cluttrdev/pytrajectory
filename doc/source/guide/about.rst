@@ -31,3 +31,4 @@ Licence
 -------
 
 .. literalinclude:: /../../LICENSE
+
