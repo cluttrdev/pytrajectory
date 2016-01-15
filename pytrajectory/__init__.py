@@ -18,7 +18,7 @@ from log import logging
 __version__ = '1.2.0'
 
 # Placeholder for the datetime string of latest commit
-__date__ = "2015-12-01 18:36:30"
+__date__ = "2016-01-15 13:32:24"
 
 # `__date__` contains the date and time of the latest commit
 # (will be altered with every commit using git's pre-commit hook)
