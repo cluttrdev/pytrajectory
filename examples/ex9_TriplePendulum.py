@@ -1,21 +1,23 @@
-# N-bar pendulum
+# 3-bar pendulum
 
 # import all we need for solving the problem
 from pytrajectory import ControlSystem
+
 import numpy as np
 import sympy as sp
+
 from sympy import cos, sin
 from numpy import pi
 
-from IPython import embed as IPS
-
-
 def n_bar_pendulum(N=1, param_values=dict()):
     '''
-    Returns mass matrix `M` and right hand site `B` of motion equations
-    M * (d^2/dt^2) x = B
-    of the N bar pendulum.
+    Returns the mass matrix :math:`M` and right hand site :math:`B` of motion equations
     
+    .. math::
+       M * (d^2/dt^2) x = B
+    
+    for the :math:`N`\ -bar pendulum.
+
     Parameters
     ----------
     
@@ -149,8 +151,7 @@ def n_bar_pendulum(N=1, param_values=dict()):
     input_vars = [F]
     
     # return stuff
-    return sp.Matrix(M), sp.Matrix(B).T, state_vars, input_vars
-
+    return sp.Matrix(M), sp.Matrix(B), state_vars, input_vars
 
 def solve_motion_equations(M, B, state_vars=[], input_vars=[], parameters_values=dict()):
     '''
@@ -162,11 +163,11 @@ def solve_motion_equations(M, B, state_vars=[], input_vars=[], parameters_values
     ----------
     
     M : sympy.Matrix
-        A sympy.Matrix containing sympy expressions and symbols that represents
+        A sympy.Matrix containing sympy expressions and symbols that represent
         the mass matrix of the control system.
     
     B : sympy.Matrix
-        A sympy.Matrix containing sympy expressions and symbols that represents
+        A sympy.Matrix containing sympy expressions and symbols that represent
         the right hand site of the motion equations.
     
     state_vars : list
@@ -240,7 +241,7 @@ def f(x, u):
     
     # now solve the motion equations w.r.t. the accelerations
     # (might take some while...)
-    print "    -> solving motion equations w.r.t. accelerations"
+    #print "    -> solving motion equations w.r.t. accelerations"
     
     # apply sympy.cse() on M and B to speed up solving the eqs
     M_cse_list, M_cse_res = sp.cse(M, symbols=sp.numbered_symbols('M_cse'))
@@ -302,132 +303,123 @@ def f(x, u):
     # now we have defined a callable function that can be used within PyTrajectory
     return f
 
-if __name__=='__main__':
-    N = 3
-    
-    # parameters
-    l1 = 0.25                   # 1/2 * length of the pendulum 1
-    l2 = 0.25                   # 1/2 * length of the pendulum 2
-    l3 = 0.25                   # 1/2 * length of the pendulum 3
-    m1 = 0.1                    # mass of the pendulum 1
-    m2 = 0.1                    # mass of the pendulum 2
-    m3 = 0.1                    # mass of the pendulum 3
-    m = 1.0                     # mass of the car
-    g = 9.81                    # gravitational acceleration
-    I1 = 4.0/3.0 * m1 * l1**2   # inertia 1
-    I2 = 4.0/3.0 * m2 * l2**2   # inertia 2
-    I3 = 4.0/3.0 * m2 * l2**2   # inertia 3
+# we consider the case of a 3-bar pendulum
+N = 3
 
-    param_values = {'l_1':l1, 'l_2':l2, 'l_3':l3,
-                    'm_1':m1, 'm_2':m2, 'm_3':m3,
-                    'm_0':m, 'g':g, 
-                    'I_1':I1, 'I_2':I2, 'I_3':I3,
-                    }
-    
-    # get matrices of motion equations
-    print "Get matrices of motion equations"
-    M, B, state_vars, input_vars = N_Bar_Pendulum(N=N, param_values=param_values)
-    
-    # get callable function for vectorfield that can be used with PyTrajectory
-    print "Get callable vectorfield"
-    f = solve_motion_equations(M, B, state_vars, input_vars)
-    
-    # then we specify all boundary conditions
-    a = 0.0
-    xa = [0.0, 0.0, pi, 0.0, pi, 0.0, pi, 0.0]
+# set model parameters
+l1 = 0.25                   # 1/2 * length of the pendulum 1
+l2 = 0.25                   # 1/2 * length of the pendulum 2
+l3 = 0.25                   # 1/2 * length of the pendulum 3
+m1 = 0.1                    # mass of the pendulum 1
+m2 = 0.1                    # mass of the pendulum 2
+m3 = 0.1                    # mass of the pendulum 3
+m = 1.0                     # mass of the car
+g = 9.81                    # gravitational acceleration
+I1 = 4.0/3.0 * m1 * l1**2   # inertia 1
+I2 = 4.0/3.0 * m2 * l2**2   # inertia 2
+I3 = 4.0/3.0 * m2 * l2**2   # inertia 3
 
-    b = 3.5
-    xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+param_values = {'l_1':l1, 'l_2':l2, 'l_3':l3,
+                'm_1':m1, 'm_2':m2, 'm_3':m3,
+                'm_0':m, 'g':g, 
+                'I_1':I1, 'I_2':I2, 'I_3':I3}
 
-    ua = [0.0]
-    ub = [0.0]
+# get matrices of motion equations
+M, B, state_vars, input_vars = n_bar_pendulum(N=3, param_values=param_values)
 
-    # here we specify the constraints for the velocity of the car
-    con = {0 : [-1.0, 1.0],
-           1 : [-5.0, 5.0]}
-    
-    # now we create our Trajectory object and alter some method parameters via the keyword arguments
-    S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=con, eps=4e-1, su=20, kx=2, use_chains=False)
-    
-    # time to run the iteration
-    x, u = S.solve()
-    
-    # the following code provides an animation of the system above
-    # for a more detailed explanation have a look at the 'Visualisation' section in the documentation
-    import sys
-    import matplotlib as mpl
-    from pytrajectory.visualisation import Animation
-    
-    def create_draw_function(N=1, car_width_height=[0.05, 0.02], rod_lengths=0.5, pendulum_sizes=0.015):
-        # if all rods have the same length
-        if type(rod_lengths) in {int, float}:
-            rod_lengths = [rod_lengths] * N
+# get callable function for vectorfield that can be used with PyTrajectory
+f = solve_motion_equations(M, B, state_vars, input_vars)
 
-        # if all pendulums have the same size
-        if type(pendulum_sizes) in {int, float}:
-            pendulum_sizes = [pendulum_sizes] * N
+# then we specify all boundary conditions
+a = 0.0
+xa = [0.0, 0.0, pi, 0.0, pi, 0.0, pi, 0.0]
 
-        car_width, car_height = car_width_height
+b = 3.5
+xb = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        # the drawing function
-        def draw(xt, image):
-            x = xt[0]
-            phi = xt[2::2]
+ua = [0.0]
+ub = [0.0]
+
+# now we create our Trajectory object and alter some method parameters via the keyword arguments
+S = ControlSystem(f, a, b, xa, xb, ua, ub, constraints=None,
+                  eps=4e-1, su=30, kx=2, use_chains=False,
+                  use_std_approach=False)
+
+# time to run the iteration
+x, u = S.solve()
+
+# the following code provides an animation of the system above
+# for a more detailed explanation have a look at the 'Visualisation' section
+# in the documentation
+import sys
+import matplotlib as mpl
+from pytrajectory.visualisation import Animation
+
+# all rods have the same length
+rod_lengths = [0.5] * N
+
+# all pendulums have the same size
+pendulum_sizes = [0.015] * N
+
+car_width, car_height = [0.05, 0.02]
     
-            x_car = x
-            y_car = 0
+# the drawing function
+def draw(xt, image):
+    x = xt[0]
+    phi = xt[2::2]
     
-            # coordinates of the pendulums
-            x_p = []
-            y_p = []
+    x_car = x
+    y_car = 0
     
-            # first pendulum
-            x_p.append( x_car + rod_lengths[0] * sin(phi[0]) )
-            y_p.append( rod_lengths[0] * cos(phi[0]) )
+    # coordinates of the pendulums
+    x_p = []
+    y_p = []
     
-            # the rest
-            for i in xrange(1,N):
-                x_p.append( x_p[i-1] + rod_lengths[i] * sin(phi[i]) )
-                y_p.append( y_p[i-1] + rod_lengths[i] * cos(phi[i]) )
+    # first pendulum
+    x_p.append( x_car + rod_lengths[0] * sin(phi[0]) )
+    y_p.append( rod_lengths[0] * cos(phi[0]) )
+    
+    # the rest
+    for i in xrange(1,3):
+        x_p.append( x_p[i-1] + rod_lengths[i] * sin(phi[i]) )
+        y_p.append( y_p[i-1] + rod_lengths[i] * cos(phi[i]) )
         
-            # create image
+    # create image
     
-            # first the car and joint
-            car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_height), car_width, car_height,
-                                        fill=True, facecolor='grey', linewidth=2.0)
-            joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
+    # first the car and joint
+    car = mpl.patches.Rectangle((x_car-0.5*car_width, y_car-car_height), car_width, car_height,
+                                fill=True, facecolor='grey', linewidth=2.0)
+    joint = mpl.patches.Circle((x_car,0), 0.005, color='black')
     
-            image.patches.append(car)
-            image.patches.append(joint)
+    image.patches.append(car)
+    image.patches.append(joint)
     
-    
-            # then the pendulums
-            for i in xrange(N):
-                image.patches.append( mpl.patches.Circle(xy=(x_p[i], y_p[i]), 
-                                                         radius=pendulum_sizes[i], 
-                                                         color='black') )
+    # then the pendulums
+    for i in xrange(3):
+        image.patches.append( mpl.patches.Circle(xy=(x_p[i], y_p[i]), 
+                                                 radius=pendulum_sizes[i], 
+                                                 color='black') )
         
-                if i == 0:
-                    image.lines.append( mpl.lines.Line2D(xdata=[x_car, x_p[0]], ydata=[y_car, y_p[0]],
-                                                         color='black', zorder=1, linewidth=2.0) )
-                else:
-                    image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[i]], ydata=[y_p[i-1], y_p[i]],
-                                                         color='black', zorder=1, linewidth=2.0) )
-            # and return the image
-            return image
+        if i == 0:
+            image.lines.append( mpl.lines.Line2D(xdata=[x_car, x_p[0]], ydata=[y_car, y_p[0]],
+                                                 color='black', zorder=1, linewidth=2.0) )
+        else:
+            image.lines.append( mpl.lines.Line2D(xdata=[x_p[i-1], x_p[i]], ydata=[y_p[i-1], y_p[i]],
+                                                 color='black', zorder=1, linewidth=2.0) )
+    # and return the image
+    return image
 
-        # return the drawing function
-        return draw
-    
-    # create Animation object
-    A = Animation(drawfnc=create_draw_function(N=N), simdata=S.sim)
-    xmin = np.min(S.sim[1][:,0])
-    xmax = np.max(S.sim[1][:,0])
+# create Animation object
+if 'plot' in sys.argv or 'animate' in sys.argv:
+    A = Animation(drawfnc=draw, simdata=S.sim_data,
+                  plotsys=[(0,'$x$'),(1,'$\\dot{x}$')], plotinputs=[(0,'$u$')])
+    xmin = np.min(S.sim_data[1][:,0])
+    xmax = np.max(S.sim_data[1][:,0])
     A.set_limits(xlim=(xmin - 1.5, xmax + 1.5), ylim=(-2.0,2.0))
+
+if 'plot' in sys.argv:
+    A.show(t=S.b)
     
-    if 'plot' in sys.argv:
-        A.show(t=S.b)
-    
-    if 'animate' in sys.argv:
-        A.animate()
-        A.save('ex_n_bar_pendulum.gif')
+if 'animate' in sys.argv:
+    A.animate()
+    A.save('ex9_TriplePendulum.gif')

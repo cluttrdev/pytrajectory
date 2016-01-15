@@ -76,8 +76,8 @@ class Solver:
         
         eye = scp.sparse.identity(len(self.x0))
 
-        #mu = 0.1
-        mu = 1.0
+        #mu = 1.0
+        mu = 1e-4
         
         # borders for convergence-control
         b0 = 0.2
@@ -115,6 +115,7 @@ class Solver:
                 if (roh<=b0): mu = 2.0*mu
                 if (roh>=b1): mu = 0.5*mu
                 #logging.debug("  roh= %f    mu= %f"%(roh,mu))
+                logging.debug('  mu = {}'.format(mu))
                 
                 # the following was believed to be some kind of bug, hence the warning
                 # but that was not the case...

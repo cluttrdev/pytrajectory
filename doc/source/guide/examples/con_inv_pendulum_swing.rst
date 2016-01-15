@@ -25,13 +25,13 @@ object. ::
 
    >>> T = Trajectory(f, a, b=3.0, xa, xb, uab, constraints=con)
 
+.. only:: html
+
+   .. image:: /../pic/con_inv_pend_swing.gif
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex7_ConstrainedInvertedPendulum.py
    :lines: 1-44
-
-.. only:: html
-
-   .. image:: /../pic/con_inv_pend_swing.gif
 

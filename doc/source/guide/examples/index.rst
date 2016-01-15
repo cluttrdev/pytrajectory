@@ -36,4 +36,4 @@ For even more examples, which might not be part of the documentation, have a loo
    con_double_integrator
    con_inv_pendulum_swing
    con_double_pendulum
-   inv_n_bar_pend3
+   inv_3_bar_pend

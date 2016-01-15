@@ -66,13 +66,14 @@ yield the boundary conditions for the inputs.
 
    $ F_1(0) = F_1(T) = F_2(0) = F_2(T) = \frac{mg}{2 \cos(\alpha)} $
 
+.. only:: html
+
+   .. image:: /../pic/aircraft.gif
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex3_Aircraft.py
    :lines: 1-59
 
-.. only:: html
-
-   .. image:: /../pic/aircraft.gif
 

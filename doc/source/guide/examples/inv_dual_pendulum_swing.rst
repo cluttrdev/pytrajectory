@@ -41,13 +41,13 @@ same position again and the pendulums should be at rest with
       x(T) = \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
    \end{equation*}
 
+.. only:: html
+
+   .. image:: /../pic/inv_dual_pend_swing.gif
+
 Source Code
 +++++++++++
 
 .. literalinclude:: /../../examples/ex2_InvertedDualPendulumSwingUp.py
    :lines: 1-46
-
-.. only:: html
-
-   .. image:: /../pic/inv_dual_pend_swing.gif
 

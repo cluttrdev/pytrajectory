@@ -120,6 +120,7 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 # new: alabaster
 # old default: classic
+#html_theme = 'classic'
 html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
